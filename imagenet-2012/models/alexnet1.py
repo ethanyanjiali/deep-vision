@@ -2,13 +2,12 @@ import torch
 import torch.nn as nn
 
 # [1] https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
-# [2] https://arxiv.org/pdf/1404.5997.pdf
 # [3] http://cs231n.github.io/convolutional-networks
 
 
 class AlexNet(nn.Module):
     '''
-    This is a simplified version of AlexNet from [1]. I just defined a single tower structure here.
+    This implement the original AlexNet in one tower structure, hence the parameters are doubled
     '''
 
     def __init__(self):
