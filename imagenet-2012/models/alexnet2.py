@@ -10,41 +10,49 @@ import torch.nn.init as Init
 class AlexNet(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        # formula
-        # conv layer
-        # output_size = (input_size - kernel_size + 2 * padding) / stride + 1
-        # padding = ((output_size - 1) * stride) + kernel_size - input_size) / 2
-        # pooling layer
-        # output_size = (input_size - kernel_size) / stride + 1
-        # where input_size and output_size are the square image side length
+        # "In detail, the single-column model has 64, 192, 384, 384, 256 filters
+        # in the five convolutional layers, respectivel"[1]
+        # "It has the same number of layers as the two-tower model, and the
+        # (x, y) map dimensions in each layer are equivalent to
+        # the (x, y) map dimensions in the two-tower model.
+        # The minor difference in parameters and connections
+        # arises from a necessary adjustment in the number of
+        # kernels in the convolutional layers, due to the unrestricted
+        # layer-to-layer connectivity in the single-tower model."[1]
 
-        # "The first convolutional layer filters the 224×224×3 input image with
-        # 96 kernels of size 11×11×3 with a stride of 4 pixels."[1]
-        # Also from [1]Fig.2, next layer is 55x55x48
-        # hence padding = ((55 - 1) * 4 + 11 - 224) / 2 = 2
-        # to verify, output = (224 - 11 + 2 * 2) / 4 + 1 = 55
-        self.conv1 = nn.Conv2d(3, 48, 11, stride=4, padding=2)
+        # According to the above, I just need to change the # of output channels
+        # Please refer to ./alexnet1 for detailed calculation
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 64, 11, stride=4, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(3, 2),
+            nn.Conv2d(96, 192, 5, stride=1, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(3, 2),
+            nn.Conv2d(256, 384, 3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 384, 3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 256, 3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(3, 2),
+        )
 
-        # From Fig.2 in [1], there's a maxpooling layer after first conv layer
-        # Also from Fig.2 in [1], the pooling reduces dimension from 55x55 to 27x27
-        # hence it's likely that they uses overlapping pooling kernel=3, stride=2
-        # to verify, output_size = (55 - 3) / 2 + 1 = 27
-        self.pooling1 = nn.MaxPool2d(3, 2)
-
-        # "The second convolutional layer takes as input the (response-normalized
-        # and pooled) output of the first convolutional layer and filters it with
-        # 256 kernels of size 5 × 5 × 48."[1]
-
-        # To achive an output size of 27, we need a combination of stride = 2 and padding = 1
-        # output_size = (27 - 5 + 2 * 1) / 2 + 1 = 27
-        self.conv2 = nn.Conv2d(48, 128, 5, stride=4, padding=1)
-
-        # "The third, fourth, and fifth convolutional layers are connected to one another
-        # without any intervening pooling or normalization layers"[1]
-        # Also from Fig.2 in [1], next layer is 13x13x192
-        # To achive an output size of 27, we need a combination of stride = 2 and padding = 1
-        # output_size = (55 - 5 + 2 * 1) / 2 + 1 = 27
-        self.conv3 = nn.Conv2d(48, 128, 5, stride=4, padding=1)
+        self.classifier = nn.Sequential(
+            # This part is same with ./alexnet 1 as mentioned above
+            nn.Dropout(p=0.5),
+            nn.Linear(6 * 6 * 256, 4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.5),
+            nn.Linear(4096, 4096),
+            nn.ReLU(inplace=True),
+            nn.Linear(4096, 1000),
+            # "Another difference is that instead of a softmax
+            # final layer with multinomial logistic regression
+            # cost, this model’s final layer has 1000 independent logistic
+            # units, trained to minimize cross-entropy"[1]
+            # Therefore, I removed the Softmax layer from ./alexnet1
+        )
 
     def forward(self, x):
         return x
