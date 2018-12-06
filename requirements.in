@@ -6,3 +6,6 @@ yapf
 flake8
 opencv-contrib-python
 torchsummary
+matplotlib
+Pillow
+Flask
