@@ -25,9 +25,14 @@ class AlexNet(nn.Module):
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, 11, stride=4, padding=2),
             nn.ReLU(inplace=True),
+            # Later in the VGG paper, it demonstrated that LRN is not necessary
+            # Hence most of AlexNet implementation doesn't include LRN
+            # However, for study purpose, I still added this layer
+            nn.LocalResponseNorm(64),
             nn.MaxPool2d(3, 2),
             nn.Conv2d(96, 192, 5, stride=1, padding=2),
             nn.ReLU(inplace=True),
+            nn.LocalResponseNorm(192),
             nn.MaxPool2d(3, 2),
             nn.Conv2d(256, 384, 3, stride=1, padding=1),
             nn.ReLU(inplace=True),
