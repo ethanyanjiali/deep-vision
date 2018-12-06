@@ -1,4 +1,6 @@
 import os
+from os import listdir
+from os.path import isfile, join
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
@@ -17,9 +19,13 @@ class ImageNet2012Dataset(Dataset):
         """
         Args:
             root_dir (string): The directory with all image files (flatten).
+            labels_file: The label file path
         """
         self.root_dir = root_dir
-        self.tranform = transforms.Compose([
+        self.images = [
+            f for f in listdir(root_dir) if isfile(join(root_dir, f))
+        ]
+        self.transform = transforms.Compose([
             Rescale(255),
             RandomCrop(224),
             ToTensor(),
@@ -27,31 +33,31 @@ class ImageNet2012Dataset(Dataset):
         self.label_to_idx = {}
         self.idx_to_name = {}
         with open(labels_file, 'r') as f:
-            line = fp.readline()
+            line = f.readline()
             idx = 0
             while line:
                 line = line.strip()
                 parts = line.split(' ')
                 label = parts[0]
                 name = "".join(parts[1:])
-                self.label_to_id[label] = idx
+                self.label_to_idx[label] = idx
                 self.idx_to_name[idx] = name
                 idx += 1
-                line = fp.readline()
+                line = f.readline()
 
     def __len__(self):
-        return len(self.key_pts_frame)
+        return len(self.images)
 
     def __getitem__(self, idx):
-        image_name = os.path.join(self.root_dir,
-                                  self.key_pts_frame.iloc[idx, 0])
+        image_name = self.images[idx]
+        image_path = join(self.root_dir, self.images[idx])
 
-        image = mpimg.imread(image_name)
+        image = mpimg.imread(image_path)
 
         # Train file name is in "n02708093_7537.JPEG" format
         # Val file name is in "n15075141_ILSVRC2012_val_00047144.JPEG" format
         parts = image_name.split('_')
-        annotation = self.label_to_idx([parts[0][1:]])
+        annotation = self.label_to_idx[parts[0]]
         sample = {'image': image, 'annotation': annotation}
 
         if self.transform:
@@ -128,10 +134,9 @@ class ToTensor(object):
     def __call__(self, sample):
         image, annotation = sample['image'], sample['annotation']
 
-        # if image has no grayscale color channel, add one
+        # if image is in grayscale and has no color channels, add 3 channels
         if (len(image.shape) == 2):
-            # add that third color dim
-            image = image.reshape(image.shape[0], image.shape[1], 1)
+            image = np.stack((image, ) * 3, axis=-1)
 
         # swap color axis because
         # numpy image: H x W x C
@@ -140,5 +145,5 @@ class ToTensor(object):
 
         return {
             'image': torch.from_numpy(image),
-            'annotation': torch.from_numpy(annotation)
+            'annotation': annotation,
         }

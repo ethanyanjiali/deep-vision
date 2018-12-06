@@ -7,9 +7,8 @@ import torch.optim as optim
 import torch.nn as nn
 from torchsummary import summary
 
-from data_load import (RandomCrop, ImageNet2012Dataset, Normalize, Rescale,
-                       ToTensor)
-from models import Net
+from data_load import (RandomCrop, ImageNet2012Dataset, Rescale, ToTensor)
+from models.alexnet1 import AlexNet
 
 train_batch_size = 128
 evaluate_batch_size = 32
@@ -19,10 +18,10 @@ model_dir = './saved_models/'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def initialize_train_loader(transform):
+def initialize_train_loader():
     train_dataset = ImageNet2012Dataset(
         root_dir='../../imagenet-2012/train_flatten/',
-        labels_file='../../imagenet-2012/sysnets.txt',
+        labels_file='../../imagenet-2012/synsets.txt',
     )
     print('Number of train images: ', len(train_dataset))
 
@@ -38,10 +37,10 @@ def initialize_train_loader(transform):
     return train_loader
 
 
-def initialize_validation_loader(transform):
+def initialize_validation_loader():
     val_dataset = ImageNet2012Dataset(
         root_dir='../../imagenet-2012/val_flatten/',
-        labels_file='../../imagenet-2012/sysnets.txt',
+        labels_file='../../imagenet-2012/synsets.txt',
     )
     print('Number of validation images: ', len(val_dataset))
 
@@ -127,9 +126,9 @@ def run():
 
     model_id = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
     # instantiate the neural network
-    net = Net()
+    net = AlexNet()
     net.to(device=device)
-    summary(net, (1, 224, 224))
+    summary(net, (3, 224, 224))
     # define the loss function using CrossEntropyLoss
     criterion = nn.CrossEntropyLoss()
     # define the params updating function using SGD
