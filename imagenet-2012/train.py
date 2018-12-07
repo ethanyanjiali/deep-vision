@@ -32,7 +32,7 @@ def initialize_train_loader():
         train_dataset,
         batch_size=train_batch_size,
         shuffle=True,
-        num_workers=2)
+        num_workers=0)
 
     return train_loader
 
@@ -51,7 +51,7 @@ def initialize_validation_loader():
         val_dataset,
         batch_size=evaluate_batch_size,
         shuffle=True,
-        num_workers=2)
+        num_workers=0)
 
     return val_loader
 
@@ -89,7 +89,7 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
         # a batch of keypoints (batch_size, 1)
         annotations = data['annotation']
         # annotation is an integer index
-        annotations = annotations.to(device=device, dtype=torch.int)
+        annotations = annotations.to(device=device, dtype=torch.long)
         # PyTorch likes float type for image. So we convert to it.
         images = images.to(device=device, dtype=torch.float)
 
@@ -132,7 +132,12 @@ def run():
     # define the loss function using CrossEntropyLoss
     criterion = nn.CrossEntropyLoss()
     # define the params updating function using SGD
-    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(
+        net.parameters(),
+        lr=0.01,
+        momentum=0.9,
+        weight_decay=0.0005,
+    )
 
     loss_logger = []
 

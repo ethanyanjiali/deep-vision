@@ -54,6 +54,10 @@ class ImageNet2012Dataset(Dataset):
 
         image = mpimg.imread(image_path)
 
+        # if there's an alpha channel, get rid of it
+        if (len(image.shape) > 2 and image.shape[2] == 4):
+            image = image[:, :, 0:3]
+
         # Train file name is in "n02708093_7537.JPEG" format
         # Val file name is in "n15075141_ILSVRC2012_val_00047144.JPEG" format
         parts = image_name.split('_')
