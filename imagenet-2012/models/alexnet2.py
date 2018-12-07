@@ -7,9 +7,9 @@ import torch.nn.init as Init
 # [1] https://arxiv.org/pdf/1404.5997.pdf
 
 
-class AlexNet(nn.Module):
+class AlexNet2(nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super(AlexNet2, self).__init__()
         # "In detail, the single-column model has 64, 192, 384, 384, 256 filters
         # in the five convolutional layers, respectivel"[1]
         # "It has the same number of layers as the two-tower model, and the
@@ -34,7 +34,7 @@ class AlexNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.LocalResponseNorm(192),
             nn.MaxPool2d(3, 2),
-            nn.Conv2d(256, 384, 3, stride=1, padding=1),
+            nn.Conv2d(192, 384, 3, stride=1, padding=1),
             nn.ReLU(inplace=True),
             nn.Conv2d(384, 384, 3, stride=1, padding=1),
             nn.ReLU(inplace=True),

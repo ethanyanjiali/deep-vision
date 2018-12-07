@@ -4,11 +4,11 @@ from flask import Flask, request, abort, jsonify, send_from_directory
 from PIL import Image
 from torchvision import transforms
 
-from models import Net
+from models.alexnet1 import AlexNet
 
 app = Flask(__name__, static_url_path='/')
 
-net = Net()
+net = AlexNet()
 checkpoint = torch.load(
     './saved_models/model-2018-12-02T08-16-33-final.pt', map_location='cpu')
 net.load_state_dict(checkpoint['model'])

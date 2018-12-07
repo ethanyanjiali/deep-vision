@@ -1,14 +1,16 @@
+import argparse
 import time
 
 import torch
-from torch.utils.data import DataLoader
-from torchvision import transforms
-import torch.optim as optim
 import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
 from torchsummary import summary
+from torchvision import transforms
 
-from data_load import (RandomCrop, ImageNet2012Dataset, Rescale, ToTensor)
-from models.alexnet1 import AlexNet
+from data_load import ImageNet2012Dataset, RandomCrop, Rescale, ToTensor
+from models.alexnet1 import AlexNet1
+from models.alexnet2 import AlexNet2
 
 train_batch_size = 128
 evaluate_batch_size = 32
@@ -20,8 +22,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def initialize_train_loader():
     train_dataset = ImageNet2012Dataset(
-        root_dir='../../imagenet-2012/train_flatten/',
-        labels_file='../../imagenet-2012/synsets.txt',
+        root_dir='./dataset/train_flatten/',
+        labels_file='./dataset/synsets.txt',
     )
     print('Number of train images: ', len(train_dataset))
 
@@ -39,8 +41,8 @@ def initialize_train_loader():
 
 def initialize_validation_loader():
     val_dataset = ImageNet2012Dataset(
-        root_dir='../../imagenet-2012/val_flatten/',
-        labels_file='../../imagenet-2012/synsets.txt',
+        root_dir='./dataset/val_flatten/',
+        labels_file='./dataset/synsets.txt',
     )
     print('Number of validation images: ', len(val_dataset))
 
@@ -117,7 +119,7 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
             batches_loss = 0.0
 
 
-def run():
+def start(model_name, net, criterion, optimizer):
     print("CUDA is available: {}".format(torch.cuda.is_available()))
 
     # loader will split datatests into batches witht size defined by batch_size
@@ -125,24 +127,12 @@ def run():
     val_loader = initialize_validation_loader()
 
     model_id = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
-    # instantiate the neural network
-    net = AlexNet()
     net.to(device=device)
     summary(net, (3, 224, 224))
-    # define the loss function using CrossEntropyLoss
-    criterion = nn.CrossEntropyLoss()
-    # define the params updating function using SGD
-    optimizer = optim.SGD(
-        net.parameters(),
-        lr=0.01,
-        momentum=0.9,
-        weight_decay=0.0005,
-    )
-
     loss_logger = []
 
     for i in range(1, epochs + 1):
-        model_name = 'model-{}-epoch-{}.pt'.format(model_id, i)
+        checkpoint_file = '{}-{}-epoch-{}.pt'.format(model_name, model_id, i)
 
         # train all data for one epoch
         train(net, criterion, optimizer, i, train_loader, model_id,
@@ -161,17 +151,54 @@ def run():
                 'model': net.state_dict(),
                 'optimizer': optimizer.state_dict(),
                 'loss_logger': loss_logger,
-            }, model_dir + model_name)
+            }, model_dir + checkpoint_file)
 
     print("Finished training!")
-    model_name = 'model-{}-final.pt'.format(model_id)
+    checkpoint_file = '{}-{}-final.pt'.format(model_name, model_id)
     torch.save({
         'epoch': epochs,
         'model': net.state_dict(),
         'optimizer': optimizer.state_dict(),
         'loss_logger': loss_logger,
-    }, model_dir + model_name)
+    }, model_dir + checkpoint_file)
 
 
 if __name__ == "__main__":
-    run()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-m",
+        "--model",
+        type=str,
+        required=True,
+        choices=["alexnet1", "alexnet2"],
+        help="specify model name",
+    )
+    args = parser.parse_args()
+    model_name = answer = args.model
+
+    if model_name == "alexnet1":
+        # instantiate the neural network
+        net = AlexNet1()
+        # define the loss function using CrossEntropyLoss
+        criterion = nn.CrossEntropyLoss()
+        # define the params updating function using SGD
+        optimizer = optim.SGD(
+            net.parameters(),
+            lr=0.01,
+            momentum=0.9,
+            weight_decay=0.0005,
+        )
+    elif model_name == "alexnet2":
+        # instantiate the neural network
+        net = AlexNet2()
+        # define the loss function using CrossEntropyLoss
+        criterion = nn.CrossEntropyLoss()
+        # define the params updating function using SGD
+        optimizer = optim.SGD(
+            net.parameters(),
+            lr=0.01,
+            momentum=0.9,
+            weight_decay=0.0005,
+        )
+
+    start(model_name, net, criterion, optimizer)

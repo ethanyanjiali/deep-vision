@@ -6,13 +6,13 @@ import torch.nn as nn
 # [3] https://prateekvjoshi.com/2016/04/05/what-is-local-response-normalization-in-convolutional-neural-networks/
 
 
-class AlexNet(nn.Module):
+class AlexNet1(nn.Module):
     '''
     This implement the original AlexNet in one tower structure, hence the parameters are doubled
     '''
 
     def __init__(self):
-        super(AlexNet, self).__init__()
+        super(AlexNet1, self).__init__()
         # formula
         # conv layer
         # output_size = (input_size - kernel_size + 2 * padding) / stride + 1
