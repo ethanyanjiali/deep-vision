@@ -30,7 +30,7 @@ class AlexNet2(nn.Module):
             # However, for study purpose, I still added this layer
             nn.LocalResponseNorm(64),
             nn.MaxPool2d(3, 2),
-            nn.Conv2d(96, 192, 5, stride=1, padding=2),
+            nn.Conv2d(64, 192, 5, stride=1, padding=2),
             nn.ReLU(inplace=True),
             nn.LocalResponseNorm(192),
             nn.MaxPool2d(3, 2),
@@ -60,4 +60,11 @@ class AlexNet2(nn.Module):
         )
 
     def forward(self, x):
+        x = self.features(x)
+
+        # flatten the output from conv layers, but keep b∏atch size
+        x = x.view(x.size(0), 6 * 6 * 256)
+
+        x = self.classifier(x)
+
         return x

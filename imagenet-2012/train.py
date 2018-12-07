@@ -174,7 +174,7 @@ if __name__ == "__main__":
         help="specify model name",
     )
     args = parser.parse_args()
-    model_name = answer = args.model
+    model_name = args.model
 
     if model_name == "alexnet1":
         # instantiate the neural network
