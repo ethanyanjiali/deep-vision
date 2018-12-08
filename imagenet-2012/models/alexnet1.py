@@ -8,16 +8,16 @@ import torch.nn as nn
 
 class AlexNet1(nn.Module):
     '''
-    This implement the original AlexNet in one tower structure, hence the parameters are doubled
+    This implements the original AlexNet in one tower structure, hence the parameters are doubled
     '''
 
     def __init__(self):
         super(AlexNet1, self).__init__()
         # formula
-        # conv layer
+        # [conv layer]
         # output_size = (input_size - kernel_size + 2 * padding) / stride + 1
         # padding = ((output_size - 1) * stride) + kernel_size - input_size) / 2
-        # pooling layer
+        # [pooling layer]
         # output_size = (input_size - kernel_size) / stride + 1
         # where input_size and output_size are the square image side length
     
@@ -107,7 +107,8 @@ class AlexNet1(nn.Module):
             # "The output of the last fully-connected layer is fed to a 1000-way softmax which produces
             # a distribution over the 1000 class labels."[1]
             nn.Linear(4096, 1000),
-            nn.Softmax(),
+            # There's no softmax here because we use CrossEntropyLoss which already includes Softmax
+            # https://discuss.pytorch.org/t/vgg-output-layer-no-softmax/9273/5
         )
         
 

@@ -12,7 +12,6 @@ from data_load import ImageNet2012Dataset, RandomCrop, Rescale, ToTensor
 from models.alexnet1 import AlexNet1
 from models.alexnet2 import AlexNet2
 
-train_batch_size = 128
 evaluate_batch_size = 32
 epochs = 55
 desired_image_shape = torch.empty(3, 224, 224).size()
@@ -20,10 +19,11 @@ model_dir = './saved_models/'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def initialize_train_loader():
+def initialize_train_loader(transform, batch_size):
     train_dataset = ImageNet2012Dataset(
         root_dir='./dataset/train_flatten/',
         labels_file='./dataset/synsets.txt',
+        transform=transform,
     )
     print('Number of train images: ', len(train_dataset))
 
@@ -39,10 +39,11 @@ def initialize_train_loader():
     return train_loader
 
 
-def initialize_validation_loader():
+def initialize_validation_loader(transform):
     val_dataset = ImageNet2012Dataset(
         root_dir='./dataset/val_flatten/',
         labels_file='./dataset/synsets.txt',
+        transform=transform,
     )
     print('Number of validation images: ', len(val_dataset))
 
@@ -66,7 +67,7 @@ def evaluate(net, criterion, epoch, val_loader):
         for batch_i, data in enumerate(val_loader):
             images = data['image']
             annotations = data['annotation']
-            annotations = annotations.to(device=device, dtype=torch.int)
+            annotations = annotations.to(device=device, dtype=torch.long)
             images = images.to(device=device, dtype=torch.float)
 
             output = net(images)
@@ -119,12 +120,12 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
             batches_loss = 0.0
 
 
-def start(model_name, net, criterion, optimizer):
+def start(model_name, net, criterion, optimizer, transform, batch_size):
     print("CUDA is available: {}".format(torch.cuda.is_available()))
 
     # loader will split datatests into batches witht size defined by batch_size
-    train_loader = initialize_train_loader()
-    val_loader = initialize_validation_loader()
+    train_loader = initialize_train_loader(transform, batch_size)
+    val_loader = initialize_validation_loader(transform)
 
     model_id = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
     net.to(device=device)
@@ -177,6 +178,12 @@ if __name__ == "__main__":
     model_name = args.model
 
     if model_name == "alexnet1":
+        transform = transforms.Compose([
+            Rescale(255),
+            RandomCrop(224),
+            ToTensor(),
+        ])
+        batch_size = 128
         # instantiate the neural network
         net = AlexNet1()
         # define the loss function using CrossEntropyLoss
@@ -189,6 +196,13 @@ if __name__ == "__main__":
             weight_decay=0.0005,
         )
     elif model_name == "alexnet2":
+        transform = transforms.Compose([
+            Rescale(255),
+            RandomCrop(224),
+            ToTensor(),
+        ])
+        # "We trained our models using stochastic gradient descent with a batch size of 128 examples" alexnet1.[1]
+        batch_size = 128
         # instantiate the neural network
         net = AlexNet2()
         # define the loss function using CrossEntropyLoss
@@ -201,4 +215,4 @@ if __name__ == "__main__":
             weight_decay=0.0005,
         )
 
-    start(model_name, net, criterion, optimizer)
+    start(model_name, net, criterion, optimizer, transform)

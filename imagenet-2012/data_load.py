@@ -3,7 +3,6 @@ from os import listdir
 from os.path import isfile, join
 import torch
 from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
 import numpy as np
 import matplotlib.image as mpimg
 import cv2
@@ -15,7 +14,7 @@ class ImageNet2012Dataset(Dataset):
     http://www.image-net.org/challenges/LSVRC/2012/nonpub-downloads
     """
 
-    def __init__(self, root_dir, labels_file):
+    def __init__(self, root_dir, labels_file, transform):
         """
         Args:
             root_dir (string): The directory with all image files (flatten).
@@ -25,11 +24,7 @@ class ImageNet2012Dataset(Dataset):
         self.images = [
             f for f in listdir(root_dir) if isfile(join(root_dir, f))
         ]
-        self.transform = transforms.Compose([
-            Rescale(255),
-            RandomCrop(224),
-            ToTensor(),
-        ])
+        self.transform = transform
         self.label_to_idx = {}
         self.idx_to_name = {}
         with open(labels_file, 'r') as f:

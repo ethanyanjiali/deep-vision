@@ -8,6 +8,9 @@ import torch.nn.init as Init
 
 
 class AlexNet2(nn.Module):
+    '''
+    This implements the network from the second version of AlexNet
+    '''
     def __init__(self):
         super(AlexNet2, self).__init__()
         # "In detail, the single-column model has 64, 192, 384, 384, 256 filters
@@ -56,7 +59,6 @@ class AlexNet2(nn.Module):
             # final layer with multinomial logistic regression
             # cost, this model’s final layer has 1000 independent logistic
             # units, trained to minimize cross-entropy"[1]
-            # Therefore, I removed the Softmax layer from ./alexnet1
         )
 
     def forward(self, x):
