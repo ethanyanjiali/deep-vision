@@ -1,4 +1,4 @@
-TIME=$(shell echo $(date +"%Y-%m-%d-%H-%M-%S"))
+TIME := `/bin/date "+%Y-%m-%d-%H-%M-%S"`
 
 find-python:
 	ps -ef | grep python
