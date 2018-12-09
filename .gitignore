@@ -1,4 +1,6 @@
 env
 */dataset
 .DS_Store
-ssh.sh
+ssh1.sh
+ssh2.sh
+saved_models/*

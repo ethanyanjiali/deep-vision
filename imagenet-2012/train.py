@@ -31,10 +31,7 @@ def initialize_train_loader(transform, batch_size):
     ) == desired_image_shape, "Wrong train image dimension"
 
     train_loader = DataLoader(
-        train_dataset,
-        batch_size=train_batch_size,
-        shuffle=True,
-        num_workers=0)
+        train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
 
     return train_loader
 
@@ -114,8 +111,10 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
         batches_loss += loss.item()
 
         if batch_i % 10 == 9:  # print every 10 batches
-            print('Epoch: {}, Batch: {}, Avg. Loss: {}'.format(
-                epoch, batch_i + 1, batches_loss / 10))
+            print(
+                'Time, {}, Epoch: {}, Batch: {}, Avg. Loss: {}'.format(
+                    time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime()),
+                    epoch, batch_i + 1, batches_loss / 10), )
             loss_logger.append(batches_loss)
             batches_loss = 0.0
 
@@ -142,11 +141,11 @@ def start(model_name, net, criterion, optimizer, transform, batch_size):
         # evaludate the accuracy after each epoch
         evaluate(net, criterion, i, val_loader)
 
-        # save model after every 5 epochs
+        # save model after every 2 epochs
         # https://discuss.pytorch.org/t/loading-a-saved-model-for-continue-training/17244/3
         # https://github.com/pytorch/pytorch/issues/2830
         # https://pytorch.org/tutorials/beginner/saving_loading_models.html
-        if i % 5 == 1:
+        if i % 2 == 1:
             torch.save({
                 'epoch': i,
                 'model': net.state_dict(),
@@ -215,4 +214,4 @@ if __name__ == "__main__":
             weight_decay=0.0005,
         )
 
-    start(model_name, net, criterion, optimizer, transform)
+    start(model_name, net, criterion, optimizer, transform, batch_size)
