@@ -242,13 +242,10 @@ if __name__ == "__main__":
 
         # However, since I'm training on one GPU, to avoid "CUDA out of memory" issue, I have to reduce the
         # batch size here
-        # Also the learning rate from the original paper seems too high:
-        # https://stackoverflow.com/questions/43720817/how-many-epochs-does-it-take-to-train-vgg-16
-        # https://flyyufelix.github.io/2016/10/08/fine-tuning-in-keras-part2.html
         batch_size = 128
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.001,
+            lr=0.01,
             momentum=0.9,
             weight_decay=0.0005,
         )
@@ -271,7 +268,7 @@ if __name__ == "__main__":
         batch_size = 128
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.001,
+            lr=0.01,
             momentum=0.9,
             weight_decay=0.0005,
         )
