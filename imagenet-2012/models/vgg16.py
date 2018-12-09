@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 # [1] https://arxiv.org/pdf/1409.1556.pdf
+# [2] https://arxiv.org/pdf/1502.01852.pdf
 
 class VGG16(nn.Module):
     '''
@@ -93,6 +94,9 @@ class VGG16(nn.Module):
             # There's no softmax here because we use CrossEntropyLoss which already includes Softmax
             # https://discuss.pytorch.org/t/vgg-output-layer-no-softmax/9273/5
         )
+        
+        # A deep network like VGG requires proper intialization to be able to converge
+        self._initialize_weights()
 
     def forward(self, x):
         x = self.features(x)
@@ -103,3 +107,26 @@ class VGG16(nn.Module):
         x = self.classifier(x)
 
         return x
+
+    def _initialize_weights(self):
+        # First, when I train the model with default weight initialization, it doesn't show any sign of convergence at all after
+        # 2 epochs, the loss remain same at 6.907
+        # https://discuss.pytorch.org/t/what-is-the-default-initialization-of-a-conv2d-layer-and-linear-layer/16055/2
+        #
+        # "The initialisation of the network weights is important, since bad initialisation can stall learning due
+        # to the instability of gradient in deep nets. To circumvent this problem, we began with training
+        # the configuration A (Table 1), shallow enough to be trained with random initialisation. Then, when
+        # training deeper architectures, we initialised the first four convolutional layers and the last three fullyconnected
+        # layers with the layers of net A (the intermediate layers were initialised randomly)"[1]
+        #
+        # However this would be too much hassle for us. So I refer to [2]
+        # in 2.2. Initialization of Filter Weights for Rectifiers, it gives details about how to initialize weights
+        # that allows for extremely deep models to converge. This has been implemented in PyTroch as kaiming_normal
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)

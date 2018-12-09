@@ -103,6 +103,9 @@ class VGG19(nn.Module):
             # https://discuss.pytorch.org/t/vgg-output-layer-no-softmax/9273/5
         )
 
+        # A deep network like VGG requires proper intialization to be able to converge
+        self._initialize_weights()
+
     def forward(self, x):
         x = self.features(x)
 
@@ -112,3 +115,14 @@ class VGG19(nn.Module):
         x = self.classifier(x)
 
         return x
+
+    def _initialize_weights(self):
+        # Please refer to ./vgg16 for more explanantions
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)
