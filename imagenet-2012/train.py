@@ -119,7 +119,8 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
             batches_loss = 0.0
 
 
-def start(model_name, net, criterion, optimizer, transform, batch_size):
+def start(model_name, net, criterion, optimizer, transform, batch_size,
+          start_epoch, loss_logger):
     print("CUDA is available: {}".format(torch.cuda.is_available()))
 
     # loader will split datatests into batches witht size defined by batch_size
@@ -129,9 +130,8 @@ def start(model_name, net, criterion, optimizer, transform, batch_size):
     model_id = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
     net.to(device=device)
     summary(net, (3, 224, 224))
-    loss_logger = []
 
-    for i in range(1, epochs + 1):
+    for i in range(start_epoch, epochs + 1):
         checkpoint_file = '{}-{}-epoch-{}.pt'.format(model_name, model_id, i)
 
         # train all data for one epoch
@@ -173,8 +173,15 @@ if __name__ == "__main__":
         choices=["alexnet1", "alexnet2"],
         help="specify model name",
     )
+    parser.add_argument(
+        "-c",
+        "--checkpoint",
+        type=str,
+        help="specify checkpoint file path",
+    )
     args = parser.parse_args()
     model_name = args.model
+    checkpoint_file = args.checkpoint
 
     if model_name == "alexnet1":
         transform = transforms.Compose([
@@ -214,4 +221,14 @@ if __name__ == "__main__":
             weight_decay=0.0005,
         )
 
-    start(model_name, net, criterion, optimizer, transform, batch_size)
+    start_epoch = 1
+    loss_logger = []
+    if checkpoint_file:
+        checkpoint = torch.load(checkpoint_file)
+        net.load_state_dict(checkpoint['model'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+        start_epoch = checkpoint['epoch']
+        loss_logger = checkpoint['loss_logger']
+
+    start(model_name, net, criterion, optimizer, transform, batch_size,
+          start_epoch, loss_logger)

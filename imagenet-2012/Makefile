@@ -1,5 +1,6 @@
 mount-imagenet:
-	sudo mount -o discard,defaults /dev/sdb ./dataset
+	mkdir -p ./dataset
+	sudo mount --read-only -o norecovery /dev/sdb ./dataset
 
 train_alexnet1:
 	rm -rf nohup.out
