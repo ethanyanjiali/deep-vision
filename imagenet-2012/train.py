@@ -242,10 +242,16 @@ if __name__ == "__main__":
 
         # However, since I'm training on one GPU, to avoid "CUDA out of memory" issue, I have to reduce the
         # batch size here
+        # using lr=0.01 with kaiming init will result in loss explosion
+        # 35.06133270263672
+        # 115.53974151611328
+        # 41985.546875
+        # 2.7532622521468985e+29
+        # nan
         batch_size = 128
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.01,
+            lr=0.001,
             momentum=0.9,
             weight_decay=0.0005,
         )
@@ -268,7 +274,7 @@ if __name__ == "__main__":
         batch_size = 128
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.01,
+            lr=0.001,
             momentum=0.9,
             weight_decay=0.0005,
         )
