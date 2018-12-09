@@ -66,6 +66,10 @@ imagenet-2012
         |_synsets.txt
 ```
 
+## System Requirement
+
+I'm training all these models with 16GB RAM and one Nvidia P100 GPU (~15G). If you have different hardware, you might need to change some parameters to fit model into your CUDA memory, especially batch size.
+
 ## Start Training
 
 This repo implements many different models. Once you have the dataset ready, you can start the training code by running one of the commands below in this directory:

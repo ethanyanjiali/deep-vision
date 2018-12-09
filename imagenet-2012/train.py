@@ -224,7 +224,7 @@ if __name__ == "__main__":
         )
     elif model_name == "vgg16":
         transform = transforms.Compose([
-            Rescale(384),
+            Rescale(256),
             RandomCrop(224),
             ToTensor(),
         ])
@@ -236,7 +236,13 @@ if __name__ == "__main__":
         # weight decay (the L2 penalty multiplier set to 5^10−4) and dropout regularisation
         # for the first two fully-connected layers (dropout ratio set to 0.5).
         # The learning rate was initially set to 10−2" vgg16.[1]
-        batch_size = 256
+
+        # "Multi-GPU training exploits data parallelism, and is carried out by splitting each batch of
+        # training images into several GPU batches, processed in parallel on each GPU." vgg16[1]
+
+        # However, since I'm training on one GPU, to avoid "CUDA out of memory" issue, I have to reduce the
+        # batch size here
+        batch_size = 128
         optimizer = optim.SGD(
             net.parameters(),
             lr=0.01,
@@ -245,7 +251,7 @@ if __name__ == "__main__":
         )
     elif model_name == "vgg19":
         transform = transforms.Compose([
-            Rescale(384),
+            Rescale(256),
             RandomCrop(224),
             ToTensor(),
         ])
@@ -257,7 +263,9 @@ if __name__ == "__main__":
         # weight decay (the L2 penalty multiplier set to 5^10−4) and dropout regularisation
         # for the first two fully-connected layers (dropout ratio set to 0.5).
         # The learning rate was initially set to 10−2" vgg19.[1]
-        batch_size = 256
+
+        # Similar constraints like VGG16 above
+        batch_size = 128
         optimizer = optim.SGD(
             net.parameters(),
             lr=0.01,

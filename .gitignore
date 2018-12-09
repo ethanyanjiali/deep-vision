@@ -4,3 +4,4 @@ env
 ssh1.sh
 ssh2.sh
 saved_models/*
+*.log
