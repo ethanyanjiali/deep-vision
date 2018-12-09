@@ -4,6 +4,7 @@ torchvision
 numpy
 yapf
 flake8
+opencv-python
 opencv-contrib-python
 torchsummary
 matplotlib
