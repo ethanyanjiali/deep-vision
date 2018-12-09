@@ -11,6 +11,8 @@ from torchvision import transforms
 from data_load import ImageNet2012Dataset, RandomCrop, Rescale, ToTensor
 from models.alexnet1 import AlexNet1
 from models.alexnet2 import AlexNet2
+from models.vgg16 import VGG16
+from models.vgg19 import VGG19
 
 evaluate_batch_size = 32
 epochs = 55
@@ -170,7 +172,7 @@ if __name__ == "__main__":
         "--model",
         type=str,
         required=True,
-        choices=["alexnet1", "alexnet2"],
+        choices=["alexnet1", "alexnet2", "vgg16", "vgg19"],
         help="specify model name",
     )
     parser.add_argument(
@@ -214,6 +216,48 @@ if __name__ == "__main__":
         # define the loss function using CrossEntropyLoss
         criterion = nn.CrossEntropyLoss()
         # define the params updating function using SGD
+        optimizer = optim.SGD(
+            net.parameters(),
+            lr=0.01,
+            momentum=0.9,
+            weight_decay=0.0005,
+        )
+    elif model_name == "vgg16":
+        transform = transforms.Compose([
+            Rescale(384),
+            RandomCrop(224),
+            ToTensor(),
+        ])
+        # instantiate the neural network
+        net = VGG16()
+        # define the loss function using CrossEntropyLoss
+        criterion = nn.CrossEntropyLoss()
+        # "The batch size was set to 256, momentum to 0.9. The training was regularised by
+        # weight decay (the L2 penalty multiplier set to 5^10−4) and dropout regularisation
+        # for the first two fully-connected layers (dropout ratio set to 0.5).
+        # The learning rate was initially set to 10−2" vgg16.[1]
+        batch_size = 256
+        optimizer = optim.SGD(
+            net.parameters(),
+            lr=0.01,
+            momentum=0.9,
+            weight_decay=0.0005,
+        )
+    elif model_name == "vgg19":
+        transform = transforms.Compose([
+            Rescale(384),
+            RandomCrop(224),
+            ToTensor(),
+        ])
+        # instantiate the neural network
+        net = VGG19()
+        # define the loss function using CrossEntropyLoss
+        criterion = nn.CrossEntropyLoss()
+        # "The batch size was set to 256, momentum to 0.9. The training was regularised by
+        # weight decay (the L2 penalty multiplier set to 5^10−4) and dropout regularisation
+        # for the first two fully-connected layers (dropout ratio set to 0.5).
+        # The learning rate was initially set to 10−2" vgg19.[1]
+        batch_size = 256
         optimizer = optim.SGD(
             net.parameters(),
             lr=0.01,
