@@ -3,5 +3,6 @@ env
 .DS_Store
 ssh1.sh
 ssh2.sh
-saved_models/*
+saved_models
 *.log
+__pycache__

@@ -224,7 +224,7 @@ if __name__ == "__main__":
         )
     elif model_name == "vgg16":
         transform = transforms.Compose([
-            Rescale(256),
+            Rescale(384),
             RandomCrop(224),
             ToTensor(),
         ])
@@ -233,7 +233,7 @@ if __name__ == "__main__":
         # define the loss function using CrossEntropyLoss
         criterion = nn.CrossEntropyLoss()
         # "The batch size was set to 256, momentum to 0.9. The training was regularised by
-        # weight decay (the L2 penalty multiplier set to 5^10−4) and dropout regularisation
+        # weight decay (the L2 penalty multiplier set to 5*10^4) and dropout regularisation
         # for the first two fully-connected layers (dropout ratio set to 0.5).
         # The learning rate was initially set to 10−2" vgg16.[1]
 
@@ -242,16 +242,19 @@ if __name__ == "__main__":
 
         # However, since I'm training on one GPU, to avoid "CUDA out of memory" issue, I have to reduce the
         # batch size here
+        # Also the learning rate from the original paper seems too high:
+        # https://stackoverflow.com/questions/43720817/how-many-epochs-does-it-take-to-train-vgg-16
+        # https://flyyufelix.github.io/2016/10/08/fine-tuning-in-keras-part2.html
         batch_size = 128
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.01,
+            lr=0.001,
             momentum=0.9,
             weight_decay=0.0005,
         )
     elif model_name == "vgg19":
         transform = transforms.Compose([
-            Rescale(256),
+            Rescale(384),
             RandomCrop(224),
             ToTensor(),
         ])
@@ -268,7 +271,7 @@ if __name__ == "__main__":
         batch_size = 128
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.01,
+            lr=0.001,
             momentum=0.9,
             weight_decay=0.0005,
         )
