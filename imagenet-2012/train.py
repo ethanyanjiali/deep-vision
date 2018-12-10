@@ -197,9 +197,10 @@ if __name__ == "__main__":
         # define the loss function using CrossEntropyLoss
         criterion = nn.CrossEntropyLoss()
         # define the params updating function using SGD
+        # we use 0.01 for first 3 epochs, and then 0.001 when plateau
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.01,
+            lr=0.001,
             momentum=0.9,
             weight_decay=0.0005,
         )
@@ -216,9 +217,10 @@ if __name__ == "__main__":
         # define the loss function using CrossEntropyLoss
         criterion = nn.CrossEntropyLoss()
         # define the params updating function using SGD
+        # we use lr=0.01 for first 3 epochs, and then 0.001 when plateau
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.01,
+            lr=0.001,
             momentum=0.9,
             weight_decay=0.0005,
         )

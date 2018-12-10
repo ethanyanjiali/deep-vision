@@ -112,6 +112,7 @@ class VGG16(nn.Module):
         # First, when I train the model with default weight initialization, it doesn't show any sign of convergence at all after
         # 2 epochs, the loss remain same at 6.907
         # https://discuss.pytorch.org/t/what-is-the-default-initialization-of-a-conv2d-layer-and-linear-layer/16055/2
+        # which actually refers to http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf 4.6 Initializing the weights
         #
         # "The initialisation of the network weights is important, since bad initialisation can stall learning due
         # to the instability of gradient in deep nets. To circumvent this problem, we began with training
