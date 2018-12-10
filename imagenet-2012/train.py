@@ -291,7 +291,7 @@ if __name__ == "__main__":
             for k, v in state.items():
                 if isinstance(v, torch.Tensor):
                     state[k] = v.cuda()
-        start_epoch = checkpoint['epoch']
+        start_epoch = checkpoint['epoch'] + 1
         loss_logger = checkpoint['loss_logger']
 
     start(model_name, net, criterion, optimizer, transform, batch_size,
