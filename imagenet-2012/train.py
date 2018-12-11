@@ -201,7 +201,7 @@ if __name__ == "__main__":
         optimizer = optim.SGD(
             net.parameters(),
             lr=
-            0.0001,  # we use 0.01 for first 3 epochs, and then 0.001 for epoch 4 and 5, and then 0.0001 after
+            0.01,  # we use 0.01 for first 3 epochs, and then 0.001 for epoch 4 and 5, and then 0.0001 after
             momentum=0.9,
             weight_decay=0.0005,
         )
@@ -221,7 +221,7 @@ if __name__ == "__main__":
         optimizer = optim.SGD(
             net.parameters(),
             lr=
-            0.0001,  # we use 0.01 for first 3 epochs, and then 0.001 for epoch 4 and 5, and then 0.0001 after
+            0.01,  # we use 0.01 for first 3 epochs, and then 0.001 for epoch 4 and 5, and then 0.0001 after
             momentum=0.9,
             weight_decay=0.0005,
         )
