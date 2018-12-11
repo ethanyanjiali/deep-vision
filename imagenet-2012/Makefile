@@ -15,6 +15,10 @@ train_alexnet2:
 	mkdir -p ./saved_models
 	nohup python -u train.py -m alexnet2 > "alexnet2-${TIME}".log &
 
+resume_alexnet2:
+	mkdir -p ./saved_models
+	nohup python -u train.py -m alexnet2 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/alexnet2-2018-12-10T08:41:41-epoch-5.pt > "alexnet2-${TIME}".log &
+
 train_vgg16:
 	mkdir -p ./saved_models
 	nohup python -u train.py -m vgg16 > "vgg16-${TIME}".log &
