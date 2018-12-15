@@ -1,46 +1,35 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[10]:
+# In[9]:
 
 
 import matplotlib.pyplot as plt
+import torch
 
-log_file1 = "./logs/vgg16-2018-12-09-19-15-09.log"
-log_file2 = "./logs/alexnet2-2018-12-11-07-58-29.log"
-batches1 = []
-losses1 = []
-with open(log_file1, 'r') as f:
-    line = f.readline()
-    cnt = 0
-    while line:
-        if line.startswith("Time"):
-            parts = line.split(",")
-            cnt += 1
-            batches1.append(cnt)
-            losses1.append(float(parts[4][12:-1]))
-        line = f.readline()
-batches2 = []
-losses2 = []
-with open(log_file2, 'r') as f:
-    line = f.readline()
-    cnt = 0
-    while line:
-        if line.startswith("Time"):
-            parts = line.split(",")
-            cnt += 1
-            batches2.append(cnt)
-            losses2.append(float(parts[4][12:-1]))
-        line = f.readline()
+checkpoint = torch.load(
+    './saved_models/vgg16-2018-12-09T19_15_19-epoch-13.pt', map_location='cpu')
 
-plt.figure(figsize=(20,5))
-plt.subplot(121)
+losses = [i/10 for i in checkpoint["loss_logger"]]
+batches = [i for i in range(1, len(losses) + 1)]
+
+plt.figure(figsize=(15,5))
 plt.title('vgg16')
-plt.plot(batches1, losses1)
-plt.subplot(122)
+plt.plot(batches, losses)
+
+
+# In[10]:
+
+
+checkpoint = torch.load(
+    './saved_models/alexnet2-2018-12-11T07_58_40-epoch-11.pt', map_location='cpu')
+
+losses = [i/10 for i in checkpoint["loss_logger"]]
+batches = [i for i in range(1, len(losses) + 1)]
+
+plt.figure(figsize=(15,5))
 plt.title('alexnet2')
-plt.plot(batches2, losses2)
-plt.show()
+plt.plot(batches, losses)
 
 
 # In[ ]:

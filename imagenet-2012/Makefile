@@ -17,11 +17,15 @@ train_alexnet2:
 
 resume_alexnet2:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m alexnet2 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/alexnet2-2018-12-10T08:41:41-epoch-5.pt > "alexnet2-${TIME}".log &
+	nohup python -u train.py -m alexnet2 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/alexnet2-2018-12-11T07_58_40-epoch-11.pt > "alexnet2-${TIME}".log &
 
 train_vgg16:
 	mkdir -p ./saved_models
 	nohup python -u train.py -m vgg16 > "vgg16-${TIME}".log &
+
+resume_vgg16:
+	mkdir -p ./saved_models
+	nohup python -u train.py -m vgg16 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/vgg16-2018-12-09T19:15:19-epoch-13.pt > "vgg16-${TIME}".log &
 
 train_vgg19:
 	mkdir -p ./saved_models
