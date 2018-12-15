@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[61]:
+# In[67]:
 
 
 import matplotlib.pyplot as plt
@@ -12,7 +12,7 @@ from torchvision import transforms
 import cv2
 
 import json
-with open('./dataset/labels.json') as f:
+with open('./labels/indices.json') as f:
     labels = json.load(f)
     
 import os
