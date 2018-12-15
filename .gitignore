@@ -1,5 +1,7 @@
 env
-*/dataset
+*/dataset/*
+!*/dataset/labels.json
+!*/dataset/synsets.txt
 .DS_Store
 ssh1.sh
 ssh2.sh
@@ -8,3 +10,4 @@ saved_models
 __pycache__
 logs
 .ipynb_checkpoints/
+*.pyc
