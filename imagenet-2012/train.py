@@ -59,9 +59,16 @@ def initialize_validation_loader(transform):
     return val_loader
 
 
+def calc_accuracy(output, Y):
+    max_vals, max_indices = torch.max(output, 1)
+    acc = (max_indices == Y).cpu().sum().data.numpy() / max_indices.size()[0]
+    return acc
+
+
 def evaluate(net, criterion, epoch, val_loader):
     net.eval()
     total_loss = 0
+    top1_acc = 0.0
     # turn off grad to avoid cuda out of memory error
     with torch.no_grad():
         for batch_i, data in enumerate(val_loader):
@@ -72,8 +79,11 @@ def evaluate(net, criterion, epoch, val_loader):
 
             output = net(images)
             loss = criterion(output, annotations)
+            top1_acc += calc_accuracy(output, annotations)
 
             total_loss += loss
+        print('Epoch: {}, Top 1 acc: {}'.format(epoch,
+                                                top1_acc / len(val_loader)))
         print('Epoch: {}, Test Dataset Loss: {}'.format(
             epoch, total_loss / len(val_loader)))
 
