@@ -1,7 +1,5 @@
 env
 */dataset/*
-!*/dataset/labels.json
-!*/dataset/synsets.txt
 .DS_Store
 ssh1.sh
 ssh2.sh
