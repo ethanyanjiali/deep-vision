@@ -26,3 +26,6 @@ train_vgg16:
 train_vgg19:
 	mkdir -p ./saved_models
 	nohup python -u train.py -m vgg19 > "vgg19-${TIME}".log &
+
+visualize:
+	jupyter notebook

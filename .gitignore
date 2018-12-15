@@ -6,3 +6,4 @@ ssh2.sh
 saved_models
 *.log
 __pycache__
+logs
