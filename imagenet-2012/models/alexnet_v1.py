@@ -7,7 +7,7 @@ import torch.nn as nn
 # [3] https://prateekvjoshi.com/2016/04/05/what-is-local-response-normalization-in-convolutional-neural-networks/
 
 
-class AlexNet1(nn.Module):
+class AlexNetV1(nn.Module):
     '''
     This implements the original AlexNet in one tower structure, hence the parameters are doubled
     '''

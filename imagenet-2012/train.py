@@ -10,8 +10,8 @@ from torchsummary import summary
 from torchvision import transforms
 
 from data_load import ImageNet2012Dataset, RandomCrop, Rescale, ToTensor
-from models.alexnet1 import AlexNet1
-from models.alexnet2 import AlexNet2
+from models.alexnet_v1 import AlexNetV1
+from models.alexnet_v2 import AlexNetV2
 from models.vgg16 import VGG16
 from models.vgg19 import VGG19
 
@@ -65,7 +65,7 @@ def calc_accuracy(output, Y):
     return acc
 
 
-def evaluate(net, criterion, epoch, val_loader):
+def evaluate(net, criterion, epoch, val_loader, acc_logger):
     net.eval()
     total_loss = 0
     top1_acc = 0.0
@@ -82,8 +82,10 @@ def evaluate(net, criterion, epoch, val_loader):
             top1_acc += calc_accuracy(output, annotations)
 
             total_loss += loss
-        print('Epoch: {}, Top 1 acc: {}'.format(epoch,
-                                                top1_acc / len(val_loader)))
+
+        top1_acc = top1_acc / len(val_loader)
+        acc_logger.append(top1_acc)
+        print('Epoch: {}, Top 1 acc: {}'.format(epoch, top1_acc))
         print('Epoch: {}, Test Dataset Loss: {}'.format(
             epoch, total_loss / len(val_loader)))
 
@@ -133,7 +135,7 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
 
 
 def start(model_name, net, criterion, optimizer, transform, batch_size,
-          start_epoch, loss_logger):
+          start_epoch, loss_logger, acc_logger):
     print("CUDA is available: {}".format(torch.cuda.is_available()))
 
     # loader will split datatests into batches witht size defined by batch_size
@@ -152,7 +154,7 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
               loss_logger)
 
         # evaludate the accuracy after each epoch
-        evaluate(net, criterion, i, val_loader)
+        evaluate(net, criterion, i, val_loader, acc_logger)
 
         # save model after every 2 epochs
         # https://discuss.pytorch.org/t/loading-a-saved-model-for-continue-training/17244/3
@@ -164,6 +166,7 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
                 'model': net.state_dict(),
                 'optimizer': optimizer.state_dict(),
                 'loss_logger': loss_logger,
+                'acc_logger': acc_logger,
             }, model_dir + checkpoint_file)
 
     print("Finished training!")
@@ -173,6 +176,7 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
         'model': net.state_dict(),
         'optimizer': optimizer.state_dict(),
         'loss_logger': loss_logger,
+        'acc_logger': acc_logger,
     }, model_dir + checkpoint_file)
 
 
@@ -204,7 +208,7 @@ if __name__ == "__main__":
         ])
         batch_size = 128
         # instantiate the neural network
-        net = AlexNet1()
+        net = AlexNetV1()
         # define the loss function using CrossEntropyLoss
         criterion = nn.CrossEntropyLoss()
         # define the params updating function using SGD
@@ -224,7 +228,7 @@ if __name__ == "__main__":
         # "We trained our models using stochastic gradient descent with a batch size of 128 examples" alexnet1.[1]
         batch_size = 128
         # instantiate the neural network
-        net = AlexNet2()
+        net = AlexNetV2()
         # define the loss function using CrossEntropyLoss
         criterion = nn.CrossEntropyLoss()
         # define the params updating function using SGD
@@ -264,7 +268,7 @@ if __name__ == "__main__":
         batch_size = 128
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.001,
+            lr=0.0001,  # 1 - 25 epoch 0.001
             momentum=0.9,
             weight_decay=0.0005,
         )
@@ -294,6 +298,7 @@ if __name__ == "__main__":
 
     start_epoch = 1
     loss_logger = []
+    acc_logger = []
     if checkpoint_file:
         checkpoint = torch.load(checkpoint_file)
         net.load_state_dict(checkpoint['model'])
@@ -305,6 +310,9 @@ if __name__ == "__main__":
                     state[k] = v.cuda()
         start_epoch = checkpoint['epoch'] + 1
         loss_logger = checkpoint['loss_logger']
+        acc_logger = checkpoint.get('acc_logger')
+        if acc_logger is None:
+            acc_logger = [0 for i in range(start_epoch)]
 
     start(model_name, net, criterion, optimizer, transform, batch_size,
           start_epoch, loss_logger)

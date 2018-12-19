@@ -8,7 +8,7 @@ import torch.nn.init as Init
 # [1] https://arxiv.org/pdf/1404.5997.pdf
 
 
-class AlexNet2(nn.Module):
+class AlexNetV2(nn.Module):
     '''
     This implements the network from the second version of AlexNet
     '''

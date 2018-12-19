@@ -25,7 +25,7 @@ train_vgg16:
 
 resume_vgg16:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m vgg16 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/vgg16-2018-12-09T19:15:19-epoch-13.pt > "vgg16-${TIME}".log &
+	nohup python -u train.py -m vgg16 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/vgg16-2018-12-15T09:58:42-epoch-25.pt > "vgg16-${TIME}".log &
 
 train_vgg19:
 	mkdir -p ./saved_models
