@@ -315,4 +315,4 @@ if __name__ == "__main__":
             acc_logger = [0 for i in range(start_epoch)]
 
     start(model_name, net, criterion, optimizer, transform, batch_size,
-          start_epoch, loss_logger)
+          start_epoch, loss_logger, acc_logger)
