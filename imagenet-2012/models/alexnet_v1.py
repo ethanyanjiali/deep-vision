@@ -13,7 +13,7 @@ class AlexNetV1(nn.Module):
     '''
 
     def __init__(self):
-        super(AlexNet1, self).__init__()
+        super(AlexNetV1, self).__init__()
         # formula
         # [conv layer]
         # output_size = (input_size - kernel_size + 2 * padding) / stride + 1

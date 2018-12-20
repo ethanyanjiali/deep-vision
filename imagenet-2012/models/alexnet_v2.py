@@ -13,7 +13,7 @@ class AlexNetV2(nn.Module):
     This implements the network from the second version of AlexNet
     '''
     def __init__(self):
-        super(AlexNet2, self).__init__()
+        super(AlexNetV2, self).__init__()
         # "In detail, the single-column model has 64, 192, 384, 384, 256 filters
         # in the five convolutional layers, respectivel"[1]
         # "It has the same number of layers as the two-tower model, and the
