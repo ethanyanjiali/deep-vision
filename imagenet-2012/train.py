@@ -14,6 +14,7 @@ from models.alexnet_v1 import AlexNetV1
 from models.alexnet_v2 import AlexNetV2
 from models.vgg16 import VGG16
 from models.vgg19 import VGG19
+from models.inception_v2 import InceptionV2
 
 evaluate_batch_size = 32
 epochs = 55
@@ -135,7 +136,7 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
 
 
 def start(model_name, net, criterion, optimizer, transform, batch_size,
-          start_epoch, loss_logger, acc_logger):
+          start_epoch, loss_logger, acc_logger, scheduler):
     print("CUDA is available: {}".format(torch.cuda.is_available()))
 
     # loader will split datatests into batches witht size defined by batch_size
@@ -148,7 +149,8 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
 
     for i in range(start_epoch, epochs + 1):
         checkpoint_file = '{}-{}-epoch-{}.pt'.format(model_name, model_id, i)
-
+        if scheduler is not None:
+            scheduler.step()
         # train all data for one epoch
         train(net, criterion, optimizer, i, train_loader, model_id,
               loss_logger)
@@ -187,7 +189,7 @@ if __name__ == "__main__":
         "--model",
         type=str,
         required=True,
-        choices=["alexnet1", "alexnet2", "vgg16", "vgg19"],
+        choices=["alexnet1", "alexnet2", "vgg16", "vgg19", "inception2"],
         help="specify model name",
     )
     parser.add_argument(
@@ -199,6 +201,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_name = args.model
     checkpoint_file = args.checkpoint
+    scheduler = None
 
     if model_name == "alexnet1":
         transform = transforms.Compose([
@@ -293,6 +296,38 @@ if __name__ == "__main__":
             momentum=0.9,
             weight_decay=0.0005,
         )
+    elif model_name == "inception2":
+        transform = transforms.Compose([
+            Rescale(256),
+            RandomCrop(224),
+            ToTensor(),
+        ])
+        # instantiate the neural network
+        net = InceptionV2()
+        # define the loss function using CrossEntropyLoss
+        criterion = nn.CrossEntropyLoss()
+        # "The batch size was set to 256, momentum to 0.9. The training was regularised by
+        # weight decay (the L2 penalty multiplier set to 5^10−4) and dropout regularisation
+        # for the first two fully-connected layers (dropout ratio set to 0.5).
+        # The learning rate was initially set to 10−2" vgg19.[1]
+
+        # Similar constraints like VGG16 above
+        batch_size = 128
+        # "Our training used asynchronous stochastic gradient descent with 0.9 momentum [17],
+        # fixed learning rate schedule (decreasing the learning rate by 4% every 8 epochs).
+        # Polyak averaging [13] was used to create the final model used at inference time."[1]
+        optimizer = optim.SGD(
+            net.parameters(),
+            lr=0.001,
+            momentum=0.9,
+            weight_decay=0.0005,
+        )
+        # https://discuss.pytorch.org/t/how-to-optimize-inception-model-with-auxiliary-classifiers/7958
+        scheduler = optim.lr_scheduler.StepLR(
+            optimizer,
+            step_size=8,
+            gamma=0.96,
+        )
 
     start_epoch = 1
     loss_logger = []
@@ -308,9 +343,17 @@ if __name__ == "__main__":
                     state[k] = v.cuda()
         start_epoch = checkpoint['epoch'] + 1
         loss_logger = checkpoint['loss_logger']
+
+        # load scheduler state if exist
+        if scheduler is not None:
+            scheduler_state = checkpoint.get('scheduler')
+            if scheduler_state is not None:
+                scheduler.load_state_dict(scheduler_state)
+
+        # load accuracy logger if exist. If not, initialize it with 0s
         acc_logger = checkpoint.get('acc_logger')
         if acc_logger is None:
             acc_logger = [0 for i in range(start_epoch)]
 
     start(model_name, net, criterion, optimizer, transform, batch_size,
-          start_epoch, loss_logger, acc_logger)
+          start_epoch, loss_logger, acc_logger, scheduler)
