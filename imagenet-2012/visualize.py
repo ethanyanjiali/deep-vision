@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[67]:
+# In[4]:
 
 
 import matplotlib.pyplot as plt
@@ -34,53 +34,66 @@ def to_tensor(image):
     image = image.float()
     return image
 
+def predict(net, img):
+    with torch.no_grad():
+        output = net(img)
+        max_vals, max_indices = torch.topk(output, 5)
+        max_indices = torch.squeeze(max_indices, 0)
+        max_indices = max_indices.tolist()
+        bests = [labels.get(str(i)) for i in max_indices]
+        for best in bests:
+            print(best)
 
-# In[65]:
 
+# In[5]:
 
-img = cv2.imread('./test_images/cat2.jpg')
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-img = cv2.resize(img, (224, 224), interpolation = cv2.INTER_AREA)
-plt.imshow(img)
-img = to_tensor(img)
-img = torch.unsqueeze(img, 0)
 
 checkpoint = torch.load(
-    './saved_models/alexnet2-2018-12-11T07_58_40-epoch-11.pt', map_location='cpu')
+    './saved_models/alexnet2-2018-12-20T04_27_47-epoch-33.pt', map_location='cpu')
 
-from alexnet2 import AlexNet2
-net = AlexNet2()
+from alexnet_v2 import AlexNetV2
+net = AlexNetV2()
 net.load_state_dict(checkpoint['model'])
 net.eval()
-
-
-with torch.no_grad():
-    output = net(img)
-    output = torch.squeeze(output, 0)
-    output_sorted, output_indices = torch.sort(output)
-    best = labels[str(output_indices[0].item())]
-    print(best)
 
 losses = [i/10 for i in checkpoint["loss_logger"]]
 batches = [i for i in range(1, len(losses) + 1)]
 
 plt.figure(figsize=(15,5))
-plt.title('alexnet2')
+plt.title('alexnet V2')
 plt.plot(batches, losses)
 
+def preprocess_alexnet2(img):
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = cv2.resize(img, (256, 256))
+    img = center_crop(img, 224, 224)
+    plt.imshow(img)
+    img = to_tensor(img)
+    img = torch.unsqueeze(img, 0)
+    return img
 
-# In[66]:
+
+# In[6]:
 
 
-img = cv2.imread('./test_images/cat2.jpg')
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-img = cv2.resize(img, (224, 224), interpolation = cv2.INTER_AREA)
-plt.imshow(img)
-img = to_tensor(img)
-img = torch.unsqueeze(img, 0)
+img1 = cv2.imread('./test_images/n01692333_1000.jpeg')
+img1 = preprocess_alexnet2(img1)
+predict(net, img1)
+
+
+# In[7]:
+
+
+img2 = cv2.imread('./test_images/n01440764_10026.jpeg')
+img2 = preprocess_alexnet2(img2)
+predict(net, img2)
+
+
+# In[8]:
+
 
 checkpoint = torch.load(
-    './saved_models/vgg16-2018-12-09T19_15_19-epoch-13.pt', map_location='cpu')
+    './saved_models/vgg16-2018-12-19T06_12_17-epoch-29.pt', map_location='cpu')
 
 from vgg16 import VGG16
 net = VGG16()
@@ -88,19 +101,29 @@ net.load_state_dict(checkpoint['model'])
 net.eval()
 
 
-with torch.no_grad():
-    output = net(img)
-    output = torch.squeeze(output, 0)
-    output_sorted, output_indices = torch.sort(output)
-    best = labels[str(output_indices[0].item())]
-    print(best)
-
 losses = [i/10 for i in checkpoint["loss_logger"]]
 batches = [i for i in range(1, len(losses) + 1)]
 
 plt.figure(figsize=(15,5))
 plt.title('vgg16')
 plt.plot(batches, losses)
+
+def preprocess_vgg16(img):
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = cv2.resize(img, (256, 256))
+    img = center_crop(img, 224, 224)
+    plt.imshow(img)
+    img = to_tensor(img)
+    img = torch.unsqueeze(img, 0)
+    return img
+
+
+# In[10]:
+
+
+img = cv2.imread('./test_images/cat2.jpg')
+img = preprocess_vgg16(img)
+predict(net, img)
 
 
 # In[ ]:
