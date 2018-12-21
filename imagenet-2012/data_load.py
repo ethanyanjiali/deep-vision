@@ -1,7 +1,9 @@
 import os
+import random
 from os import listdir
 from os.path import isfile, join
 import torch
+import torchvision.transforms.functional as F
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import matplotlib.image as mpimg
@@ -95,6 +97,17 @@ class Rescale(object):
         img = cv2.resize(image, (new_w, new_h))
 
         return {'image': img, 'annotation': annotation}
+
+
+class RandomHorizontalFlip(object):
+    def __init___(self, p=0.5):
+        self.p = p
+
+    def __call__(self, sample):
+        image, annotation = sample['image'], sample['annotation']
+        if random.random() < self.p:
+            return {'image': F.hflip(image), 'annotation': annotation}
+        return {'image': image, 'annotation': annotation}
 
 
 class RandomCrop(object):

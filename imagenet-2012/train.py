@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from torchsummary import summary
 from torchvision import transforms
 
-from data_load import ImageNet2012Dataset, RandomCrop, Rescale, ToTensor
+from data_load import ImageNet2012Dataset, RandomCrop, Rescale, ToTensor, RandomHorizontalFlip
 from models.alexnet_v1 import AlexNetV1
 from models.alexnet_v2 import AlexNetV2
 from models.vgg16 import VGG16
@@ -206,6 +206,7 @@ if __name__ == "__main__":
     if model_name == "alexnet1":
         transform = transforms.Compose([
             Rescale(255),
+            RandomHorizontalFlip(0.5),
             RandomCrop(224),
             ToTensor(),
         ])
@@ -224,6 +225,7 @@ if __name__ == "__main__":
     elif model_name == "alexnet2":
         transform = transforms.Compose([
             Rescale(255),
+            RandomHorizontalFlip(0.5),
             RandomCrop(224),
             ToTensor(),
         ])
@@ -243,6 +245,7 @@ if __name__ == "__main__":
     elif model_name == "vgg16":
         transform = transforms.Compose([
             Rescale(384),
+            RandomHorizontalFlip(0.5),
             RandomCrop(224),
             ToTensor(),
         ])
@@ -276,6 +279,7 @@ if __name__ == "__main__":
     elif model_name == "vgg19":
         transform = transforms.Compose([
             Rescale(384),
+            RandomHorizontalFlip(0.5),
             RandomCrop(224),
             ToTensor(),
         ])
@@ -299,6 +303,7 @@ if __name__ == "__main__":
     elif model_name == "inception2":
         transform = transforms.Compose([
             Rescale(256),
+            RandomHorizontalFlip(0.5),
             RandomCrop(224),
             ToTensor(),
         ])
