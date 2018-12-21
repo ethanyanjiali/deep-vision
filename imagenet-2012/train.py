@@ -164,21 +164,35 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
         # https://pytorch.org/tutorials/beginner/saving_loading_models.html
         if i % 2 == 1:
             torch.save({
-                'epoch': i,
-                'model': net.state_dict(),
-                'optimizer': optimizer.state_dict(),
-                'loss_logger': loss_logger,
-                'acc_logger': acc_logger,
+                'epoch':
+                i,
+                'model':
+                net.state_dict(),
+                'optimizer':
+                optimizer.state_dict(),
+                'scheduler':
+                scheduler.state_dict() if scheduler is not None else None,
+                'loss_logger':
+                loss_logger,
+                'acc_logger':
+                acc_logger,
             }, model_dir + checkpoint_file)
 
     print("Finished training!")
     checkpoint_file = '{}-{}-final.pt'.format(model_name, model_id)
     torch.save({
-        'epoch': epochs,
-        'model': net.state_dict(),
-        'optimizer': optimizer.state_dict(),
-        'loss_logger': loss_logger,
-        'acc_logger': acc_logger,
+        'epoch':
+        epochs,
+        'model':
+        net.state_dict(),
+        'optimizer':
+        optimizer.state_dict(),
+        'scheduler':
+        scheduler.state_dict() if scheduler is not None else None,
+        'loss_logger':
+        loss_logger,
+        'acc_logger':
+        acc_logger,
     }, model_dir + checkpoint_file)
 
 
