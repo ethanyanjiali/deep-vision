@@ -66,6 +66,11 @@ def calc_accuracy(output, Y):
     return acc
 
 
+def get_lr(optimizer):
+    for param_group in optimizer.param_groups:
+        return param_group['lr']
+
+
 def evaluate(net, criterion, epoch, val_loader, acc_logger):
     net.eval()
     total_loss = 0
@@ -121,6 +126,7 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
 
         loss.backward()
         # https://discuss.pytorch.org/t/how-are-optimizer-step-and-loss-backward-related/7350
+        lr = get_lr(optimizer)
         optimizer.step()
 
         # adjust the running loss
@@ -128,9 +134,9 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
 
         if batch_i % 10 == 9:  # print every 10 batches
             print(
-                'Time, {}, Epoch: {}, Batch: {}, Avg. Loss: {}'.format(
+                'Time, {}, Epoch: {}, Batch: {}, Avg. Loss: {}, LR: {}'.format(
                     time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime()),
-                    epoch, batch_i + 1, batches_loss / 10), )
+                    epoch, batch_i + 1, batches_loss / 10), lr)
             loss_logger.append(batches_loss)
             batches_loss = 0.0
 
@@ -158,25 +164,23 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
         # evaludate the accuracy after each epoch
         evaluate(net, criterion, i, val_loader, acc_logger)
 
-        # save model after every 2 epochs
         # https://discuss.pytorch.org/t/loading-a-saved-model-for-continue-training/17244/3
         # https://github.com/pytorch/pytorch/issues/2830
         # https://pytorch.org/tutorials/beginner/saving_loading_models.html
-        if i % 2 == 1:
-            torch.save({
-                'epoch':
-                i,
-                'model':
-                net.state_dict(),
-                'optimizer':
-                optimizer.state_dict(),
-                'scheduler':
-                scheduler.state_dict() if scheduler is not None else None,
-                'loss_logger':
-                loss_logger,
-                'acc_logger':
-                acc_logger,
-            }, model_dir + checkpoint_file)
+        torch.save({
+            'epoch':
+            i,
+            'model':
+            net.state_dict(),
+            'optimizer':
+            optimizer.state_dict(),
+            'scheduler':
+            scheduler.state_dict() if scheduler is not None else None,
+            'loss_logger':
+            loss_logger,
+            'acc_logger':
+            acc_logger,
+        }, model_dir + checkpoint_file)
 
     print("Finished training!")
     checkpoint_file = '{}-{}-final.pt'.format(model_name, model_id)
@@ -286,9 +290,14 @@ if __name__ == "__main__":
         batch_size = 128
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.0001,  # 1 - 25 epoch 0.001
+            lr=0.01,
             momentum=0.9,
             weight_decay=0.0005,
+        )
+        scheduler = optim.lr_scheduler.StepLR(
+            optimizer,
+            step_size=30,
+            gamma=0.1,
         )
     elif model_name == "vgg19":
         transform = transforms.Compose([
@@ -310,9 +319,14 @@ if __name__ == "__main__":
         batch_size = 128
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.001,
+            lr=0.01,
             momentum=0.9,
             weight_decay=0.0005,
+        )
+        scheduler = optim.lr_scheduler.StepLR(
+            optimizer,
+            step_size=30,
+            gamma=0.1,
         )
     elif model_name == "inception2":
         transform = transforms.Compose([
@@ -337,7 +351,7 @@ if __name__ == "__main__":
         # Polyak averaging [13] was used to create the final model used at inference time."[1]
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.001,
+            lr=0.01,
             momentum=0.9,
             weight_decay=0.0005,
         )

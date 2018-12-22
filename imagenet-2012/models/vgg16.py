@@ -126,7 +126,7 @@ class VGG16(nn.Module):
         # that allows for extremely deep models to converge. This has been implemented in PyTroch as kaiming_normal
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.xavier_normal_(m.weight)
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.Linear):
