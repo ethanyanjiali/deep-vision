@@ -106,7 +106,7 @@ class RandomHorizontalFlip(object):
     def __call__(self, sample):
         image, annotation = sample['image'], sample['annotation']
         if random.random() < self.p:
-            return {'image': F.hflip(image), 'annotation': annotation}
+            return {'image': np.fliplr(image), 'annotation': annotation}
         return {'image': image, 'annotation': annotation}
 
 
