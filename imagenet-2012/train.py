@@ -136,7 +136,7 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
             print(
                 'Time, {}, Epoch: {}, Batch: {}, Avg. Loss: {}, LR: {}'.format(
                     time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime()),
-                    epoch, batch_i + 1, batches_loss / 10), lr)
+                    epoch, batch_i + 1, batches_loss / 10, lr))
             loss_logger.append(batches_loss)
             batches_loss = 0.0
 
