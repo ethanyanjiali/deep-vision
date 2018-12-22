@@ -106,7 +106,8 @@ class RandomHorizontalFlip(object):
     def __call__(self, sample):
         image, annotation = sample['image'], sample['annotation']
         if random.random() < self.p:
-            return {'image': np.fliplr(image), 'annotation': annotation}
+            # https://discuss.pytorch.org/t/torch-from-numpy-not-support-negative-strides/3663
+            return {'image': np.fliplr(image).copy(), 'annotation': annotation}
         return {'image': image, 'annotation': annotation}
 
 
