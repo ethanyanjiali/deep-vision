@@ -35,7 +35,7 @@ def initialize_train_loader(transform, batch_size):
     ) == desired_image_shape, "Wrong train image dimension"
 
     train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
+        train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
     return train_loader
 
@@ -55,7 +55,7 @@ def initialize_validation_loader(transform):
         val_dataset,
         batch_size=evaluate_batch_size,
         shuffle=True,
-        num_workers=0)
+        num_workers=4)
 
     return val_loader
 
