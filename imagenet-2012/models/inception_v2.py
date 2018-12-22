@@ -149,10 +149,10 @@ class AuxiliaryClassifier(nn.Module):
         super(BasicConv2d, self).__init__()
         self.features = nn.Sequential(
             # "The exact structure of the extra network on the side, including the auxiliary classifier, is as follows:"[1]
-            # "An average pooling layer with 5×5 filter size and 
-            # stride 3, resulting in an 4×4×512 output for the (4a), 
+            # "An average pooling layer with 5×5 filter size and
+            # stride 3, resulting in an 4×4×512 output for the (4a),
             # and 4×4×528 for the (4d) stage"[1]
-            nn.AvgPool2d(5, 3)
+            nn.AvgPool2d(5, 3),
             # "A 1×1 convolution with 128 filters for dimension reduction and rectified linear activation"[1]
             nn.BasicConv2d(in_channels, 128, 1),
         )
