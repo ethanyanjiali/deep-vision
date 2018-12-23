@@ -35,7 +35,7 @@ def initialize_train_loader(transform, batch_size):
     ) == desired_image_shape, "Wrong train image dimension"
 
     train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True, num_workers=8)
+        train_dataset, batch_size=batch_size, shuffle=True, num_workers=16)
 
     return train_loader
 
@@ -55,7 +55,7 @@ def initialize_validation_loader(transform):
         val_dataset,
         batch_size=evaluate_batch_size,
         shuffle=True,
-        num_workers=8)
+        num_workers=16)
 
     return val_loader
 
@@ -114,17 +114,36 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
         # PyTorch likes float type for image. So we convert to it.
         images = images.to(device=device, dtype=torch.float)
 
-        # forward propagation - calculate the output
-        output = net(images)
-        # calculate the loss
-        loss = criterion(output, annotations)
+        if isinstance(net, InceptionV2):
+            # forward propagation - calculate the output
+            output, aux1_output, aux2_output = net(images)
 
-        # https://discuss.pytorch.org/t/why-do-we-need-to-set-the-gradients-manually-to-zero-in-pytorch/4903/8
-        # https://stackoverflow.com/questions/44732217/why-do-we-need-to-explicitly-call-zero-grad
-        # zero the parameter (weight) gradients
-        optimizer.zero_grad()
+            # calculate the loss
+            loss = criterion(output, annotations)
+            aux1_loss = criterion(output, annotations)
+            aux2_loss = criterion(output, annotations)
+            loss = loss + aux1_loss * 0.3 + aux2_loss * 0.3
 
-        loss.backward()
+            # https://discuss.pytorch.org/t/why-do-we-need-to-set-the-gradients-manually-to-zero-in-pytorch/4903/8
+            # https://stackoverflow.com/questions/44732217/why-do-we-need-to-explicitly-call-zero-grad
+            # zero the parameter (weight) gradients
+            optimizer.zero_grad()
+
+            loss.backward()
+        else:
+            # forward propagation - calculate the output
+            output = net(images)
+
+            # calculate the loss
+            loss = criterion(output, annotations)
+
+            # https://discuss.pytorch.org/t/why-do-we-need-to-set-the-gradients-manually-to-zero-in-pytorch/4903/8
+            # https://stackoverflow.com/questions/44732217/why-do-we-need-to-explicitly-call-zero-grad
+            # zero the parameter (weight) gradients
+            optimizer.zero_grad()
+
+            loss.backward()
+
         # https://discuss.pytorch.org/t/how-are-optimizer-step-and-loss-backward-related/7350
         lr = get_lr(optimizer)
         optimizer.step()
