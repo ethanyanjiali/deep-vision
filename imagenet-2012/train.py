@@ -35,7 +35,7 @@ def initialize_train_loader(transform, batch_size):
     ) == desired_image_shape, "Wrong train image dimension"
 
     train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+        train_dataset, batch_size=batch_size, shuffle=True, num_workers=8)
 
     return train_loader
 
@@ -55,7 +55,7 @@ def initialize_validation_loader(transform):
         val_dataset,
         batch_size=evaluate_batch_size,
         shuffle=True,
-        num_workers=4)
+        num_workers=8)
 
     return val_loader
 
@@ -240,6 +240,11 @@ if __name__ == "__main__":
             momentum=0.9,
             weight_decay=0.0005,
         )
+        scheduler = optim.lr_scheduler.StepLR(
+            optimizer,
+            step_size=30,
+            gamma=0.1,
+        )
     elif model_name == "alexnet2":
         transform = transforms.Compose([
             Rescale(255),
@@ -256,9 +261,14 @@ if __name__ == "__main__":
         # define the params updating function using SGD
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.001,  # we use 0.01 for first 31 epochs, and then 0.001
+            lr=0.01,  # we use 0.01 for first 31 epochs, and then 0.001
             momentum=0.9,
             weight_decay=0.0005,
+        )
+        scheduler = optim.lr_scheduler.StepLR(
+            optimizer,
+            step_size=30,
+            gamma=0.1,
         )
     elif model_name == "vgg16":
         transform = transforms.Compose([
