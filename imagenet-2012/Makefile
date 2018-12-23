@@ -31,5 +31,9 @@ train_vgg19:
 	mkdir -p ./saved_models
 	nohup python -u train.py -m vgg19 > "vgg19-${TIME}".log &
 
+train_inception1:
+	mkdir -p ./saved_models
+	nohup python -u train.py -m inception1 > "inception1-${TIME}".log &
+
 visualize:
 	jupyter notebook
