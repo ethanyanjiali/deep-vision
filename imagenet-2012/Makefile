@@ -7,6 +7,10 @@ mount-imagenet:
 	mkdir -p ./dataset
 	sudo mount --read-only -o norecovery /dev/sdb ./dataset
 
+mount-imagenet-aws:
+	mkdir -p ./dataset
+	sudo mount --read-only -o norecovery /dev/xvdb ./dataset
+
 train_alexnet1:
 	mkdir -p ./saved_models
 	nohup python -u train.py -m alexnet1 > "alexnet1-${TIME}".log &
