@@ -14,7 +14,7 @@ from models.alexnet_v1 import AlexNetV1
 from models.alexnet_v2 import AlexNetV2
 from models.vgg16 import VGG16
 from models.vgg19 import VGG19
-from models.inception_v2 import InceptionV2
+from models.inception_v1 import InceptionV1
 
 evaluate_batch_size = 32
 epochs = 55
@@ -226,7 +226,7 @@ if __name__ == "__main__":
         "--model",
         type=str,
         required=True,
-        choices=["alexnet1", "alexnet2", "vgg16", "vgg19", "inception2"],
+        choices=["alexnet1", "alexnet2", "vgg16", "vgg19", "inception1"],
         help="specify model name",
     )
     parser.add_argument(
@@ -357,7 +357,7 @@ if __name__ == "__main__":
             step_size=30,
             gamma=0.1,
         )
-    elif model_name == "inception2":
+    elif model_name == "inception1":
         transform = transforms.Compose([
             Rescale(256),
             RandomHorizontalFlip(0.5),
@@ -365,7 +365,7 @@ if __name__ == "__main__":
             ToTensor(),
         ])
         # instantiate the neural network
-        net = InceptionV2()
+        net = InceptionV1()
         # define the loss function using CrossEntropyLoss
         criterion = nn.CrossEntropyLoss()
         # "The batch size was set to 256, momentum to 0.9. The training was regularised by
