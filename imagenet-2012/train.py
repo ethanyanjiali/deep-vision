@@ -114,7 +114,7 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
         # PyTorch likes float type for image. So we convert to it.
         images = images.to(device=device, dtype=torch.float)
 
-        if isinstance(net, InceptionV2):
+        if isinstance(net, InceptionV1):
             # forward propagation - calculate the output
             output, aux1_output, aux2_output = net(images)
 
