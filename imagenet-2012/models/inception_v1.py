@@ -73,7 +73,6 @@ class InceptionV1(nn.Module):
         self.avgpool = nn.AvgPool2d(7, stride=1)
         self.dropout = nn.Dropout(p=0.4)
         self.linear = nn.Linear(1024, 1000)
-        self.relu = nn.ReLU(inplace=True)
 
         self._initialize_weights()
 
