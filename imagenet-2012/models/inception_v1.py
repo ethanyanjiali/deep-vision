@@ -106,8 +106,7 @@ class InceptionV1(nn.Module):
         x = x.view(x.size(0), 1 * 1 * 1024)
 
         x = self.dropout(x)
-        x = self.linear(x)
-        output = self.relu(x)
+        output = self.linear(x)
         # There's no softmax here because we use CrossEntropyLoss which already includes Softmax
         # https://discuss.pytorch.org/t/vgg-output-layer-no-softmax/9273/5
         if self.training and output_aux1 is not None and output_aux2 is not None:
