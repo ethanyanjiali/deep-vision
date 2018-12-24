@@ -75,6 +75,8 @@ class InceptionV1(nn.Module):
         self.linear = nn.Linear(1024, 1000)
         self.relu = nn.ReLU(inplace=True)
 
+        self._initialize_weights()
+
     def forward(self, x):
         x = self.conv7x7(x)
         x = self.maxpool1(x)
@@ -112,6 +114,16 @@ class InceptionV1(nn.Module):
         if self.training and output_aux1 is not None and output_aux2 is not None:
             return output, output_aux1, output_aux2
         return output
+
+    def _initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.xavier_normal_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)
 
 
 class InceptionModule(nn.Module):
