@@ -17,7 +17,7 @@ from models.vgg19 import VGG19
 from models.inception_v1 import InceptionV1
 
 evaluate_batch_size = 32
-epochs = 55
+epochs = 95
 desired_image_shape = torch.empty(3, 224, 224).size()
 model_dir = './saved_models/'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
