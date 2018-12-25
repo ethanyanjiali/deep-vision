@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# [1] https://www.cs.unc.edu/~wliu/papers/GoogLeNet.pdf
+# [1] Going Deeper with Convolutions https://www.cs.unc.edu/~wliu/papers/GoogLeNet.pdf
 
 
 class InceptionV1(nn.Module):

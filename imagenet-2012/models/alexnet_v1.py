@@ -2,7 +2,8 @@
 import torch
 import torch.nn as nn
 
-# [1] https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
+# [1] ImageNet Classification with Deep Convolutional Neural Networks
+# https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
 # [2] http://cs231n.github.io/convolutional-networks
 # [3] https://prateekvjoshi.com/2016/04/05/what-is-local-response-normalization-in-convolutional-neural-networks/
 

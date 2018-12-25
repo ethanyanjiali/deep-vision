@@ -287,7 +287,7 @@ if __name__ == "__main__":
         )
         # scheduler = optim.lr_scheduler.MultiStepLR(
         #     optimizer,
-        #     milestones=[30, 45, 60],
+        #     milestones=[30, 45, 80],
         #     gamma=0.1,
         # )
     elif model_name == "vgg16":
@@ -379,7 +379,7 @@ if __name__ == "__main__":
         # "Our training used asynchronous stochastic gradient descent with 0.9 momentum [17],
         # fixed learning rate schedule (decreasing the learning rate by 4% every 8 epochs).
         # Polyak averaging [13] was used to create the final model used at inference time."[1]
-        optimizer = optim.SGD(
+        optimizer = optim.ASGD(
             net.parameters(),
             lr=0.01,
             momentum=0.9,
@@ -398,7 +398,7 @@ if __name__ == "__main__":
     if checkpoint_file:
         checkpoint = torch.load(checkpoint_file)
         net.load_state_dict(checkpoint['model'])
-        # optimizer.load_state_dict(checkpoint['optimizer'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
         # https://github.com/pytorch/pytorch/issues/2830#issuecomment-336194949
         for state in optimizer.state.values():
             for k, v in state.items():

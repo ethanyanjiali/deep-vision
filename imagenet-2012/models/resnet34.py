@@ -2,7 +2,7 @@
 import torch
 import torch.nn as nn
 
-# [1] https://arxiv.org/pdf/1512.03385.pdf
+# [1] Deep Residual Learning for Image Recognition https://arxiv.org/pdf/1512.03385.pdf
 
 
 class ResNet34(nn.Module):
