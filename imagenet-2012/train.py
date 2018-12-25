@@ -281,7 +281,7 @@ if __name__ == "__main__":
         optimizer = optim.SGD(
             net.parameters(),
             lr=
-            0.0001,  # I use 0.01 for first 30 epochs, and then 0.001 for next 15 epochs, then 0.0001 for remaining epochs
+            0.00001,  # 0.01 1-30 epochs, 0.001 31-45 epochs, 0.0001 46-80 epochs
             momentum=0.9,
             weight_decay=0.0005,
         )
