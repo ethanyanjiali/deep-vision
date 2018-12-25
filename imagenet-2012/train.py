@@ -379,7 +379,7 @@ if __name__ == "__main__":
         # "Our training used asynchronous stochastic gradient descent with 0.9 momentum [17],
         # fixed learning rate schedule (decreasing the learning rate by 4% every 8 epochs).
         # Polyak averaging [13] was used to create the final model used at inference time."[1]
-        optimizer = optim.ASGD(
+        optimizer = optim.SGD(
             net.parameters(),
             lr=0.01,
             momentum=0.9,

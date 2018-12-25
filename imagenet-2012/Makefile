@@ -39,5 +39,9 @@ train_inception1:
 	mkdir -p ./saved_models
 	nohup python -u train.py -m inception1 > "inception1-${TIME}".log &
 
+resume_inception1:
+	mkdir -p ./saved_models
+	nohup python -u train.py -m vgg16 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/inception1-2018-12-24T00:20:14-epoch-30.pt > "inception1-${TIME}".log &
+
 visualize:
 	jupyter notebook
