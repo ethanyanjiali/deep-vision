@@ -390,7 +390,7 @@ if __name__ == "__main__":
             net.parameters(),
             lr=0.01,
             momentum=0.9,
-            weight_decay=0.0005,
+            weight_decay=0.0002,
         )
         # However, the original lr schedule requires 250 epochs, and it stays at loss=3.5 because lr is going down too slowly
         # As reported by https://github.com/BVLC/caffe/tree/master/models/bvlc_googlenet
