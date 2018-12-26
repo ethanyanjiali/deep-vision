@@ -382,12 +382,6 @@ if __name__ == "__main__":
         net = InceptionV1()
         # define the loss function using CrossEntropyLoss
         criterion = nn.CrossEntropyLoss()
-        # "The batch size was set to 256, momentum to 0.9. The training was regularised by
-        # weight decay (the L2 penalty multiplier set to 5^10−4) and dropout regularisation
-        # for the first two fully-connected layers (dropout ratio set to 0.5).
-        # The learning rate was initially set to 10−2" vgg19.[1]
-
-        # Similar constraints like VGG16 above
         batch_size = 128
         # "Our training used asynchronous stochastic gradient descent with 0.9 momentum [17],
         # fixed learning rate schedule (decreasing the learning rate by 4% every 8 epochs).
@@ -398,12 +392,14 @@ if __name__ == "__main__":
             momentum=0.9,
             weight_decay=0.0005,
         )
-        # https://discuss.pytorch.org/t/how-to-optimize-inception-model-with-auxiliary-classifiers/7958
-        scheduler = optim.lr_scheduler.StepLR(
-            optimizer,
-            step_size=8,
-            gamma=0.96,
-        )
+        # However, the original lr schedule requires 250 epochs, and it stays at loss=3.5 because lr is going down too slowly
+        # As reported by https://github.com/BVLC/caffe/tree/master/models/bvlc_googlenet
+        max_epochs = 60.0
+        power = 0.5
+        # Hence I use poly lr policy as recommended here:
+        # https://github.com/BVLC/caffe/blob/master/models/bvlc_googlenet/quick_solver.prototxt#L8
+        lr_func = lambda epoch: (1 - epoch / max_epochs)**power
+        scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lr_func)
     elif model_name == "resnet34":
         transform = transforms.Compose([
             Rescale(256),
