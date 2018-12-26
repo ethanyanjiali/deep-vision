@@ -15,9 +15,10 @@ from models.alexnet_v2 import AlexNetV2
 from models.vgg16 import VGG16
 from models.vgg19 import VGG19
 from models.inception_v1 import InceptionV1
+from models.resnet34 import ResNet34
 
 evaluate_batch_size = 32
-epochs = 95
+epochs = 250
 desired_image_shape = torch.empty(3, 224, 224).size()
 model_dir = './saved_models/'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -169,6 +170,11 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
     val_loader = initialize_validation_loader(transform)
 
     model_id = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
+
+    if torch.cuda.device_count() > 1:
+        print("Using", torch.cuda.device_count(), "GPUs!")
+        net = nn.DataParallel(net)
+
     net.to(device=device)
     summary(net, (3, 224, 224))
 
@@ -226,7 +232,14 @@ if __name__ == "__main__":
         "--model",
         type=str,
         required=True,
-        choices=["alexnet1", "alexnet2", "vgg16", "vgg19", "inception1"],
+        choices=[
+            "alexnet1",
+            "alexnet2",
+            "vgg16",
+            "vgg19",
+            "inception1",
+            "resnet34",
+        ],
         help="specify model name",
     )
     parser.add_argument(
@@ -390,6 +403,37 @@ if __name__ == "__main__":
             optimizer,
             step_size=8,
             gamma=0.96,
+        )
+    elif model_name == "resnet34":
+        transform = transforms.Compose([
+            Rescale(256),
+            RandomHorizontalFlip(0.5),
+            RandomCrop(224),
+            ToTensor(),
+        ])
+        # instantiate the neural network
+        net = ResNet34()
+        # define the loss function using CrossEntropyLoss
+        criterion = nn.CrossEntropyLoss()
+        # "The batch size was set to 256, momentum to 0.9. The training was regularised by
+        # weight decay (the L2 penalty multiplier set to 5^10−4) and dropout regularisation
+        # for the first two fully-connected layers (dropout ratio set to 0.5).
+        # The learning rate was initially set to 10−2" vgg19.[1]
+
+        # "We use SGD with a mini-batch size of 256." However only 128 can fit in my 16G GPU
+        batch_size = 128
+        # "The learning rate starts from 0.1 and is divided by 10 when the error plateaus,
+        # We use a weight decay of 0.0001 and a momentum of 0.9."" resnet34.[1]
+        optimizer = optim.SGD(
+            net.parameters(),
+            lr=0.1,
+            momentum=0.9,
+            weight_decay=0.0001,
+        )
+        scheduler = optim.lr_scheduler.StepLR(
+            optimizer,
+            step_size=20,
+            gamma=0.1,
         )
 
     start_epoch = 1

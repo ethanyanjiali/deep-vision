@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 class InceptionV1(nn.Module):
     '''
-    This implements Inception V2, aka GoogLeNet, that described in [1]
+    This implements Inception V1, aka GoogLeNet, that described in [1]
     '''
 
     def __init__(self):
