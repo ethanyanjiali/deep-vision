@@ -441,7 +441,7 @@ if __name__ == "__main__":
     if checkpoint_file:
         checkpoint = torch.load(checkpoint_file)
         net.load_state_dict(checkpoint['model'])
-        optimizer.load_state_dict(checkpoint['optimizer'])
+        # optimizer.load_state_dict(checkpoint['optimizer'])
         # https://github.com/pytorch/pytorch/issues/2830#issuecomment-336194949
         for state in optimizer.state.values():
             for k, v in state.items():
