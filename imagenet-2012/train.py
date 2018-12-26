@@ -255,7 +255,8 @@ if __name__ == "__main__":
 
     if model_name == "alexnet1":
         transform = transforms.Compose([
-            Rescale(255),
+            # "Therefore, we down-sampled the images to a fixed resolution of 256 × 256" alexnet1.[1]
+            Rescale(256),
             RandomHorizontalFlip(0.5),
             RandomCrop(224),
             ToTensor(),
@@ -279,7 +280,9 @@ if __name__ == "__main__":
         )
     elif model_name == "alexnet2":
         transform = transforms.Compose([
-            Rescale(255),
+            # "I trained on random 224 × 224 patches extracted from 256 × 256 images,
+            # as well as their horizontal reflection" alexnet2.[1]
+            Rescale(256),
             RandomHorizontalFlip(0.5),
             RandomCrop(224),
             ToTensor(),
@@ -294,13 +297,13 @@ if __name__ == "__main__":
         optimizer = optim.SGD(
             net.parameters(),
             lr=
-            0.00001,  # 0.01 1-30 epochs, 0.001 31-45 epochs, 0.0001 46-80 epochs
+            0.000001,  # 0.01 1-30 epochs, 0.001 31-45 epochs, 0.0001 46-80 epochs, 0.00001 81-95 epochs
             momentum=0.9,
             weight_decay=0.0005,
         )
         # scheduler = optim.lr_scheduler.MultiStepLR(
         #     optimizer,
-        #     milestones=[30, 45, 80],
+        #     milestones=[30, 45, 80, 95],
         #     gamma=0.1,
         # )
     elif model_name == "vgg16":
