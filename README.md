@@ -1,4 +1,4 @@
-PyTorch implementation of common image classification models and training scripts categorized by datasets
+PyTorch implementation of common image classification models and training scripts categorized by datasets. If you think my work is helpful, please ⭐star⭐ this repo. If you have any questions regarding the code, feel free create an issue.
 
 Datasets:
 
@@ -9,5 +9,3 @@ Datasets:
     * ResNet
 - [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html) (`cifar-10`)
 - [MNIST](http://yann.lecun.com/exdb/mnist/) (`mnist`)
-
-If you think my work is helpful, please star ⭐ this repo. If you have any questions regarding the code, feel free create an issue.
