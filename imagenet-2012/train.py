@@ -93,8 +93,9 @@ def evaluate(net, criterion, epoch, val_loader, acc_logger):
         top1_acc = top1_acc / len(val_loader)
         acc_logger.append(top1_acc)
         print('Epoch: {}, Top 1 acc: {}'.format(epoch, top1_acc))
-        print('Epoch: {}, Test Dataset Loss: {}'.format(
-            epoch, total_loss / len(val_loader)))
+        val_loss = total_loss / len(val_loader)
+        print('Epoch: {}, Test Dataset Loss: {}'.format(epoch, val_loss))
+        return val_loss
 
 
 def train(net, criterion, optimizer, epoch, train_loader, model_id,
@@ -180,14 +181,27 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
 
     for i in range(start_epoch, epochs + 1):
         checkpoint_file = '{}-{}-epoch-{}.pt'.format(model_name, model_id, i)
-        if scheduler is not None:
+
+        # for regular scheduler, we step before trainning and evaludation
+        if scheduler is not None and not isinstance(
+                scheduler,
+                optim.lr_scheduler.ReduceLROnPlateau,
+        ):
             scheduler.step()
+
         # train all data for one epoch
         train(net, criterion, optimizer, i, train_loader, model_id,
               loss_logger)
 
         # evaludate the accuracy after each epoch
-        evaluate(net, criterion, i, val_loader, acc_logger)
+        val_loss = evaluate(net, criterion, i, val_loader, acc_logger)
+
+        # for regular ReduceLROnPlateau scheduler, we step after trainning and evaludation
+        if scheduler is not None and isinstance(
+                scheduler,
+                optim.lr_scheduler.ReduceLROnPlateau,
+        ):
+            scheduler.step(val_loss)
 
         # https://discuss.pytorch.org/t/loading-a-saved-model-for-continue-training/17244/3
         # https://github.com/pytorch/pytorch/issues/2830
@@ -418,8 +432,12 @@ if __name__ == "__main__":
         # for the first two fully-connected layers (dropout ratio set to 0.5).
         # The learning rate was initially set to 10−2" vgg19.[1]
 
-        # "We use SGD with a mini-batch size of 256." However only 128 can fit in my 16G GPU
-        batch_size = 128
+        # "We use SGD with a mini-batch size of 256."
+        # Aslo from Kaiming's disclaimer here https://github.com/KaimingHe/deep-residual-networks#disclaimer-and-known-issues
+        # We know that he uses 8 GPU and 32 for each GPU
+        # So for ResNet I will be using 8 Nvidia K80 GPU instead
+        # Note that this batch size won't fit on single P100 16G GPU
+        batch_size = 256
         # "The learning rate starts from 0.1 and is divided by 10 when the error plateaus,
         # We use a weight decay of 0.0001 and a momentum of 0.9."" resnet34.[1]
         optimizer = optim.SGD(
@@ -428,10 +446,10 @@ if __name__ == "__main__":
             momentum=0.9,
             weight_decay=0.0001,
         )
-        scheduler = optim.lr_scheduler.StepLR(
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
-            step_size=20,
-            gamma=0.1,
+            "min",
+            factor=0.1,
         )
 
     start_epoch = 1
