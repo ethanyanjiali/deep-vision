@@ -48,4 +48,4 @@ train_resnet34:
 	nohup python -u train.py -m resnet34 > "resnet34-${TIME}".log &
 
 visualize:
-	jupyter notebook
+	jupyter notebook ./notebooks

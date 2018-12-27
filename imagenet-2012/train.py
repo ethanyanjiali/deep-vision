@@ -296,16 +296,15 @@ if __name__ == "__main__":
         # define the params updating function using SGD
         optimizer = optim.SGD(
             net.parameters(),
-            lr=
-            0.000001,  # 0.01 1-30 epochs, 0.001 31-45 epochs, 0.0001 46-80 epochs, 0.00001 81-95 epochs
+            lr=0.01,
             momentum=0.9,
             weight_decay=0.0005,
         )
-        # scheduler = optim.lr_scheduler.MultiStepLR(
-        #     optimizer,
-        #     milestones=[30, 45, 80, 95],
-        #     gamma=0.1,
-        # )
+        scheduler = optim.lr_scheduler.MultiStepLR(
+            optimizer,
+            milestones=[30, 45, 80, 95],
+            gamma=0.1,
+        )
     elif model_name == "vgg16":
         transform = transforms.Compose([
             Rescale(384),

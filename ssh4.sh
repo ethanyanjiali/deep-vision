@@ -1,0 +1,1 @@
+ssh -i ~/.ssh/ethan-aws-key-pair.pem ubuntu@ec2-34-219-229-177.us-west-2.compute.amazonaws.com

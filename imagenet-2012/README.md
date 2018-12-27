@@ -2,80 +2,41 @@
 
 ## Set Up Dataset
 
-Large Scale Visual Recognition Challenge 2012 (ILSVRC2012)
-
-Create a directory to store the dataset. 
-```
-mkdir -p ./dataset
-cd ./dataset
-```
-
-Download it from here: [http://www.image-net.org/challenges/LSVRC/2012/nonpub-downloads](http://www.image-net.org/challenges/LSVRC/2012/nonpub-downloads)
-
-Once you have `ILSVRC2012_img_train.tar` and `ILSVRC2012_img_val.tar`:
-```bash
-mkdir ./train
-tar xvf ILSVRC2012_img_train.tar -C ./train
-mkdir ./val
-tar xvf ILSVRC2012_img_val.tar -C ./val
-```
-
-You might need `sudo` if you have permission issue, or `nohup` if you need to walk away while waiting
-
-After decompressing all files, you should have `train` folder filled with things like `n03249569.tar`. Copy `untar-script` to your `train` folder, and run:
-```
-./untar-script.sh
-```
-
-Then you will have those `n03249569.tar` all decompress into their own folder like `n03249569`. Remove tar files:
-```
-rm -rf ./*.tar
-```
-Next, you will need to further flatten the directories since the data loader is designed to read from one directory. Copy `flatten-script` to your root `dataset` folder, and run:
-```
-./flatten-script.sh
-```
-
-This would take a while, and move all 1.28M images into `train_flatten` directory
-
-Then go to your `val` folder, run [this script](https://github.com/juliensimon/aws/blob/master/mxnet/imagenet/build_validation_tree.sh) to group them by annotation first. And then copy `./script/flatten-val-script.sh` to `/val` folder, run it:
-```
-./flatten-val-script.sh
-mv ./val-flatten ../
-```
-Finally, download [this](https://github.com/juliensimon/aws/blob/master/mxnet/imagenet/synsets_with_descriptions.txt) so that you know how to map id to real annotation name and save it as `synsets.txt` in your `dataset` directory
-
-Finally, your dataset directory should look like this:
-```
-imagenet-2012
-    |_dataset
-        |_train
-        |   |_n04347754
-        |   |_...
-        |_train_flatten
-        |   |_n01440764_10026.JPEG
-        |   |_n01440764_10027.JPEG
-        |   |_...
-        |_val
-        |   |_n04347754
-        |   |_...
-        |_val_flatten
-        |   |_n04548280_ILSVRC2012_val_00030987.JPEG
-        |   |_n04548280_ILSVRC2012_val_00030330.JPEG
-        |   |_...
-        |_synsets.txt
-```
+Follow the instruction here (DATASET.md)[DATASET.md] to download the ILSVRC2012 dataset first.
 
 ## System Requirement
 
-I'm training all these models with 16GB RAM and one Nvidia P100 GPU (~15G). If you have different hardware, you might need to change some parameters to fit model into your CUDA memory, especially batch size.
+I'm training all these models with 8 vCPU, 24GB RAM and one Nvidia P100 GPU (~16G). If you have different hardware, you might need to change some parameters to fit model into your CUDA memory, especially batch size and num_workers.
 
 ## Start Training
 
-This repo implements many different models. Once you have the dataset ready, you can start the training code by running one of the commands below in this directory:
+This repo implements many different models. Once you have the dataset ready, you can start the training code by running tasks in the Makefile. I trained some of the implemented models, and provided the training log and model file. To run the notebook, please download the pretrained model to `saved_model` directory first.
 
-| Model                                                                                                                             | Command               |
-|-----------------------------------------------------------------------------------------------------------------------------------|-----------------------|
-| [AlexNet Original Version](https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf) | `make train_alexnet1` |
-| [AlexNet Second Version](https://arxiv.org/pdf/1404.5997.pdf)                                                                     | `make train_alexnet2` |
-|                                                                                                                                   |                       |
+### AlexNet
+Training Command for V1 and V2:
+```
+make train_alexnet1
+make train_alexnet2
+```
+
+Among two versions, I trained AlexNet V2 which achieves 50.98% top 1 accuracy.
+
+**Training Log**: [alexnet2.txt](logs/alexnet2.txt)
+
+**Pretrained Model File**: [alexnet_v2_yanjiali_12_26_18.pt](https://drive.google.com/file/d/1EGYtcLsEV2ZFv6sSCKNd_fSFxtwI2cYV/view?usp=sharing)
+
+**Notebook Visualization**: [alexnet.ipynb](notebooks/alexnet.ipynb)
+
+Some training notes:
+
+- I manually changed learning rate multiple times through training. But used a LR scheduler to in the final version with milestone of 30, 45, 80, 95 epochs and 0.1 decay.
+- With default weight init from PyTorch, the loss will stop decreasing around 4.5 so I used Kaiming init instead.
+- Data augmentation part is not exactly same with the original paper.
+- I modified the log format few times during training, so the log file is not consistent everywhere.
+
+### VGG
+Training Command for 16 and 19:
+```
+make train_vgg16
+make train_vgg19
+```

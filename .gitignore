@@ -7,6 +7,5 @@ ssh3.sh
 saved_models
 *.log
 __pycache__
-logs
 .ipynb_checkpoints/
 *.pyc
