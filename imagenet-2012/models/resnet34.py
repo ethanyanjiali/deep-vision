@@ -47,6 +47,7 @@ class ResNet34(nn.Module):
     def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)
+        x = self.relu(x)
         x = self.maxpool(x)
         x = self.conv2x(x)
         x = self.conv3x(x)

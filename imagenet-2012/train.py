@@ -126,9 +126,6 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
             aux2_loss = criterion(output, annotations)
             loss = loss + aux1_loss * 0.3 + aux2_loss * 0.3
 
-            # https://discuss.pytorch.org/t/why-do-we-need-to-set-the-gradients-manually-to-zero-in-pytorch/4903/8
-            # https://stackoverflow.com/questions/44732217/why-do-we-need-to-explicitly-call-zero-grad
-            # zero the parameter (weight) gradients
             optimizer.zero_grad()
 
             loss.backward()
@@ -427,10 +424,6 @@ if __name__ == "__main__":
         net = ResNet34()
         # define the loss function using CrossEntropyLoss
         criterion = nn.CrossEntropyLoss()
-        # "The batch size was set to 256, momentum to 0.9. The training was regularised by
-        # weight decay (the L2 penalty multiplier set to 5^10−4) and dropout regularisation
-        # for the first two fully-connected layers (dropout ratio set to 0.5).
-        # The learning rate was initially set to 10−2" vgg19.[1]
 
         # "We use SGD with a mini-batch size of 256."
         # Aslo from Kaiming's disclaimer here https://github.com/KaimingHe/deep-residual-networks#disclaimer-and-known-issues
