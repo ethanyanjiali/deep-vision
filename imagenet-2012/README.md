@@ -2,11 +2,11 @@
 
 ## Set Up Dataset
 
-Follow the instruction here (DATASET.md)[DATASET.md] to download the ILSVRC2012 dataset first.
+Follow the instruction here [DATASET.md](DATASET.md) to download the ILSVRC2012 dataset first.
 
 ## System Requirement
 
-I'm training all these models with 8 vCPU, 24GB RAM and one Nvidia P100 GPU (~16G). If you have different hardware, you might need to change some parameters to fit model into your CUDA memory, especially batch size and num_workers.
+I'm training all these models with 8 vCPU, 24GB RAM and one Nvidia P100 GPU (~16G). If you have different hardware, you might need to change some parameters to fit model with your hardware, especially batch size (when memory exceed) and num_workers (for multi-thread loading).
 
 ## Start Training
 
