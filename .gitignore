@@ -4,6 +4,7 @@ env
 ssh1.sh
 ssh2.sh
 ssh3.sh
+ssh*.sh
 saved_models
 *.log
 __pycache__
