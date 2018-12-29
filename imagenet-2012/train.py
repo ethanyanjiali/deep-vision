@@ -169,10 +169,6 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
 
     model_id = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
 
-    if torch.cuda.device_count() > 1:
-        print("Using", torch.cuda.device_count(), "GPUs!")
-        net = nn.DataParallel(net)
-
     net.to(device=device)
     summary(net, (3, 224, 224))
 
@@ -422,6 +418,12 @@ if __name__ == "__main__":
         ])
         # instantiate the neural network
         net = ResNet34()
+
+        # https://github.com/bearpaw/pytorch-classification/issues/27
+        if torch.cuda.device_count() > 1:
+            print("Using", torch.cuda.device_count(), "GPUs!")
+            net = nn.DataParallel(net)
+
         # define the loss function using CrossEntropyLoss
         criterion = nn.CrossEntropyLoss()
 
