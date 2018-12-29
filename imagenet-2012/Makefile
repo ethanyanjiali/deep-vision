@@ -41,7 +41,7 @@ train_inception1:
 
 resume_inception1:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m inception1 -c /home/ubuntu/image-classification/imagenet-2012/saved_models/inception1-2018-12-24T00:20:14-epoch-30.pt > "inception1-${TIME}".log &
+	nohup python -u train.py -m inception1 -c /home/ubuntu/image-classification/imagenet-2012/saved_models/inception1-2018-12-26T09:40:04-epoch-54.pt > "inception1-${TIME}".log &
 
 train_resnet34:
 	mkdir -p ./saved_models

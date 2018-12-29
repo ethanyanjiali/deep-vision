@@ -7,7 +7,7 @@ import torch.nn as nn
 
 class ResNet34(nn.Module):
     '''
-    This implements the original AlexNet in one tower structure, hence the parameters are doubled
+    This implements ResNet 34 layers model
     '''
 
     def __init__(self):
