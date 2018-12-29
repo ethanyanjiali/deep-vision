@@ -23,6 +23,7 @@ class ResNet34(nn.Module):
             kernel_size=7,
             stride=2,
             padding=3,
+            # Don't use bias at conv layers any more because Batch Norm will cancel out this bias later
             bias=False,
         )
         # "We adopt batch normalization (BN) right after each convolution and before activation"[1]
