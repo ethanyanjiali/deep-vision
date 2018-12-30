@@ -221,7 +221,8 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
               loss_logger)
 
         # evaludate the accuracy after each epoch
-        val_loss = evaluate(net, criterion, i, val_loader, acc_logger)
+        val_loss, top1_acc, top5_acc = evaluate(net, criterion, i, val_loader,
+                                                acc_logger)
 
         # for regular ReduceLROnPlateau scheduler, we step after trainning and evaludation
         if scheduler is not None and isinstance(
