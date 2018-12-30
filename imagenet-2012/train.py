@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from torchsummary import summary
 from torchvision import transforms
 
-from data_load import ImageNet2012Dataset, RandomCrop, Rescale, ToTensor, RandomHorizontalFlip, CenterCrop
+from data_load import ImageNet2012Dataset, RandomCrop, Rescale, ToTensor, RandomHorizontalFlip, CenterCrop, Normalize
 from models.alexnet_v1 import AlexNetV1
 from models.alexnet_v2 import AlexNetV2
 from models.vgg16 import VGG16
@@ -269,14 +269,17 @@ if __name__ == "__main__":
     checkpoint_file = args.checkpoint
     scheduler = None
 
+    transform = transforms.Compose([
+        Rescale(256),
+        RandomHorizontalFlip(0.5),
+        RandomCrop(224),
+        ToTensor(),
+        # https://github.com/pytorch/examples/blob/master/imagenet/main.py#L195
+        # this is pre-calculated mean and std of imagenet dataset
+        Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
     if model_name == "alexnet1":
-        transform = transforms.Compose([
-            # "Therefore, we down-sampled the images to a fixed resolution of 256 × 256" alexnet1.[1]
-            Rescale(256),
-            RandomHorizontalFlip(0.5),
-            RandomCrop(224),
-            ToTensor(),
-        ])
         batch_size = 128
         # instantiate the neural network
         net = AlexNetV1()
@@ -291,18 +294,10 @@ if __name__ == "__main__":
         )
         scheduler = optim.lr_scheduler.StepLR(
             optimizer,
-            step_size=30,
+            step_size=20,
             gamma=0.1,
         )
     elif model_name == "alexnet2":
-        transform = transforms.Compose([
-            # "I trained on random 224 × 224 patches extracted from 256 × 256 images,
-            # as well as their horizontal reflection" alexnet2.[1]
-            Rescale(256),
-            RandomHorizontalFlip(0.5),
-            RandomCrop(224),
-            ToTensor(),
-        ])
         # "We trained our models using stochastic gradient descent with a batch size of 128 examples" alexnet1.[1]
         batch_size = 128
         # instantiate the neural network
@@ -322,12 +317,6 @@ if __name__ == "__main__":
             gamma=0.1,
         )
     elif model_name == "vgg16":
-        transform = transforms.Compose([
-            Rescale(384),
-            RandomHorizontalFlip(0.5),
-            RandomCrop(224),
-            ToTensor(),
-        ])
         # instantiate the neural network
         net = VGG16()
         # define the loss function using CrossEntropyLoss
@@ -357,16 +346,10 @@ if __name__ == "__main__":
         )
         scheduler = optim.lr_scheduler.StepLR(
             optimizer,
-            step_size=30,
-            gamma=0.1,
+            step_size=10,
+            gamma=0.5,
         )
     elif model_name == "vgg19":
-        transform = transforms.Compose([
-            Rescale(384),
-            RandomHorizontalFlip(0.5),
-            RandomCrop(224),
-            ToTensor(),
-        ])
         # instantiate the neural network
         net = VGG19()
         # define the loss function using CrossEntropyLoss
@@ -386,16 +369,10 @@ if __name__ == "__main__":
         )
         scheduler = optim.lr_scheduler.StepLR(
             optimizer,
-            step_size=30,
-            gamma=0.1,
+            step_size=10,
+            gamma=0.5,
         )
     elif model_name == "inception1":
-        transform = transforms.Compose([
-            Rescale(256),
-            RandomHorizontalFlip(0.5),
-            RandomCrop(224),
-            ToTensor(),
-        ])
         # instantiate the neural network
         net = InceptionV1()
         # define the loss function using CrossEntropyLoss
@@ -419,12 +396,6 @@ if __name__ == "__main__":
         lr_func = lambda epoch: (1 - epoch / max_epochs)**power if epoch < max_epochs else 0.01
         scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lr_func)
     elif model_name == "resnet34":
-        transform = transforms.Compose([
-            Rescale(256),
-            RandomHorizontalFlip(0.5),
-            RandomCrop(224),
-            ToTensor(),
-        ])
         # instantiate the neural network
         net = ResNet34()
 

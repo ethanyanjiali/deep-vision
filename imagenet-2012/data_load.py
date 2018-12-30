@@ -190,3 +190,15 @@ class ToTensor(object):
             'image': torch.from_numpy(image),
             'annotation': annotation,
         }
+
+
+class Normalize(object):
+    """Normalize the image by given pre-calculated mean and std"""
+
+    def __call__(self, mean, std):
+        image, annotation = sample['image'], sample['annotation']
+
+        return {
+            'image': F.normalize(image, mean, std),
+            'annotation': annotation,
+        }
