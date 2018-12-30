@@ -177,6 +177,9 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
     net.to(device=device)
     summary(net, (3, 224, 224))
 
+    # make initial evaluation
+    val_loss = evaluate(net, criterion, i, val_loader, acc_logger)
+
     for i in range(start_epoch, epochs + 1):
         checkpoint_file = '{}-{}-epoch-{}.pt'.format(model_name, model_id, i)
 
