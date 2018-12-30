@@ -73,19 +73,3 @@ class AlexNetV2(nn.Module):
         x = self.classifier(x)
 
         return x
-
-    def _initialize_weights(self):
-        # First, when I train the model with default weight initialization (Lecun's), the loss went down to around 4.9 from 6.9 after 3 epochs
-        # However, not matter how small the learning rate I set, it didn't go down any more
-        # https://discuss.pytorch.org/t/what-is-the-default-initialization-of-a-conv2d-layer-and-linear-layer/16055/2
-        # which actually refers to http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf 4.6 Initializing the weights
-        #
-        # Hence I replaced the weights init with the same method that I used for VGG. Please see ./vgg16 for more details
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.Linear):
-                nn.init.normal_(m.weight, 0, 0.01)
-                nn.init.constant_(m.bias, 0)
