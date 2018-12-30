@@ -62,8 +62,6 @@ class AlexNetV2(nn.Module):
             # units, trained to minimize cross-entropy"[1]
         )
 
-        self._initialize_weights()
-
     def forward(self, x):
         x = self.features(x)
 
