@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from torchsummary import summary
 from torchvision import transforms
 
-from data_load import ImageNet2012Dataset, RandomCrop, Rescale, ToTensor, RandomHorizontalFlip
+from data_load import ImageNet2012Dataset, RandomCrop, Rescale, ToTensor, RandomHorizontalFlip, CenterCrop
 from models.alexnet_v1 import AlexNetV1
 from models.alexnet_v2 import AlexNetV2
 from models.vgg16 import VGG16
@@ -22,6 +22,11 @@ epochs = 250
 desired_image_shape = torch.empty(3, 224, 224).size()
 model_dir = './saved_models/'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+val_transform = transforms.Compose([
+    Rescale(256),
+    CenterCrop(224),
+    ToTensor(),
+])
 
 
 def initialize_train_loader(transform, batch_size):
@@ -165,7 +170,7 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
 
     # loader will split datatests into batches witht size defined by batch_size
     train_loader = initialize_train_loader(transform, batch_size)
-    val_loader = initialize_validation_loader(transform)
+    val_loader = initialize_validation_loader(val_transform)
 
     model_id = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
 
