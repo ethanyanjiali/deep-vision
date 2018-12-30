@@ -17,7 +17,7 @@ from models.vgg19 import VGG19
 from models.inception_v1 import InceptionV1
 from models.resnet34 import ResNet34
 
-evaluate_batch_size = 32
+evaluate_batch_size = 128
 epochs = 250
 desired_image_shape = torch.empty(3, 224, 224).size()
 model_dir = './saved_models/'
@@ -26,6 +26,7 @@ val_transform = transforms.Compose([
     Rescale(256),
     CenterCrop(224),
     ToTensor(),
+    Normalize(),
 ])
 
 
@@ -66,7 +67,7 @@ def initialize_validation_loader(transform):
     return val_loader
 
 
-def calc_accuracy(output, Y):
+def calc_accuracy_top1(output, Y):
     max_vals, max_indices = torch.max(output, 1)
     acc = (max_indices == Y).cpu().sum().data.numpy() / max_indices.size()[0]
     return acc
@@ -77,10 +78,29 @@ def get_lr(optimizer):
         return param_group['lr']
 
 
+# https://github.com/pytorch/examples/blob/master/imagenet/main.py#L381
+def accuracy(output, target, topk=(1, )):
+    """Computes the accuracy over the k top predictions for the specified values of k"""
+    with torch.no_grad():
+        maxk = max(topk)
+        batch_size = target.size(0)
+
+        _, pred = output.topk(maxk, 1, True, True)
+        pred = pred.t()
+        correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+        res = []
+        for k in topk:
+            correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+            res.append(correct_k.mul_(100.0 / batch_size))
+        return res
+
+
 def evaluate(net, criterion, epoch, val_loader, acc_logger):
     net.eval()
     total_loss = 0
     top1_acc = 0.0
+    top5_acc = 0.0
     # turn off grad to avoid cuda out of memory error
     with torch.no_grad():
         for batch_i, data in enumerate(val_loader):
@@ -91,16 +111,19 @@ def evaluate(net, criterion, epoch, val_loader, acc_logger):
 
             output = net(images)
             loss = criterion(output, annotations)
-            top1_acc += calc_accuracy(output, annotations)
-
+            acc1, acc5 = accuracy(output, target, topk=(1, 5))
+            top1_acc += acc1[0]
+            top5_acc += acc5[0]
             total_loss += loss
 
         top1_acc = top1_acc / len(val_loader)
+        top5_acc = top5_acc / len(val_loader)
         acc_logger.append(top1_acc)
-        print('Epoch: {}, Top 1 acc: {}'.format(epoch, top1_acc))
+        print('Epoch: {}, Validation Top 1 acc: {}'.format(epoch, top1_acc))
+        print('Epoch: {}, Validation Top 5 acc: {}'.format(epoch, top5_acc))
         val_loss = total_loss / len(val_loader)
-        print('Epoch: {}, Test Dataset Loss: {}'.format(epoch, val_loss))
-        return val_loss
+        print('Epoch: {}, Validation Set Loss: {}'.format(epoch, val_loss))
+        return val_loss, top1_acc, top5_acc
 
 
 def train(net, criterion, optimizer, epoch, train_loader, model_id,
@@ -178,8 +201,8 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
     summary(net, (3, 224, 224))
 
     # make initial evaluation
-    val_loss = evaluate(net, criterion, start_epoch - 1, val_loader,
-                        acc_logger)
+    val_loss, top1_acc, top5_acc = evaluate(net, criterion, start_epoch - 1,
+                                            val_loader, acc_logger)
 
     for i in range(start_epoch, epochs + 1):
         checkpoint_file = '{}-{}-epoch-{}.pt'.format(model_name, model_id, i)
