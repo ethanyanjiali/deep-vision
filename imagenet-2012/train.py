@@ -313,7 +313,7 @@ if __name__ == "__main__":
         # define the params updating function using SGD
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.01,
+            lr=0.005,
             momentum=0.9,
             weight_decay=0.0005,
         )
@@ -330,9 +330,10 @@ if __name__ == "__main__":
         # define the loss function using CrossEntropyLoss
         criterion = nn.CrossEntropyLoss()
         # define the params updating function using SGD
+        # loss will become nan if init lr = 0.01
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.01,
+            lr=0.005,
             momentum=0.9,
             weight_decay=0.0005,
         )
