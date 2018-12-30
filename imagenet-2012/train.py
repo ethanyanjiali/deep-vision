@@ -319,7 +319,7 @@ if __name__ == "__main__":
         )
         scheduler = optim.lr_scheduler.StepLR(
             optimizer,
-            step_size=20,
+            step_size=30,
             gamma=0.1,
         )
     elif model_name == "alexnet2":
@@ -336,9 +336,9 @@ if __name__ == "__main__":
             momentum=0.9,
             weight_decay=0.0005,
         )
-        scheduler = optim.lr_scheduler.MultiStepLR(
+        scheduler = optim.lr_scheduler.StepLR(
             optimizer,
-            milestones=[30, 45, 80, 95],
+            step_size=30,
             gamma=0.1,
         )
     elif model_name == "vgg16":
