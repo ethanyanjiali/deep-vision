@@ -26,7 +26,9 @@ val_transform = transforms.Compose([
     Rescale(256),
     CenterCrop(224),
     ToTensor(),
-    Normalize(),
+    # https://github.com/pytorch/examples/blob/master/imagenet/main.py#L195
+    # this is pre-calculated mean and std of imagenet dataset
+    Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
 
