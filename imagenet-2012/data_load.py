@@ -195,10 +195,14 @@ class ToTensor(object):
 class Normalize(object):
     """Normalize the image by given pre-calculated mean and std"""
 
-    def __call__(self, mean, std):
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, sample):
         image, annotation = sample['image'], sample['annotation']
 
         return {
-            'image': F.normalize(image, mean, std),
+            'image': F.normalize(image, self.mean, self.std),
             'annotation': annotation,
         }
