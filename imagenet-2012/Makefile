@@ -29,7 +29,7 @@ train_vgg16:
 
 resume_vgg16:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m vgg16 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/vgg16-2018-12-23T22:41:43-epoch-33.pt > "vgg16-${TIME}".log &
+	nohup python -u train.py -m vgg16 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/vgg16-2018-12-29T17:35:39-epoch-37.pt > "vgg16-${TIME}".log &
 
 train_vgg19:
 	mkdir -p ./saved_models
@@ -41,7 +41,7 @@ train_inception1:
 
 resume_inception1:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m inception1 -c /home/ubuntu/image-classification/imagenet-2012/saved_models/inception1-2018-12-26T09:40:04-epoch-54.pt > "inception1-${TIME}".log &
+	nohup python -u train.py -m inception1 -c /home/ubuntu/image-classification/imagenet-2012/saved_models/inception1-2018-12-29T22:59:58-epoch-58.pt > "inception1-${TIME}".log &
 
 train_resnet34:
 	mkdir -p ./saved_models
@@ -49,7 +49,7 @@ train_resnet34:
 
 resume_resnet34:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m resnet34 -c /home/ubuntu/cv-classification/imagenet-2012/saved_models/resnet34-2018-12-27T05:50:50-epoch-86.pt > "resnet34-${TIME}".log &
+	nohup python -u train.py -m resnet34 -c /home/ubuntu/cv-classification/imagenet-2012/saved_models/resnet34-2018-12-29T18:04:34-epoch-105.pt > "resnet34-${TIME}".log &
 
 visualize:
 	jupyter notebook ./notebooks
