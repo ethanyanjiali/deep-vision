@@ -334,7 +334,7 @@ if __name__ == "__main__":
         # loss will become nan if init lr = 0.01
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.1,
+            lr=0.001,
             momentum=0.9,
             weight_decay=0.0005,
         )
@@ -460,7 +460,7 @@ if __name__ == "__main__":
     if checkpoint_file:
         checkpoint = torch.load(checkpoint_file)
         net.load_state_dict(checkpoint['model'])
-        optimizer.load_state_dict(checkpoint['optimizer'])
+        # optimizer.load_state_dict(checkpoint['optimizer'])
         # https://github.com/pytorch/pytorch/issues/2830#issuecomment-336194949
         for state in optimizer.state.values():
             for k, v in state.items():
