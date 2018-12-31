@@ -62,8 +62,6 @@ class AlexNetV2(nn.Module):
             # units, trained to minimize cross-entropy"[1]
         )
 
-        self._initialize_weights()
-
 
     def forward(self, x):
         x = self.features(x)
@@ -74,13 +72,3 @@ class AlexNetV2(nn.Module):
         x = self.classifier(x)
 
         return x
-
-    def _initialize_weights(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.xavier_normal_(m.weight)
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0.1)
-            elif isinstance(m, nn.Linear):
-                nn.init.normal_(m.weight, 0, 0.01)
-                nn.init.constant_(m.bias, 0.1)

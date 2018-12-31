@@ -203,8 +203,8 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
     summary(net, (3, 224, 224))
 
     # make initial evaluation
-    # val_loss, top1_acc, top5_acc = evaluate(net, criterion, start_epoch - 1,
-    #                                         val_loader, acc_logger)
+    val_loss, top1_acc, top5_acc = evaluate(net, criterion, start_epoch - 1,
+                                            val_loader, acc_logger)
 
     for i in range(start_epoch, epochs + 1):
         checkpoint_file = '{}-{}-epoch-{}.pt'.format(model_name, model_id, i)
@@ -318,10 +318,10 @@ if __name__ == "__main__":
             momentum=0.9,
             weight_decay=0.0005,
         )
-        scheduler = optim.lr_scheduler.StepLR(
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
-            step_size=10,
-            gamma=0.1,
+            "min",
+            factor=0.1,
         )
     elif model_name == "alexnet2":
         # "We trained our models using stochastic gradient descent with a batch size of 128 examples" alexnet1.[1]
@@ -334,14 +334,14 @@ if __name__ == "__main__":
         # loss will become nan if init lr = 0.01
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.001,
+            lr=0.1,
             momentum=0.9,
             weight_decay=0.0005,
         )
-        scheduler = optim.lr_scheduler.StepLR(
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
-            step_size=10,
-            gamma=0.1,
+            "min",
+            factor=0.1,
         )
     elif model_name == "vgg16":
         # instantiate the neural network
@@ -460,7 +460,7 @@ if __name__ == "__main__":
     if checkpoint_file:
         checkpoint = torch.load(checkpoint_file)
         net.load_state_dict(checkpoint['model'])
-        # optimizer.load_state_dict(checkpoint['optimizer'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
         # https://github.com/pytorch/pytorch/issues/2830#issuecomment-336194949
         for state in optimizer.state.values():
             for k, v in state.items():
@@ -470,10 +470,10 @@ if __name__ == "__main__":
         loss_logger = checkpoint['loss_logger']
 
         # load scheduler state if exist
-        # if scheduler is not None:
-        #     scheduler_state = checkpoint.get('scheduler')
-        #     if scheduler_state is not None:
-        #         scheduler.load_state_dict(scheduler_state)
+        if scheduler is not None:
+            scheduler_state = checkpoint.get('scheduler')
+            if scheduler_state is not None:
+                scheduler.load_state_dict(scheduler_state)
 
         # load accuracy logger if exist. If not, initialize it with 0s
         acc_logger = checkpoint.get('acc_logger')
