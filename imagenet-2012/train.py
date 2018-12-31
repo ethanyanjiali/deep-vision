@@ -203,8 +203,8 @@ def start(model_name, net, criterion, optimizer, transform, batch_size,
     summary(net, (3, 224, 224))
 
     # make initial evaluation
-    val_loss, top1_acc, top5_acc = evaluate(net, criterion, start_epoch - 1,
-                                            val_loader, acc_logger)
+    # val_loss, top1_acc, top5_acc = evaluate(net, criterion, start_epoch - 1,
+    #                                         val_loader, acc_logger)
 
     for i in range(start_epoch, epochs + 1):
         checkpoint_file = '{}-{}-epoch-{}.pt'.format(model_name, model_id, i)
@@ -470,10 +470,10 @@ if __name__ == "__main__":
         loss_logger = checkpoint['loss_logger']
 
         # load scheduler state if exist
-        if scheduler is not None:
-            scheduler_state = checkpoint.get('scheduler')
-            if scheduler_state is not None:
-                scheduler.load_state_dict(scheduler_state)
+        # if scheduler is not None:
+        #     scheduler_state = checkpoint.get('scheduler')
+        #     if scheduler_state is not None:
+        #         scheduler.load_state_dict(scheduler_state)
 
         # load accuracy logger if exist. If not, initialize it with 0s
         acc_logger = checkpoint.get('acc_logger')
