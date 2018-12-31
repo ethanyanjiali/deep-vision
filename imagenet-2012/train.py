@@ -314,13 +314,13 @@ if __name__ == "__main__":
         # define the params updating function using SGD
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.01,
+            lr=0.1,
             momentum=0.9,
             weight_decay=0.0005,
         )
         scheduler = optim.lr_scheduler.StepLR(
             optimizer,
-            step_size=30,
+            step_size=10,
             gamma=0.1,
         )
     elif model_name == "alexnet2":
@@ -334,13 +334,13 @@ if __name__ == "__main__":
         # loss will become nan if init lr = 0.01
         optimizer = optim.SGD(
             net.parameters(),
-            lr=0.01,
+            lr=0.1,
             momentum=0.9,
             weight_decay=0.0005,
         )
         scheduler = optim.lr_scheduler.StepLR(
             optimizer,
-            step_size=30,
+            step_size=10,
             gamma=0.1,
         )
     elif model_name == "vgg16":

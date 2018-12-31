@@ -80,7 +80,7 @@ class AlexNetV2(nn.Module):
             if isinstance(m, nn.Conv2d):
                 nn.init.xavier_normal_(m.weight)
                 if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
+                    nn.init.constant_(m.bias, 0.1)
             elif isinstance(m, nn.Linear):
                 nn.init.normal_(m.weight, 0, 0.01)
-                nn.init.constant_(m.bias, 0)
+                nn.init.constant_(m.bias, 0.1)
