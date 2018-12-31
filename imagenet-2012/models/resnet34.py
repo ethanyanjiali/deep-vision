@@ -34,7 +34,7 @@ class ResNet34(nn.Module):
         self.maxpool = nn.MaxPool2d(
             kernel_size=3, stride=2, padding=1, ceil_mode=True)
 
-        # this refers to Table 1 in [1]
+        # this refers to Table 1 in [1] 34-layer column
         self.conv2x = self._make_blocks(2, 64, 64)
         self.conv3x = self._make_blocks(2, 64, 128)
         self.conv4x = self._make_blocks(2, 128, 256)
