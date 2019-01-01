@@ -1,0 +1,2 @@
+visualize:
+	jupyter notebook ./notebooks
