@@ -30,9 +30,8 @@ class ResNet34(nn.Module):
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         # "3×3 max pool, stride 2" in Table 1 of [1]
-        # ceil[(112 - 3) / 2] + 1 = 56
-        self.maxpool = nn.MaxPool2d(
-            kernel_size=3, stride=2, padding=1, ceil_mode=True)
+        # (112 - 3) / 2 + 1 = 56
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         # this refers to Table 1 in [1] 34-layer column
         self.conv2x = self._make_blocks(2, 64, 64)
