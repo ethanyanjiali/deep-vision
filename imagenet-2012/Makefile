@@ -21,7 +21,7 @@ train_alexnet2:
 
 resume_alexnet2:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m alexnet2 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/alexnet2-2018-12-30T18:30:09-epoch-8.pt > "alexnet2-${TIME}".log &
+	nohup python -u train.py -m alexnet2 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/alexnet2-2018-12-31T04:27:43-epoch-24.pt > "alexnet2-${TIME}".log &
 
 train_vgg16:
 	mkdir -p ./saved_models
@@ -29,7 +29,7 @@ train_vgg16:
 
 resume_vgg16:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m vgg16 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/vgg16-2018-12-29T17:35:39-epoch-37.pt > "vgg16-${TIME}".log &
+	nohup python -u train.py -m vgg16 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/vgg16-2018-12-30T07:26:18-epoch-15.pt > "vgg16-${TIME}".log &
 
 train_vgg19:
 	mkdir -p ./saved_models
@@ -41,7 +41,7 @@ train_inception1:
 
 resume_inception1:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m inception1 -c /home/ubuntu/image-classification/imagenet-2012/saved_models/inception1-2018-12-29T22:59:58-epoch-58.pt > "inception1-${TIME}".log &
+	nohup python -u train.py -m inception1 -c /home/ubuntu/image-classification/imagenet-2012/saved_models/inception1-2018-12-30T07:26:12-epoch-43.pt > "inception1-${TIME}".log &
 
 train_resnet34:
 	mkdir -p ./saved_models
