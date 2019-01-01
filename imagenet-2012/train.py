@@ -16,7 +16,6 @@ from models.vgg16 import VGG16
 from models.vgg19 import VGG19
 from models.inception_v1 import InceptionV1
 from models.resnet34 import ResNet34
-from models.resnet50 import ResNet50
 
 evaluate_batch_size = 128
 epochs = 250
@@ -441,37 +440,6 @@ if __name__ == "__main__":
         # So for ResNet I will be using 8 Nvidia K80 GPU instead
         # Note that this batch size won't fit on single P100 16G GPU
         batch_size = 512
-        # "The learning rate starts from 0.1 and is divided by 10 when the error plateaus,
-        # We use a weight decay of 0.0001 and a momentum of 0.9."" resnet34.[1]
-        optimizer = optim.SGD(
-            net.parameters(),
-            lr=0.1,
-            momentum=0.9,
-            weight_decay=0.0001,
-        )
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer,
-            "min",
-            factor=0.1,
-        )
-    elif model_name == "resnet50":
-        # instantiate the neural network
-        net = ResNet50()
-
-        # https://github.com/bearpaw/pytorch-classification/issues/27
-        if torch.cuda.device_count() > 1:
-            print("Using", torch.cuda.device_count(), "GPUs!")
-            net = nn.DataParallel(net)
-
-        # define the loss function using CrossEntropyLoss
-        criterion = nn.CrossEntropyLoss()
-
-        # "We use SGD with a mini-batch size of 256."
-        # Aslo from Kaiming's disclaimer here https://github.com/KaimingHe/deep-residual-networks#disclaimer-and-known-issues
-        # We know that he uses 8 GPU and 32 for each GPU
-        # So for ResNet I will be using 8 Nvidia K80 GPU instead
-        # Note that this batch size won't fit on single P100 16G GPU
-        batch_size = 256
         # "The learning rate starts from 0.1 and is divided by 10 when the error plateaus,
         # We use a weight decay of 0.0001 and a momentum of 0.9."" resnet34.[1]
         optimizer = optim.SGD(
