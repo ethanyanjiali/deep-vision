@@ -34,10 +34,11 @@ class ResNet34(nn.Module):
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         # this refers to Table 1 in [1] 34-layer column
-        self.conv2x = self._make_blocks(2, 64, 64)
-        self.conv3x = self._make_blocks(2, 64, 128)
-        self.conv4x = self._make_blocks(2, 128, 256)
-        self.conv5x = self._make_blocks(2, 256, 512)
+        # note that we don't downsample on conv2x
+        self.conv2x = self._make_blocks(2, 64, 64, stride=1)
+        self.conv3x = self._make_blocks(2, 64, 128, stride=2)
+        self.conv4x = self._make_blocks(2, 128, 256, stride=2)
+        self.conv5x = self._make_blocks(2, 256, 512, stride=2)
 
         # in order to use FC layer, we need to downsample to 1x1x512
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
@@ -61,12 +62,18 @@ class ResNet34(nn.Module):
         output = self.linear(x)
         return output
 
-    def _make_blocks(self, num_blocks, in_channels, out_channels):
+    def _make_blocks(self, num_blocks, in_channels, out_channels, stride):
         blocks = []
         # this first block should downsample
         # "Downsampling is performed by conv3 1, conv4 1, and conv5 1 with a stride of 2."[1]
+        downsample = stride == 2
         blocks.append(
-            BasicBlock(in_channels, out_channels, stride=2, downsample=True))
+            BasicBlock(
+                in_channels,
+                out_channels,
+                stride=stride,
+                downsample=downsample,
+            ))
         for i in range(1, num_blocks):
             blocks.append(BasicBlock(out_channels, out_channels))
         return nn.Sequential(*blocks)
