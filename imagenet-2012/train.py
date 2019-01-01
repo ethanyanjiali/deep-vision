@@ -437,10 +437,10 @@ if __name__ == "__main__":
 
         # "We use SGD with a mini-batch size of 256."
         # Aslo from Kaiming's disclaimer here https://github.com/KaimingHe/deep-residual-networks#disclaimer-and-known-issues
-        # We know that he uses 8 GPU and 32 for each GPU
+        # Since he uses 8 GPU and 32 for each GPU
         # So for ResNet I will be using 8 Nvidia K80 GPU instead
         # Note that this batch size won't fit on single P100 16G GPU
-        batch_size = 256
+        batch_size = 512
         # "The learning rate starts from 0.1 and is divided by 10 when the error plateaus,
         # We use a weight decay of 0.0001 and a momentum of 0.9."" resnet34.[1]
         optimizer = optim.SGD(
