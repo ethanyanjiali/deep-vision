@@ -193,8 +193,7 @@ class AuxiliaryClassifier(nn.Module):
 class BasicConv2d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, **kwargs):
         super(BasicConv2d, self).__init__()
-        self.conv = nn.Conv2d(
-            in_channels, out_channels, kernel_size, bias=False, **kwargs)
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, **kwargs)
 
     def forward(self, x):
         x = self.conv(x)
