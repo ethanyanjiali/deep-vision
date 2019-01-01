@@ -49,7 +49,7 @@ class ImageNet2012Dataset(Dataset):
         image_path = join(self.root_dir, self.images[idx])
 
         image = cv2.imread(image_path)
-        image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         # if there's an alpha channel, get rid of it
         if (len(image.shape) > 2 and image.shape[2] == 4):
