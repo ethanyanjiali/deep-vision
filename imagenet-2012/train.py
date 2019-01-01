@@ -402,6 +402,12 @@ if __name__ == "__main__":
     elif model_name == "inception1":
         # instantiate the neural network
         net = InceptionV1()
+
+        # https://github.com/bearpaw/pytorch-classification/issues/27
+        if torch.cuda.device_count() > 1:
+            print("Using", torch.cuda.device_count(), "GPUs!")
+            net = nn.DataParallel(net)
+
         # define the loss function using CrossEntropyLoss
         criterion = nn.CrossEntropyLoss()
         batch_size = 128
