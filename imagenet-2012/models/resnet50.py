@@ -76,7 +76,7 @@ class ResNet50(nn.Module):
             ))
         for i in range(1, num_blocks):
             blocks.append(BottleneckBlock(
-                out2
+                out2,
                 out1,
                 out2,
             )
