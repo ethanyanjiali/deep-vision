@@ -152,8 +152,8 @@ def train(net, criterion, optimizer, epoch, train_loader, model_id,
 
             # calculate the loss
             loss = criterion(output, annotations)
-            aux1_loss = criterion(output, annotations)
-            aux2_loss = criterion(output, annotations)
+            aux1_loss = criterion(aux1_output, annotations)
+            aux2_loss = criterion(aux2_output, annotations)
             loss = loss + aux1_loss * 0.3 + aux2_loss * 0.3
 
             optimizer.zero_grad()

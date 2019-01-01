@@ -18,8 +18,8 @@ class MnistDataset(Dataset):
     def __init__(self, images_path, labels_path):
         """
         Args:
-            root_dir (string): The directory with all image files (flatten).
-            labels_file: The label file path
+            images_path (string): the path to the images idx file
+            labels_path (string): the path to the labels idx file
         """
         with open(images_path, 'rb') as images_f:
             b = images_f.read()
@@ -42,4 +42,40 @@ class MnistDataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, idx):
-        return self.images[idx], self.labels[idx]
+        return {
+            'image': self.images[idx],
+            'label': self.labels[idx],
+        }
+
+
+class ToTensor(object):
+    """Convert ndarrays in sample to Tensors."""
+
+    def __call__(self, sample):
+        image, label = sample['image'], sample['label']
+
+        # swap color axis because
+        # numpy image: H x W x C
+        # torch image: C X H X W
+        image = image.transpose((2, 0, 1))
+
+        return {
+            'image': torch.from_numpy(image).float(),
+            'label': label,
+        }
+
+
+class Normalize(object):
+    """Normalize the image by given pre-calculated mean and std"""
+
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, sample):
+        image, annotation = sample['image'], sample['label']
+
+        return {
+            'image': F.normalize(image, self.mean, self.std),
+            'label': label,
+        }
