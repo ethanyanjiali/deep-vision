@@ -6,7 +6,6 @@ import torch
 import torchvision.transforms.functional as F
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
-import matplotlib.image as mpimg
 import cv2
 
 
@@ -49,7 +48,8 @@ class ImageNet2012Dataset(Dataset):
         image_name = self.images[idx]
         image_path = join(self.root_dir, self.images[idx])
 
-        image = mpimg.imread(image_path)
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # if there's an alpha channel, get rid of it
         if (len(image.shape) > 2 and image.shape[2] == 4):

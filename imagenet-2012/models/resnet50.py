@@ -104,7 +104,6 @@ class BottleneckBlock(nn.Module):
             out1,
             kernel_size=1,
             stride=stride,
-            padding=1,
             bias=False,
         )
         self.bn1 = nn.BatchNorm2d(out1)
@@ -126,7 +125,6 @@ class BottleneckBlock(nn.Module):
             out2,
             kernel_size=1,
             stride=1,
-            padding=1,
             bias=False,
         )
         self.bn3 = nn.BatchNorm2d(out2)
