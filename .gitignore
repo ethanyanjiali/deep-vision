@@ -5,7 +5,6 @@ ssh2.sh
 ssh3.sh
 ssh*.sh
 saved_models
-*.log
 __pycache__
 .ipynb_checkpoints/
 *.pyc
