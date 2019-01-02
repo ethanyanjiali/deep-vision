@@ -1,4 +1,4 @@
-# MNIST 
+# MNIST - PyTorch
 
 This directory contains the PyTorch implementation of famous cliassification models using public MNIST dataset
 
@@ -11,18 +11,6 @@ This directory contains the PyTorch implementation of famous cliassification mod
 |__data_load.py // data loader
 |__train.py // single machine training script
 ```
-
-## Set Up Dataset
-
-The dataset has already been downloaded to `dataset` directory under `mnist`. The data loader will work when the dataset directory looks like this:
-```
-dataset
-|__t10k-images-idx3-ubyte
-|__t10k-labels-idx1-ubyte
-|__train-images-idx3-ubyte
-|__train-labels-idx3-ubyte
-```
-However, if you want to download your own copy, here's the link: [http://yann.lecun.com/exdb/mnist/](http://yann.lecun.com/exdb/mnist/)
 
 ## System Requirement
 

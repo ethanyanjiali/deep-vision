@@ -2,11 +2,11 @@ PyTorch implementation of common image classification models and training script
 
 Datasets:
 
-- [ImageNet ILSVRC2012](http://www.image-net.org/challenges/LSVRC/2012/) (`imagenet-2012`)
-    * AlexNet
-    * VGG
-    * GoogLeNet, Inception
-    * ResNet
-- [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html) (`cifar-10`)
-- [MNIST](http://yann.lecun.com/exdb/mnist/) (`mnist`)
-    * LeNet
+- [ImageNet ILSVRC2012](imagenet-2012) 
+    - AlexNet
+    - VGG
+    - GoogLeNet, Inception
+    - ResNet
+- [CIFAR-10](cifar-10)
+- [MNIST](mnist)
+    - LeNet
