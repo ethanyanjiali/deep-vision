@@ -49,7 +49,7 @@ train_resnet34:
 
 resume_resnet34:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m resnet34 -c /home/ubuntu/cv-classification/imagenet-2012/saved_models/resnet34-2018-12-29T18:04:34-epoch-105.pt > "resnet34-${TIME}".log &
+	nohup python -u train.py -m resnet34 -c /home/ubuntu/cv-classification/imagenet-2012/saved_models/resnet34-2019-01-01T05:47:30-epoch-58.pt > "resnet34-${TIME}".log &
 
 visualize:
 	jupyter notebook ./notebooks
