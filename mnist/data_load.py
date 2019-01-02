@@ -15,7 +15,7 @@ class MnistDataset(Dataset):
     http://yann.lecun.com/exdb/mnist/
     """
 
-    def __init__(self, images_path, labels_path):
+    def __init__(self, images_path, labels_path, mean, std):
         """
         Args:
             images_path (string): the path to the images idx file
@@ -30,7 +30,16 @@ class MnistDataset(Dataset):
             self.images = []
             for i in range(16, len(b), 28 * 28):
                 image = np.asarray(list(b[i:i + 28 * 28]), dtype=np.uint8)
-                image = image.reshape((28, 28))
+                # convert to 28x28 2d array
+                image = np.reshape(image, (28, 28))
+                # pad zeros 28x28 -> 32x32
+                image = np.pad(image, ((2, 2), (2, 2)), 'constant')
+                # add one channel as color channel at first to match Tensor C x H x W
+                image = np.reshape(image, (1, 32, 32))
+                # convert ndarray to tensor
+                image = torch.from_numpy(image).float()
+                # normalize the image input using gien mean and std
+                image = F.normalize(image, mean, std)
                 self.images.append(image)
         with open(labels_path, 'rb') as labels_f:
             b = labels_f.read()
@@ -45,37 +54,4 @@ class MnistDataset(Dataset):
         return {
             'image': self.images[idx],
             'label': self.labels[idx],
-        }
-
-
-class ToTensor(object):
-    """Convert ndarrays in sample to Tensors."""
-
-    def __call__(self, sample):
-        image, label = sample['image'], sample['label']
-
-        # swap color axis because
-        # numpy image: H x W x C
-        # torch image: C X H X W
-        image = image.transpose((2, 0, 1))
-
-        return {
-            'image': torch.from_numpy(image).float(),
-            'label': label,
-        }
-
-
-class Normalize(object):
-    """Normalize the image by given pre-calculated mean and std"""
-
-    def __init__(self, mean, std):
-        self.mean = mean
-        self.std = std
-
-    def __call__(self, sample):
-        image, annotation = sample['image'], sample['label']
-
-        return {
-            'image': F.normalize(image, self.mean, self.std),
-            'label': label,
         }

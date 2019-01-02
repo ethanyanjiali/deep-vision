@@ -9,3 +9,4 @@ Datasets:
     * ResNet
 - [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html) (`cifar-10`)
 - [MNIST](http://yann.lecun.com/exdb/mnist/) (`mnist`)
+    * LeNet

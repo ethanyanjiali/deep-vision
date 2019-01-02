@@ -114,9 +114,9 @@ def evaluate(net, criterion, epoch, val_loader, acc_logger):
             output = net(images)
             loss = criterion(output, annotations)
             acc1, acc5 = accuracy(output, annotations, topk=(1, 5))
-            top1_acc += acc1[0]
-            top5_acc += acc5[0]
-            total_loss += loss
+            top1_acc += acc1[0].item()
+            top5_acc += acc5[0].item()
+            total_loss += loss.item()
 
         top1_acc = top1_acc / len(val_loader)
         top5_acc = top5_acc / len(val_loader)
