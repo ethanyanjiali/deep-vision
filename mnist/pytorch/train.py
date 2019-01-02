@@ -86,8 +86,8 @@ def load_checkpoint(checkpoint_path, net, optimizer, scheduler, loggers):
 
 def run_epochs(config, checkpoint_path):
     train_dataset = MnistDataset(
-        images_path='./dataset/train-images-idx3-ubyte',
-        labels_path='./dataset/train-labels-idx1-ubyte',
+        images_path='../dataset/train-images-idx3-ubyte',
+        labels_path='../dataset/train-labels-idx1-ubyte',
         # Global mean and standard deviation of the MNIST dataset
         mean=[0.1307],
         std=[0.3081],
@@ -99,8 +99,8 @@ def run_epochs(config, checkpoint_path):
         num_workers=config.get('num_workers'),
     )
     val_dataset = MnistDataset(
-        images_path='./dataset/t10k-images-idx3-ubyte',
-        labels_path='./dataset/t10k-labels-idx1-ubyte',
+        images_path='../dataset/t10k-images-idx3-ubyte',
+        labels_path='../dataset/t10k-labels-idx1-ubyte',
         mean=[0.1307],
         std=[0.3081],
     )

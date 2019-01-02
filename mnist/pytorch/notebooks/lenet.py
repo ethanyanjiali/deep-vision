@@ -21,15 +21,15 @@ import matplotlib.pyplot as plt
 
 # # Load model and dataset
 
-# In[19]:
+# In[2]:
 
 
 checkpoint = torch.load(
-    '../saved_models/lenet5_yanjiali_01_01_18.pt', map_location='cpu')
+    '../saved_models/lenet5-pt-yanjiali-010219.pt', map_location='cpu')
 
 val_dataset = MnistDataset(
-    images_path='../dataset/t10k-images-idx3-ubyte',
-    labels_path='../dataset/t10k-labels-idx1-ubyte',
+    images_path='../../dataset/t10k-images-idx3-ubyte',
+    labels_path='../../dataset/t10k-labels-idx1-ubyte',
     mean=[0.1307],
     std=[0.3081],
 )
@@ -47,7 +47,7 @@ net.load_state_dict(checkpoint['model'])
 net.eval()
 
 
-# In[20]:
+# In[3]:
 
 
 loggers = checkpoint['loggers']
@@ -57,34 +57,10 @@ val_loss = loggers['val_loss']
 val_top1_acc = loggers['val_top1_acc']
 val_top5_acc = loggers['val_top5_acc']
 
-# loggers = {
-#     'train_loss': train_loss,
-#     'val_loss': {
-#         'epochs': val_loss['epochs'],
-#         'value': [i.item() for i in val_loss['value']],
-#     },
-#     'val_top1_acc': {
-#         'epochs': val_top1_acc['epochs'],
-#         'value': [i.item() for i in val_top1_acc['value']],
-#     },
-#     'val_top5_acc': {
-#         'epochs': val_top5_acc['epochs'],
-#         'value': [i.item() for i in val_top5_acc['value']],
-#     }
-# }
-
-# torch.save({
-#     'epoch': checkpoint['epoch'],
-#     'model': checkpoint['model'],
-#     'optimizer': checkpoint['optimizer'],
-#     'scheduler': checkpoint['scheduler'],
-#     'loggers': loggers,
-# }, '../saved_models/lenet5_yanjiali_01_01_18.pt')
-
 
 # # Visualize training metrics
 
-# In[25]:
+# In[4]:
 
 
 plt.figure(figsize=(10,10))
@@ -112,7 +88,7 @@ plt.plot(val_top5_acc['value'])
 
 # # Visualize model output
 
-# In[3]:
+# In[5]:
 
 
 it = iter(val_loader)
@@ -120,15 +96,30 @@ data = next(it)
 
 plt.figure(figsize=(15,15))
 
+def predict(net, img):
+    with torch.no_grad():
+        output = net(img)
+        max_vals, max_indices = torch.topk(output, 1)
+        max_indices = torch.squeeze(max_indices, 0)
+        max_indices = max_indices.squeeze().tolist()
+        return max_indices
+
+img = data['image']
+digits = predict(net, img)
+
 for i in range(8):
     for j in range(8):
         idx = i * 8 + j
         plt.subplot(8, 8, idx + 1)
         img = data['image'][idx].squeeze().numpy()
-        digit = data['label'][idx].item()
+        actual = data['label'][idx]
+        predicted = digits[idx]
+        if actual != predicted:
+            plt.title(predicted, color='r')
+        else:
+            plt.title(predicted)
         plt.axis('off')
         plt.imshow(img, cmap='gray')
-        plt.title(digit)
         plt.grid(True)
 
 
