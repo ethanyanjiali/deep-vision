@@ -2,8 +2,8 @@
 import torch
 import torch.nn as nn
 
-# [1] https://arxiv.org/pdf/1409.1556.pdf
-# [2] https://arxiv.org/pdf/1502.01852.pdf
+# [1] VERY DEEP CONVOLUTIONAL NETWORKS FOR LARGE-SCALE IMAGE RECOGNITION
+# https://arxiv.org/pdf/1409.1556.pdf
 
 class VGG16(nn.Module):
     '''
@@ -115,15 +115,8 @@ class VGG16(nn.Module):
         # https://discuss.pytorch.org/t/what-is-the-default-initialization-of-a-conv2d-layer-and-linear-layer/16055/2
         # which actually refers to http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf 4.6 Initializing the weights
         #
-        # "The initialisation of the network weights is important, since bad initialisation can stall learning due
-        # to the instability of gradient in deep nets. To circumvent this problem, we began with training
-        # the configuration A (Table 1), shallow enough to be trained with random initialisation. Then, when
-        # training deeper architectures, we initialised the first four convolutional layers and the last three fullyconnected
-        # layers with the layers of net A (the intermediate layers were initialised randomly)"[1]
-        #
-        # However this would be too much hassle for us. So I refer to [2]
-        # in 2.2. Initialization of Filter Weights for Rectifiers, it gives details about how to initialize weights
-        # that allows for extremely deep models to converge. This has been implemented in PyTroch as kaiming_normal
+        # "It is worth noting that after the paper submission we found that it is possible to initialise the weights without
+        # pre-training by using the random initialisation procedure of Glorot & Bengio (2010)."[1]
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.xavier_normal_(m.weight)

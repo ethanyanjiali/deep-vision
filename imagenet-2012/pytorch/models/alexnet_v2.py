@@ -5,7 +5,8 @@ import torch.nn.functional as Func
 # can use the below import should you choose to initialize the weights of your Net
 import torch.nn.init as Init
 
-# [1] One weird trick for parallelizing convolutional neural networks https://arxiv.org/pdf/1404.5997.pdf
+# [1] One weird trick for parallelizing convolutional neural networks
+# https://arxiv.org/pdf/1404.5997.pdf
 
 
 class AlexNetV2(nn.Module):

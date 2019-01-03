@@ -1,26 +1,65 @@
 import argparse
 import time
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchsummary import summary
+from torchvision import transforms
 
-from data_load import MnistDataset
-from models.lenet5 import LeNet5
+from data_load import (CenterCrop, ImageNet2012Dataset, Normalize, RandomCrop,
+                       RandomHorizontalFlip, Rescale, ToTensor)
+from models.alexnet_v1 import AlexNetV1
+from models.alexnet_v2 import AlexNetV2
+from models.inception_v1 import InceptionV1
+from models.resnet34 import ResNet34
+from models.vgg16 import VGG16
+from models.vgg19 import VGG19
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model_dir = './saved_models/'
+desired_image_shape = torch.empty(3, 224, 224).size()
 
 training_config = {
-    'lenet5': {
-        'name': 'lenet5',
-        'batch_size': 64,
-        'num_workers': 2,
-        'model': LeNet5,
+    'alexnet1': {
+        'name': 'alexnet1',
+        # "We trained our models using stochastic gradient descent with a batch size
+        # of 128 examples" alexnet1.[1]
+        'batch_size': 128,
+        'num_workers': 1,
+        'model': AlexNetV1,
         'optimizer': optim.SGD,
+        # "...momentum of 0.9, and weight decay of 0.0005...The learning rate was
+        # initialized at 0.01..." alexnet1.[1]
         'optimizer_params': {
-            'lr': 0.1,
+            'lr': 0.01,
+            'momentum': 0.9,
+            'weight_decay': 0.0005,
+        },
+        # "The heuristic which we followed was to divide the learning rate by 10
+        # when the validation error rate stopped improving withthe current
+        # learning rate." alextnet1.[1]
+        'scheduler': optim.lr_scheduler.ReduceLROnPlateau,
+        'scheduler_params': {
+            'factor': 0.1,
+            'mode': 'max',
+        },
+        'total_epochs': 200,
+    },
+    'alexnet2': {
+        'name': 'alexnet2',
+        'batch_size': 128,
+        'num_workers': 16,
+        'model': AlexNetV2,
+        'optimizer': optim.SGD,
+        # "I trained all models for exactly 90 epochs, and multiplied the learning rate
+        # by 250−1/3 at 25%, 50%, and 75% training progress" alexnet2.[1]
+        # "...momentum may be less necessary...
+        # but in my experiments I used µ = 0.9..." alexnet2.[1]
+        # I used the same lr policy as alexnet1 above though
+        'optimizer_params': {
+            'lr': 0.01,
             'momentum': 0.9,
             'weight_decay': 0.0005,
         },
@@ -30,8 +69,141 @@ training_config = {
             'mode': 'max',
         },
         'total_epochs': 200,
+    },
+    'vgg16': {
+        'name': 'vgg16',
+        # "The batch size was set to 256" vgg16.[1]
+        # The original paper trained on multiple GPUs, but here I just use one P100 which
+        # has 16G memory. Batch size 256 will cause "CUDA out of memory" issue.
+        'batch_size': 128,
+        'num_workers': 16,
+        'model': VGG16,
+        # "...momentum to 0.9. The training was regularised by
+        # weight decay (the L2 penalty multiplier set to 5*10^4) and dropout regularisation
+        # for the first two fully-connected layers (dropout ratio set to 0.5).
+        # The learning rate was initially set to 10−2" vgg16.[1]
+        'optimizer': optim.SGD,
+        'optimizer_params': {
+            'lr': 0.01,
+            'momentum': 0.9,
+            'weight_decay': 0.0005,
+        },
+        'scheduler': optim.lr_scheduler.StepLR,
+        'scheduler_params': {
+            'step_size': 10,
+            'gamma': 0.5,
+        },
+        'total_epochs': 200,
+    },
+    'vgg19': {
+        'name': 'vgg19',
+        # Please refer to vgg16
+        'batch_size': 128,
+        'num_workers': 16,
+        'model': VGG16,
+        'optimizer': optim.SGD,
+        'optimizer_params': {
+            'lr': 0.01,
+            'momentum': 0.9,
+            'weight_decay': 0.0005,
+        },
+        'scheduler': optim.lr_scheduler.StepLR,
+        'scheduler_params': {
+            'step_size': 10,
+            'gamma': 0.5,
+        },
+        'total_epochs': 200,
+    },
+    'inception1': {
+        'name': 'inception1',
+        'batch_size': 128,
+        'num_workers': 16,
+        'model': InceptionV1,
+        # "Our training used asynchronous stochastic gradient descent with 0.9 momentum,
+        # fixed learning rate schedule (decreasing the learning rate by 4% every 8 epochs)."[1]
+        'optimizer': optim.SGD,
+        'optimizer_params': {
+            'lr': 0.01,
+            'momentum': 0.9,
+            'weight_decay': 0.0002,
+        },
+        # The original LR policy is too slow as reported here https://github.com/BVLC/caffe/tree/master/models/bvlc_googlenet
+        'scheduler': optim.lr_scheduler.LambdaLR,
+        # Hence I use polynomial decay lr policy as recommended here:
+        # https://github.com/BVLC/caffe/blob/master/models/bvlc_googlenet/quick_solver.prototxt#L8
+        'scheduler_params': {
+            'lr_lambda': lambda epoch: (1 - epoch / 60)**0.5 if epoch < 60 else 0.01,
+        },
+        'total_epochs': 200,
+    },
+    'resnet34': {
+        'name': 'resnet34',
+        # "We use SGD with a mini-batch size of 256." resnet34.[1]
+        # Aslo from Kaiming's disclaimer here https://github.com/KaimingHe/deep-residual-networks#disclaimer-and-known-issues
+        # Since he uses 8 GPU and 32 for each GPU
+        # So for ResNet I will be using 8 Nvidia K80 GPU instead
+        # Note that this batch size won't fit on single P100 16G GPU
+        'batch_size': 256,
+        'num_workers': 16,
+        'model': ResNet34,
+        'optimizer': optim.SGD,
+        'optimizer_params': {
+            'lr': 0.1,
+            'momentum': 0.9,
+            'weight_decay': 0.0001,
+        },
+        # "The learning rate starts from 0.1 and is divided by 10 when the error plateaus,
+        # We use a weight decay of 0.0001 and a momentum of 0.9."" resnet34.[1]
+        'scheduler': optim.lr_scheduler.ReduceLROnPlateau,
+        'scheduler_params': {
+            'factor': 0.1,
+            'mode': 'max', # I'm using accuarcy instead of error rate so it's max here
+        },
+        'total_epochs': 200,
     }
 }
+
+
+def initialize_train_loader(transform, config):
+    train_dataset = ImageNet2012Dataset(
+        root_dir='../dataset/train_flatten/',
+        labels_file='../dataset/synsets.txt',
+        transform=transform,
+    )
+    print('Number of train images: ', len(train_dataset))
+
+    assert train_dataset[0]['image'].size(
+    ) == desired_image_shape, "Wrong train image dimension!"
+
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=config.get('batch_size'),
+        shuffle=True,
+        num_workers=config.get('num_workers'),
+    )
+
+    return train_loader
+
+
+def initialize_val_loader(transform, config):
+    val_dataset = ImageNet2012Dataset(
+        root_dir='../dataset/val_flatten/',
+        labels_file='../dataset/synsets.txt',
+        transform=transform,
+    )
+    print('Number of validation images: ', len(val_dataset))
+
+    assert val_dataset[0]['image'].size(
+    ) == desired_image_shape, "Wrong validation image dimension"
+
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=config.get('batch_size'),
+        shuffle=False,
+        num_workers=config.get('num_workers'),
+    )
+
+    return val_loader
 
 
 def initialize_loggers():
@@ -85,40 +257,42 @@ def load_checkpoint(checkpoint_path, net, optimizer, scheduler, loggers):
 
 
 def run_epochs(config, checkpoint_path):
-    train_dataset = MnistDataset(
-        images_path='../dataset/train-images-idx3-ubyte',
-        labels_path='../dataset/train-labels-idx1-ubyte',
-        # Global mean and standard deviation of the MNIST dataset
-        mean=[0.1307],
-        std=[0.3081],
-    )
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=config.get('batch_size'),
-        shuffle=True,
-        num_workers=config.get('num_workers'),
-    )
-    val_dataset = MnistDataset(
-        images_path='../dataset/t10k-images-idx3-ubyte',
-        labels_path='../dataset/t10k-labels-idx1-ubyte',
-        mean=[0.1307],
-        std=[0.3081],
-    )
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=config.get('batch_size'),
-        shuffle=False,
-        num_workers=config.get('num_workers'),
-    )
+    print("CUDA is available: {}".format(torch.cuda.is_available()))
+
+    # Define data loader: data preprocessing and augmentation
+    # I use same procedures for all models that consumes imagenet-2012 dataset for simplicity
+    imagenet_train_transform = transforms.Compose([
+        Rescale(256),
+        RandomHorizontalFlip(0.5),
+        RandomCrop(224),
+        ToTensor(),
+        # https://github.com/pytorch/examples/blob/master/imagenet/main.py#L195
+        # this is pre-calculated mean and std of imagenet dataset
+        Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
+    val_transform = transforms.Compose([
+        Rescale(256),
+        CenterCrop(224),
+        ToTensor(),
+        Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
+    train_loader = initialize_train_loader(imagenet_train_transform, config)
+    val_loader = initialize_val_loader(imagenet_val_transform, config)
 
     # Define the neural network.
     Model = config.get('model')
     net = Model()
+    # Wrap it with DataParallel to train with multiple GPUs
+    if torch.cuda.device_count() > 1:
+        print("Using", torch.cuda.device_count(), "GPUs!")
+        net = nn.DataParallel(net)
     # transfer variables to GPU if present
     net.to(device=device)
 
-    # Print the network structure given 1x32x32 input
-    summary(net, (1, 32, 32))
+    # Print the network structure given 3x32x32 input
+    summary(net, (3, 32, 32))
 
     # Define the loss function. CrossEntrophyLoss is the most common one for classification task.
     criterion = nn.CrossEntropyLoss()
@@ -174,7 +348,7 @@ def run_epochs(config, checkpoint_path):
             loggers,
         )
 
-        # for ReduceLROnPlateau scheduler, we need to use val_loss as metric
+        # for ReduceLROnPlateau scheduler, we need to use top1_acc as metric
         if isinstance(scheduler, optim.lr_scheduler.ReduceLROnPlateau):
             scheduler.step(top1_acc)
         else:
@@ -306,14 +480,13 @@ def accuracy(output, target, topk=(1, )):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    supported_models = list(training_config.keys())
     parser.add_argument(
         "-m",
         "--model",
         type=str,
         required=True,
-        choices=[
-            "lenet5",
-        ],
+        choices=supported_models,
         help="specify model name",
     )
     parser.add_argument(
