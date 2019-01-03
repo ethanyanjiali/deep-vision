@@ -305,15 +305,18 @@ def run_epochs(config, checkpoint_path):
     # Define the neural network.
     Model = config.get('model')
     net = Model()
+
+    # Print the network structure given 3x32x32 input
+    # need to put this before DataParallel to avoid "Expected more than 1 value per channel when training" error
+    # https://github.com/pytorch/pytorch/issues/4534
+    summary(net, (3, 32, 32))
+
     # Wrap it with DataParallel to train with multiple GPUs
     if torch.cuda.device_count() > 1:
         print("Using", torch.cuda.device_count(), "GPUs!")
         net = nn.DataParallel(net)
     # transfer variables to GPU if present
     net.to(device=device)
-
-    # Print the network structure given 3x32x32 input
-    summary(net, (3, 32, 32))
 
     # Define the loss function. CrossEntrophyLoss is the most common one for classification task.
     criterion = nn.CrossEntropyLoss()
