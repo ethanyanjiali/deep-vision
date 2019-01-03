@@ -1,6 +1,0 @@
-{
-    "python.pythonPath": "env/bin/python",
-    "python.linting.flake8Args": [
-        "--max-line-length 100"
-    ]
-}
