@@ -1,25 +1,23 @@
-# ImageNet ILSVRC2012
+# ImageNet ILSVRC2012 - PyTorch
 
-This directory contains the code to replicate famous cliassification models using public ImageNet ILSVRC2012 dataset
+This directory contains the PyTorch code to replicate famous cliassification models with public ImageNet ILSVRC2012 dataset
 
 ## Directory Structure
+
 ```
-|__dataset // holds dataset for training and validation
-|__labels  // some misc label files for evaluation
-|__notebooks // Jupyter notebooks to visualize the model inference
-|__logs // training logs for the models I trained
-|__scripts // some helper scripts to prepare dataset
-|__test_images // test images for inference visuliazation
-|__models // model network structure implementations
-|__data_load.py // data loader
-|__train.py // single machine training script
-|__train_dist.py // distributed training script
-|__serve.py // a local web app for inference visualization
+pytorch
+|__notebooks        // Jupyter notebooks to visualize the model inference
+|__logs             // training logs for the models I trained
+|__test_images      // test images for inference visuliazation
+|__models           // model network structure pytorch implementations
+|__data_load.py     // data loader
+|__train.py         // single machine training script
+|__train_dist.py    // distributed training script
 ```
 
 ## Set Up Dataset
 
-Follow the instruction here [DATASET.md](DATASET.md) to download the ILSVRC2012 dataset first.
+Follow the instruction here [DATASET.md](../DATASET.md) to download the ILSVRC2012 dataset first.
 
 ## System Requirement
 

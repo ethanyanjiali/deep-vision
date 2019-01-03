@@ -13,7 +13,7 @@ from torchvision import transforms
 import cv2
 
 import json
-with open('../labels/indices.json') as f:
+with open('../../dataset_utils/indices.json') as f:
     labels = json.load(f)
     
 import os

@@ -34,8 +34,8 @@ val_transform = transforms.Compose([
 
 def initialize_train_loader(transform, batch_size):
     train_dataset = ImageNet2012Dataset(
-        root_dir='./dataset/train_flatten/',
-        labels_file='./dataset/synsets.txt',
+        root_dir='../dataset/train_flatten/',
+        labels_file='../dataset/synsets.txt',
         transform=transform,
     )
     print('Number of train images: ', len(train_dataset))
@@ -51,8 +51,8 @@ def initialize_train_loader(transform, batch_size):
 
 def initialize_validation_loader(transform):
     val_dataset = ImageNet2012Dataset(
-        root_dir='./dataset/val_flatten/',
-        labels_file='./dataset/synsets.txt',
+        root_dir='../dataset/val_flatten/',
+        labels_file='../dataset/synsets.txt',
         transform=transform,
     )
     print('Number of validation images: ', len(val_dataset))
