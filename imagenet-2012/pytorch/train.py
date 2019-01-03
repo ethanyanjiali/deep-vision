@@ -292,7 +292,7 @@ def run_epochs(config, checkpoint_path):
         Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
-    val_transform = transforms.Compose([
+    imagenet_val_transform = transforms.Compose([
         Rescale(256),
         CenterCrop(224),
         ToTensor(),
