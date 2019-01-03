@@ -37,27 +37,64 @@ There're few tips before you acutally start training:
 
 ## AlexNet
 Training Command for V1 and V2:
+
+### AlexNet V1
 ```
 make train_alexnet1
-make train_alexnet2
 ```
 
-Among two versions, I trained AlexNet V2 which achieves 50.98% top 1 accuracy. Some training notes:
+### AlexNet V2
+```
+make train_alexnet2
+```
+Among two versions, I trained AlexNet V2 which achieves. Some training notes: 
 
 - I manually changed learning rate multiple times through training. But used a LR scheduler to in the final version with milestone of 30, 45, 80, 95 epochs and 0.1 decay.
 - With default weight init from PyTorch, the loss will stop decreasing around 4.5 so I used Kaiming init instead.
 - Data augmentation part is not exactly same with the original paper.
-- I modified the log format few times during training, so the log file is not consistent everywhere.
+- I modified the log format few times during training, so the log file is not consistent everywhere. 
+
+**Accuracy**: 50.98% (Top-1)
 
 **Training Log**: [alexnet2.txt](logs/alexnet2.txt)
 
 **Pretrained Model File**: [alexnet_v2_yanjiali_12_26_18.pt](https://drive.google.com/file/d/1EGYtcLsEV2ZFv6sSCKNd_fSFxtwI2cYV/view?usp=sharing)
 
-**Notebook Visualization**: [alexnet.ipynb](notebooks/alexnet.ipynb)
+**Notebook Visualization**: [AlexNetV2.ipynb](notebooks/AlexNetV2.ipynb)
 
 ## VGG
-Training Command for 16 and 19:
+
+## ResNet
+
+### ResNet-34
 ```
-make train_vgg16
-make train_vgg19
+make train_resnet34
 ```
+
+- This model is trained by an old training script (`train_old.py`), therefore some log format might differ from those newer ones.
+- Unlike the new training config, I trained resnet-34 with a batch size of 512. Since I used 8 GPUs, it's 64 batch size per GPU. Kaiming did mentioned that different batch size might degrad the accuracy. So I advice still stick to batch size of 256 when you use 8 GPUs.
+- The best accuracy is achieved at epoch 93, but I trained until epoch 129
+
+**Accuracy**: 68.96% (Top-1), 88.61% (Top-5)
+
+**Training Log**: [resnet34-yanjiali-010319.log](logs/resnet34-yanjiali-010319.log)
+
+**Pretrained Model File**: [resnet34-pt-yanjiali-010319.pt](https://drive.google.com/file/d/1M_LY94x1YYx5EYtqzQrXoASnUa-VcRHx/view?usp=sharing)
+
+**Notebook Visualization**: [ResNet34.ipynb](notebooks/ResNet34.ipynb)
+
+### ResNet-50
+
+## FAQ
+
+> I received `Missing key(s) in state_dict:...` when I load the PyTorch model file
+
+It might because I used DataParallel to train. I tried to remove that DataParallel prefix from state dict, but in case you still see that, either load state dict with DataParallel wrapped model, or do the following:
+```python
+from collections import OrderedDict
+new_state_dict = OrderedDict()
+for k, v in state_dict.items():
+    name = k[7:] # remove 'module.' of dataparallel
+    new_state_dict[name]=v
+```
+For more infor: https://discuss.pytorch.org/t/solved-keyerror-unexpected-key-module-encoder-embedding-weight-in-state-dict/1686
