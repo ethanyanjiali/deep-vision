@@ -51,5 +51,9 @@ resume_resnet34:
 	mkdir -p ./saved_models
 	nohup python -u train.py -m resnet34 -c /home/ubuntu/cv-classification/imagenet-2012/saved_models/resnet34-2019-01-01T05:47:30-epoch-58.pt > "resnet34-${TIME}".log &
 
+train_resnet34:
+	mkdir -p ./saved_models
+	nohup python -u train.py -m resnet50 > "resnet50-${TIME}".log &
+
 visualize:
 	jupyter notebook ./notebooks
