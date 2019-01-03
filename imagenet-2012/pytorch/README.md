@@ -34,6 +34,7 @@ There're few tips before you acutally start training:
 - There're multiple options defined in `train.py`. For example, model to train `-m`, and checkpoint file to use `-c`.
 - There're also some examples for how to resume previous paused training in the Makefile.
 - To run the notebook, please download the pretrained model to `saved_model` directory first.
+- `data_load.py` implements some common data preprocessing and augmentation by using numpy. I could have use PyTorch built-in utils but this makes the process more clear
 
 ## AlexNet
 Training Command for V1 and V2:
@@ -52,7 +53,8 @@ Among two versions, I trained AlexNet V2 which achieves. Some training notes:
 - I manually changed learning rate multiple times through training. But used a LR scheduler to in the final version with milestone of 30, 45, 80, 95 epochs and 0.1 decay.
 - With default weight init from PyTorch, the loss will stop decreasing around 4.5 so I used Kaiming init instead.
 - Data augmentation part is not exactly same with the original paper.
-- I modified the log format few times during training, so the log file is not consistent everywhere. 
+- I modified the log format few times during training, so the log file is not consistent everywhere.
+- Color jittering was not applied for this training
 
 **Accuracy**: 50.98% (Top-1)
 
@@ -74,6 +76,7 @@ make train_resnet34
 - This model is trained by an old training script (`train_old.py`), therefore some log format might differ from those newer ones.
 - Unlike the new training config, I trained resnet-34 with a batch size of 512. Since I used 8 GPUs, it's 64 batch size per GPU. Kaiming did mentioned that different batch size might degrad the accuracy. So I advice still stick to batch size of 256 when you use 8 GPUs.
 - The best accuracy is achieved at epoch 93, but I trained until epoch 129
+- Color jittering was not applied for this training
 
 **Accuracy**: 68.96% (Top-1), 88.61% (Top-5)
 

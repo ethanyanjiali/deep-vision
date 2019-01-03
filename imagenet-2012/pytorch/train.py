@@ -9,11 +9,12 @@ from torchsummary import summary
 from torchvision import transforms
 
 from data_load import (CenterCrop, ImageNet2012Dataset, Normalize, RandomCrop,
-                       RandomHorizontalFlip, Rescale, ToTensor)
+                       RandomHorizontalFlip, Rescale, ToTensor, ColorJitter)
 from models.alexnet_v1 import AlexNetV1
 from models.alexnet_v2 import AlexNetV2
 from models.inception_v1 import InceptionV1
 from models.resnet34 import ResNet34
+from models.resnet50 import ResNet50
 from models.vgg16 import VGG16
 from models.vgg19 import VGG19
 
@@ -160,6 +161,25 @@ training_config = {
             'mode': 'max', # I'm using accuarcy instead of error rate so it's max here
         },
         'total_epochs': 200,
+    },
+    'resnet50': {
+        # Please refer to resnet 34
+        'name': 'resnet50',
+        'batch_size': 256,
+        'num_workers': 16,
+        'model': ResNet50,
+        'optimizer': optim.SGD,
+        'optimizer_params': {
+            'lr': 0.1,
+            'momentum': 0.9,
+            'weight_decay': 0.0001,
+        },
+        'scheduler': optim.lr_scheduler.ReduceLROnPlateau,
+        'scheduler_params': {
+            'factor': 0.1,
+            'mode': 'max',
+        },
+        'total_epochs': 200,
     }
 }
 
@@ -265,6 +285,7 @@ def run_epochs(config, checkpoint_path):
         Rescale(256),
         RandomHorizontalFlip(0.5),
         RandomCrop(224),
+        ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0),
         ToTensor(),
         # https://github.com/pytorch/examples/blob/master/imagenet/main.py#L195
         # this is pre-calculated mean and std of imagenet dataset
