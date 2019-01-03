@@ -55,9 +55,9 @@ training_config = {
         'model': AlexNetV2,
         'optimizer': optim.SGD,
         # "I trained all models for exactly 90 epochs, and multiplied the learning rate
-        # by 250−1/3 at 25%, 50%, and 75% training progress" alexnet2.[1]
+        # by 250^(1/3) at 25%, 50%,and 75% training progress" alexnet2.[1]
         # "...momentum may be less necessary...
-        # but in my experiments I used µ = 0.9..." alexnet2.[1]
+        # but in my experiments I used mu = 0.9..." alexnet2.[1]
         # I used the same lr policy as alexnet1 above though
         'optimizer_params': {
             'lr': 0.01,
@@ -82,7 +82,7 @@ training_config = {
         # "...momentum to 0.9. The training was regularised by
         # weight decay (the L2 penalty multiplier set to 5*10^4) and dropout regularisation
         # for the first two fully-connected layers (dropout ratio set to 0.5).
-        # The learning rate was initially set to 10−2" vgg16.[1]
+        # The learning rate was initially set to 10^(-2)" vgg16.[1]
         'optimizer': optim.SGD,
         'optimizer_params': {
             'lr': 0.01,
@@ -397,12 +397,12 @@ def train(train_loader, net, criterion, optimizer, epoch, loggers):
     print("Start training epoch {}".format(epoch))
 
     for batch_i, data in enumerate(train_loader):
-        # extract images and labels
+        # extract images and annotations
         image = data.get('image')
-        label = data.get('label')
+        annotation = data.get('annotation')
 
         # annotation is an integer index
-        label = label.to(device=device, dtype=torch.long)
+        annotation = annotation.to(device=device, dtype=torch.long)
         # PyTorch likes float type for image. So we convert to it.
         image = image.to(device=device, dtype=torch.float)
 
@@ -410,7 +410,7 @@ def train(train_loader, net, criterion, optimizer, epoch, loggers):
         output = net(image)
 
         # calculate the loss
-        loss = criterion(output, label)
+        loss = criterion(output, annotation)
 
         # https://discuss.pytorch.org/t/why-do-we-need-to-set-the-gradients-manually-to-zero-in-pytorch/4903/8
         # https://stackoverflow.com/questions/44732217/why-do-we-need-to-explicitly-call-zero-grad
@@ -455,14 +455,14 @@ def validate(val_loader, net, criterion, epoch, loggers):
     with torch.no_grad():
         for batch_i, data in enumerate(val_loader):
             image = data.get('image')
-            label = data.get('label')
+            annotation = data.get('annotation')
 
-            label = label.to(device=device, dtype=torch.long)
+            annotation = annotation.to(device=device, dtype=torch.long)
             image = image.to(device=device, dtype=torch.float)
 
             output = net(image)
-            loss = criterion(output, label)
-            acc1, acc5 = accuracy(output, label, topk=(1, 5))
+            loss = criterion(output, annotation)
+            acc1, acc5 = accuracy(output, annotation, topk=(1, 5))
             top1_acc += acc1[0]
             top5_acc += acc5[0]
             total_loss += loss
