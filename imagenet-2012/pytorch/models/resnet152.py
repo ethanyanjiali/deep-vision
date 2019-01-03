@@ -95,7 +95,7 @@ class ResNet152(nn.Module):
 
 class BottleneckBlock(nn.Module):
     def __init__(self, in_channels, out1, out2, stride=1, downsample=False):
-        super(BasicBlock, self).__init__()
+        super(BottleneckBlock, self).__init__()
         # According to Figure 5 Right in [1]
         # 1x1 reduce dimension
         self.conv1 = nn.Conv2d(
