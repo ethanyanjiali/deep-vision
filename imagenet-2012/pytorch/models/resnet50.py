@@ -31,8 +31,7 @@ class ResNet50(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         # "3×3 max pool, stride 2" in Table 1 of [1]
         # (112 - 3) / 2 + 1 = 56
-        self.maxpool = nn.MaxPool2d(
-            kernel_size=3, stride=2, padding=1)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         # this refers to Table 1 in [1] 50-layer column
         self.conv2x = self._make_blocks(3, 64, 64, 256)
@@ -79,7 +78,7 @@ class ResNet50(nn.Module):
                 out2,
                 out1,
                 out2,
-            )
+            ))
         return nn.Sequential(*blocks)
 
     def _initialize_weights(self):
