@@ -114,6 +114,8 @@ def run_epochs(config, checkpoint_path):
     # Define the neural network.
     Model = config.get('model')
     net = Model()
+    # transfer variables to GPU if present
+    net.to(device=device)
 
     # Print the network structure given 1x32x32 input
     summary(net, (1, 32, 32))
