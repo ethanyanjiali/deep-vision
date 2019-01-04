@@ -105,7 +105,7 @@ training_config = {
         # To differentiate from VGG-16, I tried something different here
         'optimizer': optim.Adam,
         'optimizer_params': {
-            'lr': 0.1,
+            'lr': 0.05,
             'weight_decay': 0.0005,
         },
         'scheduler': optim.lr_scheduler.StepLR,
