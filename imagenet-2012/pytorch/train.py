@@ -101,7 +101,7 @@ training_config = {
         # Please refer to vgg16
         'batch_size': 128,
         'num_workers': 16,
-        'model': VGG16,
+        'model': VGG19,
         # To differentiate from VGG-16, I tried something different here
         'optimizer': optim.Adam,
         'optimizer_params': {
