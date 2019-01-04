@@ -66,13 +66,12 @@ class ResNet34(nn.Module):
         blocks = []
         # this first block should downsample
         # "Downsampling is performed by conv3 1, conv4 1, and conv5 1 with a stride of 2."[1]
-        downsample = stride == 2
         blocks.append(
             BasicBlock(
                 in_channels,
                 out_channels,
                 stride=stride,
-                downsample=downsample,
+                downsample=True,
             ))
         for i in range(1, num_blocks):
             blocks.append(BasicBlock(out_channels, out_channels))

@@ -65,14 +65,13 @@ class ResNet152(nn.Module):
         blocks = []
         # this first block should downsample
         # "Downsampling is performed by conv3 1, conv4 1, and conv5 1 with a stride of 2."[1]
-        downsample = stride == 2
         blocks.append(
             BottleneckBlock(
                 in_channels,
                 out1,
                 out2,
                 stride=stride,
-                downsample=downsample,
+                downsample=True,
             ))
         for i in range(1, num_blocks):
             blocks.append(BottleneckBlock(
