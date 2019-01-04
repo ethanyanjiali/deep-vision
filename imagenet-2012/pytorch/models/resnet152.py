@@ -34,10 +34,10 @@ class ResNet152(nn.Module):
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         # this refers to Table 1 in [1] 152-layer column
-        self.conv2x = self._make_blocks(3, 64, 64, 256)
-        self.conv3x = self._make_blocks(8, 256, 128, 512)
-        self.conv4x = self._make_blocks(36, 512, 256, 1024)
-        self.conv5x = self._make_blocks(3, 1024, 512, 2048)
+        self.conv2x = self._make_blocks(3, 64, 64, 256, stride=1)
+        self.conv3x = self._make_blocks(8, 256, 128, 512, stride=2)
+        self.conv4x = self._make_blocks(36, 512, 256, 1024, stride=2)
+        self.conv5x = self._make_blocks(3, 1024, 512, 2048, stride=2)
 
         # in order to use FC layer, we need to downsample to 1x1x2048
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
@@ -61,17 +61,18 @@ class ResNet152(nn.Module):
         output = self.linear(x)
         return output
 
-    def _make_blocks(self, num_blocks, in_channels, out1, out2):
+    def _make_blocks(self, num_blocks, in_channels, out1, out2, stride):
         blocks = []
         # this first block should downsample
         # "Downsampling is performed by conv3 1, conv4 1, and conv5 1 with a stride of 2."[1]
+        downsample = stride == 2
         blocks.append(
             BottleneckBlock(
                 in_channels,
                 out1,
                 out2,
-                stride=2,
-                downsample=True,
+                stride=stride,
+                downsample=downsample,
             ))
         for i in range(1, num_blocks):
             blocks.append(BottleneckBlock(
