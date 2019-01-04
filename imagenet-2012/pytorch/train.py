@@ -102,10 +102,10 @@ training_config = {
         'batch_size': 128,
         'num_workers': 16,
         'model': VGG16,
-        'optimizer': optim.SGD,
+        # To differentiate from VGG-16, I tried something different here
+        'optimizer': optim.Adam,
         'optimizer_params': {
-            'lr': 0.01,
-            'momentum': 0.9,
+            'lr': 0.1,
             'weight_decay': 0.0005,
         },
         'scheduler': optim.lr_scheduler.StepLR,

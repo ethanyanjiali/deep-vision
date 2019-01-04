@@ -90,7 +90,7 @@ make train_resnet34
 
 To load the model file I trained, please do:
 
-```
+```python
 checkpoint = torch.load(
     '../saved_models/alexnet2-pt-yanjiali-010319.pt',
     map_location='cpu',
