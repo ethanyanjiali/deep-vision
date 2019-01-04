@@ -1,6 +1,6 @@
 # ImageNet ILSVRC2012 - PyTorch
 
-This directory contains the PyTorch code to replicate famous cliassification models with public ImageNet ILSVRC2012 dataset
+This directory contains the PyTorch code to replicate famous classification models with public ImageNet ILSVRC2012 dataset
 
 ## Directory Structure
 

@@ -1,14 +1,15 @@
 # MNIST - PyTorch
 
-This directory contains the PyTorch implementation of famous cliassification models using public MNIST dataset
+This directory contains the PyTorch implementation of famous classification models using public MNIST dataset
 
 ## Directory Structure
+
 ```
-|__notebooks // Jupyter notebooks to visualize the model inference
-|__logs // training logs for the models I trained
-|__models // model network structure implementations
-|__data_load.py // data loader
-|__train.py // single machine training script
+|__notebooks        // Jupyter notebooks to visualize the model inference
+|__logs             // training logs for the models I trained
+|__models           // model network structure implementations
+|__data_load.py     // data loader
+|__train.py         // single machine training script
 ```
 
 ## System Requirement
