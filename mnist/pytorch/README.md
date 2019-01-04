@@ -40,7 +40,7 @@ There're multiple variation of LeNet, and here I've only implemented LeNet-5 as 
 - The other difference is that instead of using RBF, I used a 10-way softmax as output. This makes things easier.
 - Initially I used val_loss as metrics for LR scheduler, but changed to val_top1_acc later. The training log reflects the former.
 
-**Training Log**: [logs/lenet5-pt-yanjiali-010219.log](logs/lenet5-pt-yanjiali-010219.log)
+**Training Log**: [lenet5-pt-yanjiali-010219.log](logs/lenet5-pt-yanjiali-010219.log)
 
 **Pretrained Model File**: [lenet5-pt-yanjiali-010219.pt](https://drive.google.com/file/d/1lrvO1aRgE9aMSTJJbb3Gx4wriu7PcdOu/view?usp=sharing)
 

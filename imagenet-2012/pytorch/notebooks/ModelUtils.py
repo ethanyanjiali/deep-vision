@@ -3,7 +3,7 @@
 
 # # Some useful utils for debugging the training and models
 
-# In[1]:
+# In[2]:
 
 
 import torch
@@ -21,12 +21,12 @@ from torchvision.transforms import Compose
 import matplotlib.pyplot as plt
 
 
-# In[2]:
+# In[3]:
 
 
 def fix_dataparallel_state_dict():
     checkpoint = torch.load(
-        '../saved_models/resnet34-yanjiali-010319-epoch-129.pt', map_location='cpu')
+        '../saved_models/alexnet2-yanjiali-010319.pt', map_location='cpu')
 
     state_dict = checkpoint['model']
 
@@ -53,7 +53,13 @@ def fix_dataparallel_state_dict():
         checkpoint['loss_logger'],
         'acc_logger':
         checkpoint['acc_logger'],
-    }, '../saved_models/resnet34-yanjiali-010319-epoch-129.pt')
+    }, '../saved_models/alexnet2-yanjiali-010319.pt')
+
+
+# In[5]:
+
+
+# fix_dataparallel_state_dict()
 
 
 # # Visualize Transform - Rescale, HFlip, RandomCrop, ColorJitter

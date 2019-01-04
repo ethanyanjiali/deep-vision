@@ -57,7 +57,7 @@ def predict(net, img):
 
 
 checkpoint = torch.load(
-    '../saved_models/alexnet_v2_yanjiali_12_26_18.pt', map_location='cpu')
+    '../saved_models/alexnet2-pt-yanjiali-010319.pt', map_location='cpu')
 
 from alexnet_v2 import AlexNetV2
 net = AlexNetV2()
@@ -65,13 +65,20 @@ net.load_state_dict(checkpoint['model'])
 net.eval()
 
 losses = [i/10 for i in checkpoint["loss_logger"]]
+acc = checkpoint["acc_logger"]
 batches = [i for i in range(1, len(losses) + 1)]
 
 plt.figure(figsize=(15,5))
-plt.title('alexnet V2 training loss')
+plt.subplot(121)
+plt.title('AlexNet V2 training loss')
 plt.plot(batches, losses)
+plt.xlabel('batches')
+plt.subplot(122)
+plt.title('AlexNet V2 top1 val accuracy')
+plt.xlabel('epochs')
+plt.plot(acc)
 
-def preprocess_alexnet2(img):
+def preprocess(img):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = cv2.resize(img, (256, 256))
     img = center_crop(img, 224, 224)
@@ -87,7 +94,7 @@ def preprocess_alexnet2(img):
 
 
 img1 = cv2.imread('../test_images/shark1.jpg')
-img1 = preprocess_alexnet2(img1)
+img1 = preprocess(img1)
 predict(net, img1)
 
 
@@ -95,7 +102,7 @@ predict(net, img1)
 
 
 img2 = cv2.imread('../test_images/rattlesnake1.jpg')
-img2 = preprocess_alexnet2(img2)
+img2 = preprocess(img2)
 predict(net, img2)
 
 
@@ -103,7 +110,7 @@ predict(net, img2)
 
 
 img3 = cv2.imread('../test_images/cat1.jpg')
-img3 = preprocess_alexnet2(img3)
+img3 = preprocess(img3)
 predict(net, img3)
 
 
@@ -111,7 +118,7 @@ predict(net, img3)
 
 
 img3 = cv2.imread('../test_images/dog1.jpg')
-img3 = preprocess_alexnet2(img3)
+img3 = preprocess(img3)
 predict(net, img3)
 
 
@@ -119,7 +126,7 @@ predict(net, img3)
 
 
 img3 = cv2.imread('../test_images/stove1.jpg')
-img3 = preprocess_alexnet2(img3)
+img3 = preprocess(img3)
 predict(net, img3)
 
 

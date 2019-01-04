@@ -50,17 +50,15 @@ make train_alexnet2
 ```
 Among two versions, I trained AlexNet V2 which achieves. Some training notes: 
 
-- I manually changed learning rate multiple times through training. But used a LR scheduler to in the final version with milestone of 30, 45, 80, 95 epochs and 0.1 decay.
-- With default weight init from PyTorch, the loss will stop decreasing around 4.5 so I used Kaiming init instead.
-- Data augmentation part is not exactly same with the original paper.
-- I modified the log format few times during training, so the log file is not consistent everywhere.
+- The model could be further trained with smaller learning rate, but I stopped early to save computation resource
+- I modified the data_load.py during training to fix that corrupted EXIF issue. So the second half of the training log doesn't have that warning
 - Color jittering was not applied for this training
 
-**Accuracy**: 50.98% (Top-1)
+**Accuracy**: 57.69% (Top-1), 79.10% (Top-5)
 
-**Training Log**: [alexnet2.txt](logs/alexnet2.txt)
+**Training Log**: [alexnet2-yanjiali-010319.log](logs/alexnet2-yanjiali-010319.log)
 
-**Pretrained Model File**: [alexnet_v2_yanjiali_12_26_18.pt](https://drive.google.com/file/d/1EGYtcLsEV2ZFv6sSCKNd_fSFxtwI2cYV/view?usp=sharing)
+**Pretrained Model File**: [alexnet_v2_yanjiali_12_26_18.pt](https://drive.google.com/file/d/1_leXoq7fAisfrK_ChZW5ziOzuO0kbb8N/view?usp=sharing)
 
 **Notebook Visualization**: [AlexNetV2.ipynb](notebooks/AlexNetV2.ipynb)
 
@@ -88,7 +86,17 @@ make train_resnet34
 
 ### ResNet-50
 
-## FAQ
+## Load Pretrained Model
+
+To load the model file I trained, please do:
+
+```
+checkpoint = torch.load(
+    '../saved_models/alexnet2-pt-yanjiali-010319.pt',
+    map_location='cpu',
+)
+net.load_state_dict(checkpoint['model'])
+```
 
 > I received `Missing key(s) in state_dict:...` when I load the PyTorch model file
 

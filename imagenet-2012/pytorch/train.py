@@ -133,7 +133,7 @@ training_config = {
         # Hence I use polynomial decay lr policy as recommended here:
         # https://github.com/BVLC/caffe/blob/master/models/bvlc_googlenet/quick_solver.prototxt#L8
         'scheduler_params': {
-            'lr_lambda': lambda epoch: (1 - epoch / 60)**0.5 if epoch < 60 else 0.01,
+            'lr_lambda': lambda epoch: (1 - epoch / 60)**0.5 if epoch < 60 else 0.001,
         },
         'total_epochs': 200,
     },
