@@ -430,7 +430,7 @@ if __name__ == "__main__":
         power = 0.5
         # Hence I use poly lr policy as recommended here:
         # https://github.com/BVLC/caffe/blob/master/models/bvlc_googlenet/quick_solver.prototxt#L8
-        lr_func = lambda epoch: (1 - epoch / max_epochs)**power if epoch < max_epochs else 0.01
+        lr_func = lambda epoch: (1 - epoch / max_epochs)**power if epoch < max_epochs else (0.01 if epoch < 75 else 0.001)
         scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lr_func)
     elif model_name == "resnet34":
         # instantiate the neural network

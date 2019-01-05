@@ -54,7 +54,7 @@ Among two versions, I trained AlexNet V2 which achieves. Some training notes:
 - I modified the data_load.py during training to fix that corrupted EXIF issue. So the second half of the training log doesn't have that warning
 - Color jittering was not applied for this training
 
-**Accuracy**: 57.69% (Top-1), 79.10% (Top-5)
+**Val Accuracy**: 57.69% (Top-1), 79.10% (Top-5)
 
 **Training Log**: [alexnet2-yanjiali-010319.log](logs/alexnet2-yanjiali-010319.log)
 
@@ -63,6 +63,28 @@ Among two versions, I trained AlexNet V2 which achieves. Some training notes:
 **Notebook Visualization**: [AlexNetV2.ipynb](notebooks/AlexNetV2.ipynb)
 
 ## VGG
+
+## Inception
+
+### Inception V1 (GoogLeNet)
+```bash
+make train_inception1
+```
+
+- This GoogLeNet is trained by an old training script (`train_old.py`), therefore some log format might differ from those newer ones.
+- From the notebook loss visualization, it seems like if I set max_epochs for lr policy to bigger number, maybe 90, could improve the performance when converge
+- The best accuracy is achieved at epoch 83, but I trained until epoch 90
+- Color jittering was not applied for this training
+
+**Val Accuracy**: 69.58% (Top-1), 89.21% (Top-5)
+
+**Training Log**: [inception1-yanjiali-010519.log](logs/inception1-yanjiali-010519.log)
+
+**Pretrained Model File**: [inception1-pt-yanjiali-010519.pt](https://drive.google.com/file/d/1WdIUxW2nugfhLRUXE2xGg-ZvoZVVBfaF/view?usp=sharing)
+
+**Notebook Visualization**: [GoogLeNet.ipynb](notebooks/GoogLeNet.ipynb)
+
+### Inception V3
 
 ## ResNet
 
@@ -76,7 +98,7 @@ make train_resnet34
 - The best accuracy is achieved at epoch 93, but I trained until epoch 129
 - Color jittering was not applied for this training
 
-**Accuracy**: 68.96% (Top-1), 88.61% (Top-5)
+**Val Accuracy**: 68.96% (Top-1), 88.61% (Top-5)
 
 **Training Log**: [resnet34-yanjiali-010319.log](logs/resnet34-yanjiali-010319.log)
 
