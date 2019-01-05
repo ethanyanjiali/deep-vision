@@ -82,7 +82,6 @@ class MobileNetV1(nn.Module):
         self.linear = nn.Linear(alpha * 1024, 1000)
 
     def forward(self, x):
-        x = self.conv(x)
         x = self.features(x)
         x = x.view(x.size(0), 1 * 1 * self.alpha * 1024)
         x = self.linear(x)
