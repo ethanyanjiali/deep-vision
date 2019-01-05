@@ -21,14 +21,14 @@ class MobileNetV1(nn.Module):
         # [pooling layer]
         # output_size = (input_size - kernel_size) / stride + 1
 
-        # output (224 - 3 + 2 * 1) / 2 + 1 = 112
-        # 112x112x32
         self.alpha = alpha
-        self.conv = nn.Conv2d(3, alpha * 32, 3, padding=1, stride=2)
-        self.bn = nn.BatchNorm2d(32)
-        self.relu = nn.ReLU(inplace=True)
 
         self.features = nn.Sequential(
+            # output (224 - 3 + 2 * 1) / 2 + 1 = 112
+            # 112x112x32
+            nn.Conv2d(3, alpha * 32, 3, padding=1, stride=2),
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True)
             # dw output (112 - 3 + 2 * 1) / 1 + 1 = 112
             # pw output (112 - 1 + 2 * 0) / 1 + 1 = 112
             DepthwiseSeparableConv(
@@ -82,6 +82,7 @@ class MobileNetV1(nn.Module):
         self.linear = nn.Linear(alpha * 1024, 1000)
 
     def forward(self, x):
+        x = self.conv(x)
         x = self.features(x)
         x = x.view(x.size(0), 1 * 1 * self.alpha * 1024)
         x = self.linear(x)
