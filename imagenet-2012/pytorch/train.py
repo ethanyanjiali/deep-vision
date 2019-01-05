@@ -17,6 +17,7 @@ from models.resnet34 import ResNet34
 from models.resnet50 import ResNet50
 from models.vgg16 import VGG16
 from models.vgg19 import VGG19
+from models.mobilenet_v1 import MobileNetV1
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model_dir = './saved_models/'
@@ -180,6 +181,36 @@ training_config = {
             'mode': 'max',
         },
         'total_epochs': 200,
+    },
+    'mobilenet1': {
+        # Please refer to resnet 34
+        'name': 'mobilenet1',
+        'batch_size': 128,
+        'num_workers': 16,
+        'model': MobileNetV1,
+        'model_params': {
+            'alpha': 1,
+        },
+        # "MobileNet models were trained in TensorFlow using RMSprop  ith asynchronous gradient descent
+        # similar to Inception V3" mobilenet_v1.[1]
+        # The author just mentioned it's similar to inception v3, and it says:
+        # # "while our best models were achieved using RMSProp [21] with decay of 0.9 and e = 1.0.
+        # We used a learning rate of 0.045..."inception_v3.[1]
+        'optimizer': optim.RMSprop,
+        # "we found that it was important to put very little or no weight decay..." mobilenet_v1.[1]
+        'optimizer_params': {
+            'lr': 0.045,
+            'alpha': 0.9,
+            'eps': 1.0,
+        },
+        # use same lr policy with inception v3 as well
+        # "decayed every two epoch using an exponential rate of 0.94."inception_v3.[1]
+        'scheduler': optim.lr_scheduler.StepLR,
+        'scheduler_params': {
+            'step_size': 2,
+            'gamma': 0.94,
+        },
+        'total_epochs': 200,
     }
 }
 
@@ -304,7 +335,11 @@ def run_epochs(config, checkpoint_path):
 
     # Define the neural network.
     Model = config.get('model')
-    net = Model()
+    model_params = config.get('model_params')
+    if model_params is not None:
+        net = Model(**model_params)
+    else:
+        net = Model()
 
     # transfer variables to GPU if present
     net.to(device=device)

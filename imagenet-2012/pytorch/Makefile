@@ -55,5 +55,9 @@ train_resnet50:
 	mkdir -p ./saved_models
 	nohup python -u train.py -m resnet50 > "resnet50-${TIME}".log &
 
+train_mobilenet1:
+	mkdir -p ./saved_models
+	nohup python -u train.py -m mobilenet1 > "mobilenet1-${TIME}".log &
+
 visualize:
 	jupyter notebook ./notebooks
