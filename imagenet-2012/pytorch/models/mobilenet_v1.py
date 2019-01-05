@@ -95,8 +95,10 @@ class MobileNetV1(nn.Module):
 class DepthwiseSeparableConv(nn.Module):
     def __init__(self, in_channels, out_channels, dw_stride, pw_stride):
         super(DepthwiseSeparableConv, self).__init__()
-        self.dw = DepthwiseConv(in_channels, out_channels, stride=dw_stride)
-        self.pw = PointwiseConv(out_channels, out_channels, stride=pw_stride)
+        # dw layer keeps # of channels N
+        self.dw = DepthwiseConv(in_channels, in_channels, stride=dw_stride)
+        # pw layer increase # of channels N -> M
+        self.pw = PointwiseConv(in_channels, out_channels, stride=pw_stride)
 
     def forward(self, x):
         x = self.dw(x)
