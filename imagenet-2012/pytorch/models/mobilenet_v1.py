@@ -27,7 +27,7 @@ class MobileNetV1(nn.Module):
         self.features = nn.Sequential(
             # output (224 - 3 + 2 * 1) / 2 + 1 = 112
             # 112x112x32
-            nn.Conv2d(3, alpha * 32, 3, padding=1, stride=2),
+            nn.Conv2d(3, alpha * 32, 3, padding=1, stride=2, bias=False),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True),
             # dw output (112 - 3 + 2 * 1) / 1 + 1 = 112
