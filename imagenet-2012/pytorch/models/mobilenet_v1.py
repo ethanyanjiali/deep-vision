@@ -23,6 +23,7 @@ class MobileNetV1(nn.Module):
 
         self.alpha = alpha
 
+        # Table 1 in [1]
         self.features = nn.Sequential(
             # output (224 - 3 + 2 * 1) / 2 + 1 = 112
             # 112x112x32
@@ -72,8 +73,12 @@ class MobileNetV1(nn.Module):
             # pw output (7 - 1 + 2 * 0) / 1 + 1 = 7
             DepthwiseSeparableConv(
                 alpha * 512, alpha * 1024, dw_stride=2, pw_stride=1),
+            # dw output (7 - 3 + 2 * 1) / 1 + 1 = 7
+            # pw output (7 - 1 + 2 * 0) / 1 + 1 = 7 
+            # there's a typo in the original paper where it says the stride of last
+            # depthwise separable conv is 2, but it should be 1 to keep 7x7
             DepthwiseSeparableConv(
-                alpha * 1024, alpha * 1024, dw_stride=2, pw_stride=1),
+                alpha * 1024, alpha * 1024, dw_stride=1, pw_stride=1),
             # average pooling
             # output 1x1x1024
             nn.AdaptiveAvgPool2d((1, 1)),
@@ -85,7 +90,7 @@ class MobileNetV1(nn.Module):
         x = self.features(x)
         x = x.view(x.size(0), 1 * 1 * self.alpha * 1024)
         x = self.linear(x)
-
+        return x
 
 class DepthwiseSeparableConv(nn.Module):
     def __init__(self, in_channels, out_channels, dw_stride, pw_stride):
