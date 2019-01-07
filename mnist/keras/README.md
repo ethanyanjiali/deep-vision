@@ -40,8 +40,8 @@ There're multiple variation of LeNet, and here I've only implemented LeNet-5 as 
 
 **Test Accuracy**: 98.76% (Top-1)
 
-**Training Log**: [lenet5-keras-yanjiali-010219.log](logs/lenet5-keras-yanjiali-010219.log)
+**Training Log**: [lenet5-keras-yanjiali-010519.log](logs/lenet5-keras-yanjiali-010519.log)
 
-**Pretrained Model File**: [lenet5-keras-yanjiali-010219.hdf5](https://drive.google.com/file/d/1fuEj-mKFNltFYHn4HBNgJAH9eaiVgvWM/view?usp=sharing)
+**Pretrained Model File**: [lenet5-keras-yanjiali-010519.hdf5](https://drive.google.com/file/d/1fuEj-mKFNltFYHn4HBNgJAH9eaiVgvWM/view?usp=sharing)
 
 **Notebook Visualization**: [LeNet.ipynb](notebooks/LeNet.ipynb), loggers file [lenet5-keras-loggers-010519.pkl](https://drive.google.com/file/d/1YcfCy1B3SO6nO7BiUkU2770SKzorNUt9/view?usp=sharing)
