@@ -24,6 +24,22 @@ training_config = {
 }
 
 
+class ModelHdf5Checkpoint(Callback):
+    '''
+    Save model as hdf5 format. The standard callback ModelCheckpoint saves in ckpt format
+    path: path to save hdf5 model file
+    '''
+
+    def __init__(self, model_dir, model_filename):
+        self.model_dir = model_dir
+        self.model_filename = model_filename
+
+    def on_epoch_end(self, epoch, logs={}):
+        save_path = self.model_dir + self.model_filename + '-checkpoint-epoch-{}.hdf5'.format(
+            epoch + 1)
+        self.model.save(save_path)
+
+
 class LoggersCallback(Callback):
     def __init__(self, path):
         self.path = path
@@ -110,12 +126,7 @@ def run_epochs(config, checkpoint_path):
     model_filename = '{}-tf-{}'.format(model_name, model_id)
 
     # Define save checkpoint callback
-    save_path = model_dir + model_filename + '-checkpoint-epoch-{epoch}.hdf5'
-    cp_callback = ModelCheckpoint(
-        save_path,
-        save_weights_only=True,
-        verbose=1,
-    )
+    cp_callback = ModelHdf5Checkpoint(model_dir, model_filename)
     # Define save custom loggers callback
     lg_callback = LoggersCallback(model_dir + model_filename)
 
