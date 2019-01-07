@@ -1,10 +1,6 @@
 # Classification
 
-PyTorch / Tensorflow / Keras implementation of common image classification models and training scripts categorized by datasets. If you think my work is helpful, please ⭐star⭐ this repo. If you have any questions regarding the code, feel free create an issue.
-
-- [<img src="https://github.com/pytorch/pytorch/blob/master/docs/source/_static/img/pytorch-logo-dark.png?raw=true" height="48">](https://github.com/pytorch/pytorch)
-- [<img src="https://www.tensorflow.org/images/tf_logo_transp.png" height="48">](https://github.com/tensorflow/tensorflow)
-- [<img src="https://s3.amazonaws.com/keras.io/img/keras-logo-2018-large-1200.png" height="48">](https://github.com/keras-team/keras) 
+[PyTorch](https://github.com/pytorch/pytorch) / [Tensorflow](https://github.com/tensorflow/tensorflow) / [Keras](https://github.com/keras-team/keras) implementation of common image classification models and training scripts categorized by datasets. If you think my work is helpful, please ⭐star⭐ this repo. If you have any questions regarding the code, feel free create an issue.
 
 ## Datasets
 
