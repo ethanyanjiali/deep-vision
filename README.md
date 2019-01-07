@@ -1,6 +1,6 @@
 # Classification
 
-[PyTorch](https://github.com/pytorch/pytorch) / [Tensorflow](https://github.com/tensorflow/tensorflow) / [Keras](https://github.com/keras-team/keras) implementation of common image classification models and training scripts categorized by datasets. If you think my work is helpful, please ⭐star⭐ this repo. If you have any questions regarding the code, feel free create an issue.
+[PyTorch](https://github.com/pytorch/pytorch) / [Tensorflow](https://github.com/tensorflow/tensorflow) implementation of common image classification models and training scripts categorized by datasets. If you think my work is helpful, please ⭐star⭐ this repo. If you have any questions regarding the code, feel free create an issue.
 
 ## Datasets
 
@@ -12,6 +12,12 @@
 - [CIFAR-10](cifar-10)
 - [MNIST](mnist)
     - LeNet
+
+## Setup
+
+- Create a virtualenv with Python3 `python3 -m venv env`
+- Install dependencies by `pip install -r requirements.in`
+- If you have CUDA GPU, also run `pip install tensorflow-gpu`
 
 ## Disclaimer
 

@@ -29,8 +29,6 @@ This repo implements many different models. Once you have the dataset ready, you
 
 There're few tips before you acutally start training:
 
-- I use Python 3 for this project
-- Make sure you have set up virtual environment and also installed dependencies by `pip install -r requirements.in`
 - There're multiple options defined in `train.py`. For example, model to train `-m`, and checkpoint file to use `-c`.
 - There're also some examples for how to resume previous paused training in the Makefile.
 - To run the notebook, please download the pretrained model to `saved_model` directory first.

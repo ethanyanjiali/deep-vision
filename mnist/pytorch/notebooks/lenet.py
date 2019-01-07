@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 
 
 checkpoint = torch.load(
-    '../saved_models/lenet5-pt-yanjiali-010219.pt', map_location='cpu')
+    '../saved_models/lenet5-pt-yanjiali-010619.pt', map_location='cpu')
 
 val_dataset = MnistDataset(
     images_path='../../dataset/t10k-images-idx3-ubyte',

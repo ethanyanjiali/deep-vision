@@ -14,7 +14,7 @@ if module_path not in sys.path:
 
 import cv2
 import matplotlib.pyplot as plt
-from keras.datasets import mnist
+from tensorflow.keras.datasets import mnist
 
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
@@ -24,7 +24,7 @@ from keras.datasets import mnist
 # In[2]:
 
 
-with open('../saved_models/lenet5-keras-2019-01-06T20:45:49-loggers-epoch-50.pkl', 'rb') as f:
+with open('../saved_models/lenet5-tf-yanjiali-loggers-010619.pkl', 'rb') as f:
     loggers = pickle.load(f)
     
 train_loss = loggers['train_loss']
@@ -59,10 +59,10 @@ plt.plot(val_top1_acc['value'])
 
 
 from models.lenet5 import LeNet5
-import keras.backend as K
+import tensorflow.keras.backend as K
 
 model = LeNet5(input_shape=(32, 32, 1))
-model.load_weights('../saved_models/lenet5-keras-2019-01-06T20:45:49-checkpoint-epoch-50.hdf5')
+model.load_weights('../saved_models/lenet5-tf-yanjiali-010619.hdf5')
 
 def preprocess(x):
     # pad the image from 28x28 to 32x32

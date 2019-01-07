@@ -1,6 +1,6 @@
-# MNIST - Keras 
+# MNIST - TensorFlow 
 
-This directory contains the Keras implementation of famous classification models using public MNIST dataset
+This directory contains the TensorFlow implementation of famous classification models using public MNIST dataset
 
 ## Directory Structure
 
@@ -22,8 +22,6 @@ This repo implements some popular models that uses MNIST dataset. Once you have 
 
 There're few tips before you acutally start training:
 
-- I use Python 3 for this project.
-- Make sure you have set up virtual environment and also installed dependencies by `pip install -r requirements.in`.
 - There're multiple options defined in `train.py`. For example, model to train `-m`.
 - There're also some examples for how to resume previous paused training in the Makefile.
 - To run the notebook, please download the pretrained model and loggers file to `saved_model` directory first.
@@ -38,10 +36,10 @@ There're multiple variation of LeNet, and here I've only implemented LeNet-5 as 
 
 - I didn't follow the subset of feature map that shows in Table I of the paper. That was used to reduce computational requirement but we should be fine nowadays.
 
-**Test Accuracy**: 98.76% (Top-1)
+**Test Accuracy**: 98.58% (Top-1)
 
-**Training Log**: [lenet5-keras-yanjiali-010519.log](logs/lenet5-keras-yanjiali-010519.log)
+**Training Log**: [lenet5-tf-yanjiali-010619.log](logs/lenet5-tf-yanjiali-010619.log)
 
-**Pretrained Model File**: [lenet5-keras-yanjiali-010519.hdf5](https://drive.google.com/file/d/1fuEj-mKFNltFYHn4HBNgJAH9eaiVgvWM/view?usp=sharing)
+**Pretrained Model File**: [lenet5-tf-yanjiali-010619.hdf5](https://drive.google.com/file/d/1pMVIw1yQHe6zAviRu5ddF1xjWuuF8JML/view?usp=sharing)
 
-**Notebook Visualization**: [LeNet.ipynb](notebooks/LeNet.ipynb), loggers file [lenet5-keras-loggers-010519.pkl](https://drive.google.com/file/d/1YcfCy1B3SO6nO7BiUkU2770SKzorNUt9/view?usp=sharing)
+**Notebook Visualization**: [LeNet.ipynb](notebooks/LeNet.ipynb), loggers file [lenet5-tf-yanjiali-loggers-010619.pkl](https://drive.google.com/file/d/1nzfk-W073IGsA2iZ7UTxc8jmUbevHzFI/view?usp=sharing)

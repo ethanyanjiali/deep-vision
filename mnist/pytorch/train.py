@@ -18,18 +18,16 @@ training_config = {
         'batch_size': 64,
         'num_workers': 2,
         'model': LeNet5,
-        'optimizer': optim.SGD,
+        'optimizer': optim.Adam,
         'optimizer_params': {
-            'lr': 0.1,
-            'momentum': 0.9,
-            'weight_decay': 0.0005,
+            'lr': 0.001,
         },
         'scheduler': optim.lr_scheduler.ReduceLROnPlateau,
         'scheduler_params': {
             'factor': 0.1,
             'mode': 'max',
         },
-        'total_epochs': 200,
+        'total_epochs': 50,
     }
 }
 

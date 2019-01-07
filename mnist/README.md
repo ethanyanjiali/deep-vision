@@ -23,6 +23,5 @@ I've made the networks and training scripts in multiple frameworks. Please refer
 - [PyTorch](pytorch)
     - LeNet-5
 - [TensorFlow](tensorflow)
-    - N/A
-- [Keras](keras)
     - LeNet-5
+    

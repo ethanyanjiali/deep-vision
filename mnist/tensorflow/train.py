@@ -2,9 +2,9 @@ import argparse
 import time
 import pickle
 
-from keras import optimizers
-from keras.callbacks import Callback, ModelCheckpoint, TensorBoard
-from keras.datasets import mnist
+from tensorflow.keras import optimizers
+from tensorflow.keras.callbacks import Callback, ModelCheckpoint, TensorBoard
+from tensorflow.keras.datasets import mnist
 import numpy as np
 from models.lenet5 import LeNet5
 
@@ -107,7 +107,7 @@ def run_epochs(config, checkpoint_path):
     # Set model names
     model_id = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
     model_name = config.get('name')
-    model_filename = '{}-keras-{}'.format(model_name, model_id)
+    model_filename = '{}-tf-{}'.format(model_name, model_id)
 
     # Define save checkpoint callback
     save_path = model_dir + model_filename + '-checkpoint-epoch-{epoch}.hdf5'
