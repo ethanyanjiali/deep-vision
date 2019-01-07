@@ -12,3 +12,5 @@ Pillow
 Flask
 jupyter
 ipykernel
+tensorflow
+keras

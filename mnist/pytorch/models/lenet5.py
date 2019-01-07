@@ -28,11 +28,11 @@ class LeNet5(nn.Module):
             # (32 - 5 + 2 * 0) / 1 + 1 = 28
             nn.Conv2d(1, 6, 5, stride=1),
             # "The receptive eld of each unit is a 2 by 2 area in the previous layer's corresponding feature map
-            # Each unit computes the average of its four inputs"
+            # Each unit computes the average of its four inputs"[1]
             # (28 - 2) / 2 + 1 = 14
             nn.AvgPool2d(2, stride=2),
-            # multiplies it by a trainable coeffcient adds a trainable bias and
-            # passes the result through a sigmoid function
+            # "multiplies it by a trainable coeffcient adds a trainable bias and
+            # passes the result through a sigmoid function"[1]
             nn.Sigmoid(),
             # (14 - 5 + 2 * 0) / 1 + 1 = 10
             nn.Conv2d(6, 16, 5, stride=1),

@@ -4,6 +4,8 @@ The [MNIST](https://en.wikipedia.org/wiki/MNIST_database) database (Modified Nat
 
 ## Set Up Dataset
 
+(This step is not necessary for Keras)
+
 The dataset has already been downloaded to `dataset` directory under `mnist`. The data loader will work when the dataset directory looks like this:
 ```
 dataset
@@ -19,6 +21,8 @@ However, if you want to download your own copy, here's the link: [http://yann.le
 I've made the networks and training scripts in multiple frameworks. Please refer to their own directory for specific implementation.
 
 - [PyTorch](pytorch)
-    - Lenet-5
+    - LeNet-5
 - [TensorFlow](tensorflow)
     - N/A
+- [Keras](keras)
+    - LeNet-5
