@@ -21,7 +21,7 @@ train_alexnet2:
 
 resume_alexnet2:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m alexnet2 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/alexnet2-2019-01-01T05:56:51-epoch-80.pt > "alexnet2-${TIME}".log &
+	nohup python -u train.py -m alexnet2 -c /home/yanjia.li/cv-classification/imagenet-2012/pytorch/saved_models/alexnet2-2019-01-01T05:56:51-epoch-80.pt > "alexnet2-${TIME}".log &
 
 train_vgg16:
 	mkdir -p ./saved_models
@@ -29,7 +29,7 @@ train_vgg16:
 
 resume_vgg16:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m vgg16 -c /home/yanjia.li/image-classification/imagenet-2012/saved_models/vgg16-2019-01-01T05:56:32-epoch-27.pt > "vgg16-${TIME}".log &
+	nohup python -u train.py -m vgg16 -c /home/yanjia.li/cv-classification/imagenet-2012/pytorch/saved_models/vgg16-2019-01-01T05:56:32-epoch-27.pt > "vgg16-${TIME}".log &
 
 train_vgg19:
 	mkdir -p ./saved_models
@@ -41,7 +41,7 @@ train_inception1:
 
 resume_inception1:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m inception1 -c /home/ubuntu/image-classification/imagenet-2012/saved_models/inception1-2018-12-30T07:26:12-epoch-43.pt > "inception1-${TIME}".log &
+	nohup python -u train.py -m inception1 -c /home/ubuntu/cv-classification/imagenet-2012/pytorch/saved_models/inception1-2018-12-30T07:26:12-epoch-43.pt > "inception1-${TIME}".log &
 
 train_resnet34:
 	mkdir -p ./saved_models
@@ -49,7 +49,7 @@ train_resnet34:
 
 resume_resnet34:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m resnet34 -c /home/ubuntu/cv-classification/imagenet-2012/saved_models/resnet34-2019-01-01T05:47:30-epoch-58.pt > "resnet34-${TIME}".log &
+	nohup python -u train.py -m resnet34 -c /home/ubuntu/cv-classification/imagenet-2012/pytorch/saved_models/resnet34-2019-01-01T05:47:30-epoch-58.pt > "resnet34-${TIME}".log &
 
 train_resnet50:
 	mkdir -p ./saved_models
@@ -57,7 +57,7 @@ train_resnet50:
 
 resume_resnet50:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m resnet50 -c /home/ubuntu/cv-classification/imagenet-2012/saved_models/resnet50-2019-01-04T02:13:04-epoch-63.pt > "resnet50-${TIME}".log &
+	nohup python -u train.py -m resnet50 -c /home/ubuntu/cv-classification/imagenet-2012/pytorch/saved_models/resnet50-2019-01-04T02:13:04-epoch-63.pt > "resnet50-${TIME}".log &
 
 train_mobilenet1:
 	mkdir -p ./saved_models
