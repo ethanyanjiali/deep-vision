@@ -125,7 +125,7 @@ tf.app.flags.DEFINE_integer('num_threads', 8,
 # each synset contained in the file to an integer (based on the alphabetical
 # ordering). See below for details.
 tf.app.flags.DEFINE_string('labels_file',
-                           'imagenet_lsvrc_2015_synsets.txt',
+                           'imagenet_2012_synsets.txt',
                            'Labels file')
 
 # This file containing mapping from synset to human-readable label.
@@ -138,7 +138,7 @@ tf.app.flags.DEFINE_string('labels_file',
 # where each line corresponds to a unique mapping. Note that each line is
 # formatted as <synset>\t<human readable label>.
 tf.app.flags.DEFINE_string('imagenet_metadata_file',
-                           'imagenet_metadata.txt',
+                           'imagenet_2012_metadata.txt',
                            'ImageNet metadata file')
 
 # This file is the output of process_bounding_box.py
