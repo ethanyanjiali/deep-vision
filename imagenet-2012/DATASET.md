@@ -1,5 +1,7 @@
 # Large Scale Visual Recognition Challenge 2012 (ILSVRC2012)
 
+ILSVRC2012 dataset is around 150G unpacked. Flatten dataset for PyTorch requires another 150G, and generate TFRecord for TensorFlow requires another 150G
+
 Create a directory to store the dataset under `imagenet-2012` directory. 
 ```
 mkdir -p ./dataset
@@ -30,6 +32,16 @@ tar xvf ILSVRC2012_bbox_train_v2.tar.gz -C ./bbox_train
 mkdir ./bbox_val
 tar xvf ILSVRC2012_bbox_val_v3.tgz -C ./bbox_val
 ```
+
+After downloading and unpacking all data, now you need to preprocess them for different framework
+
+## TensorFlow
+Generate bbox csv from training bbox xml
+```
+sudo python3 process_bounding_boxes.py ../dataset/bbox_train/ ./imagenet_2012_synsets.txt > imagenet_2012_bounding_boxes.csv
+```
+
+## PyTorch
 
 You might need `sudo` if you have permission issue, or `nohup` if you need to walk away while waiting
 

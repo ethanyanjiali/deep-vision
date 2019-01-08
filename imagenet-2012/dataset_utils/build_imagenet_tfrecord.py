@@ -155,7 +155,7 @@ tf.app.flags.DEFINE_string('imagenet_metadata_file',
 # with an image file.
 tf.app.flags.DEFINE_string('bounding_box_file',
                            './imagenet_2012_bounding_boxes.csv',
-                           'Bounding box file')
+                           'Train Bounding box file')
 
 FLAGS = tf.app.flags.FLAGS
 
