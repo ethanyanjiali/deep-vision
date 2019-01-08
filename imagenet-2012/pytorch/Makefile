@@ -9,7 +9,7 @@ mount-imagenet:
 
 mount-imagenet-aws:
 	mkdir -p ./dataset
-	sudo mount --read-only -o norecovery /dev/xvdb ../dataset
+	sudo mount -o norecovery /dev/xvdb ../dataset
 
 train_alexnet1:
 	mkdir -p ./saved_models

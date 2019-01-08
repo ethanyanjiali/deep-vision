@@ -8,12 +8,27 @@ cd ./dataset
 
 Download it from here: [http://www.image-net.org/challenges/LSVRC/2012/nonpub-downloads](http://www.image-net.org/challenges/LSVRC/2012/nonpub-downloads)
 
-Once you have `ILSVRC2012_img_train.tar` and `ILSVRC2012_img_val.tar`:
+```bash
+wget http://www.image-net.org/challenges/LSVRC/2012/nnoupb/ILSVRC2012_img_train.tar
+wget http://www.image-net.org/challenges/LSVRC/2012/nnoupb/ILSVRC2012_img_val.tar
+wget http://www.image-net.org/challenges/LSVRC/2012/nnoupb/ILSVRC2012_img_test.tar
+wget http://www.image-net.org/challenges/LSVRC/2012/nnoupb/ILSVRC2012_bbox_train_v2.tar.gz
+wget http://www.image-net.org/challenges/LSVRC/2012/nnoupb/ILSVRC2012_bbox_val_v3.tgz
+```
+
+Once you have them downloaded, untar them into these directories
+
 ```bash
 mkdir ./train
 tar xvf ILSVRC2012_img_train.tar -C ./train
 mkdir ./val
 tar xvf ILSVRC2012_img_val.tar -C ./val
+mkdir ./test
+tar xvf ILSVRC2012_img_test.tar -C ./test
+mkdir ./bbox_train
+tar xvf ILSVRC2012_bbox_train_v2.tar.gz -C ./bbox_train
+mkdir ./bbox_val
+tar xvf ILSVRC2012_bbox_val_v3.tgz -C ./bbox_val
 ```
 
 You might need `sudo` if you have permission issue, or `nohup` if you need to walk away while waiting
@@ -59,5 +74,8 @@ imagenet-2012
         |   |_n04548280_ILSVRC2012_val_00030987.JPEG
         |   |_n04548280_ILSVRC2012_val_00030330.JPEG
         |   |_...
+        |_test
+        |_bbox_train
+        |_bbox_val
         |_synsets.txt
 ```
