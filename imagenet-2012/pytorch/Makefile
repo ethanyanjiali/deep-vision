@@ -57,7 +57,7 @@ train_resnet50:
 
 resume_resnet50:
 	mkdir -p ./saved_models
-	nohup python -u train.py -m resnet50 -c /home/ubuntu/cv-classification/imagenet-2012/pytorch/saved_models/resnet50-2019-01-07T07:33:47-epoch-76.pt > "resnet50-${TIME}".log &
+	nohup python -u train.py -m resnet50 -c /home/ubuntu/cv-classification/imagenet-2012/pytorch/saved_models/resnet50-2019-01-08T07:17:18-epoch-97.pt > "resnet50-${TIME}".log &
 
 train_mobilenet1:
 	mkdir -p ./saved_models

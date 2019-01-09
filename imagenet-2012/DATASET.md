@@ -36,11 +36,32 @@ tar xvf ILSVRC2012_bbox_val_v3.tgz -C ./bbox_val
 After downloading and unpacking all data, now you need to preprocess them for different framework
 
 ## TensorFlow
+Inside `dataset_util` directory:
+
 Generate bbox csv from training bbox xml
-```
+```bash
 sudo python3 process_bounding_boxes.py ../dataset/bbox_train/ ./imagenet_2012_synsets.txt > imagenet_2012_bounding_boxes.csv
 ```
+Create a `tfrecord` directory in your `dataset` directory
+```bash
+mkdir -p ../dataset/tfrecord
+```
+Build TFRecord using the following script and command. You might need to tweak num_threads based on your machine CPUs to achieve best performance.
+```bash
+sudo nohup python3 build_imagenet_tfrecord.py --output_directory ../dataset/tfrecord/ --num_threads 16 --train_directory ../dataset/train --validation_directory ../dataset/val &
+```
+Wait for a while, then you will have:
+```
+tfrecord/train-00000-of-01024
+tfrecord/train-00001-of-01024
+...
+tfrecord/train-01023-of-01024
 
+tfrecord/validation-00000-of-00128
+tfrecord/validation-00001-of-00128
+...
+tfrecord/validation-00127-of-00128
+```
 ## PyTorch
 
 You might need `sudo` if you have permission issue, or `nohup` if you need to walk away while waiting
