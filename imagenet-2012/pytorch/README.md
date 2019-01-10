@@ -106,7 +106,7 @@ make train_resnet34
 
 ### ResNet-50
 ```
-make train_resnet34
+make train_resnet50
 ```
 
 - This model is trained with the new training script `train.py`
