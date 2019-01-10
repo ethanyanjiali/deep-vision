@@ -21,12 +21,12 @@ from torchvision.transforms import Compose
 import matplotlib.pyplot as plt
 
 
-# In[3]:
+# In[5]:
 
 
 def fix_dataparallel_state_dict():
     checkpoint = torch.load(
-        '../saved_models/alexnet2-yanjiali-010319.pt', map_location='cpu')
+        '../saved_models/resnet50-pt-yanjiali-010919.pt', map_location='cpu')
 
     state_dict = checkpoint['model']
 
@@ -49,17 +49,15 @@ def fix_dataparallel_state_dict():
         checkpoint['optimizer'],
         'scheduler':
         checkpoint['scheduler'],
-        'loss_logger':
-        checkpoint['loss_logger'],
-        'acc_logger':
-        checkpoint['acc_logger'],
-    }, '../saved_models/alexnet2-yanjiali-010319.pt')
+        'loggers':
+        checkpoint['loggers'],
+    }, '../saved_models/resnet50-pt-yanjiali-010919.pt')
 
 
-# In[5]:
+# In[6]:
 
 
-# fix_dataparallel_state_dict()
+fix_dataparallel_state_dict()
 
 
 # # Visualize Transform - Rescale, HFlip, RandomCrop, ColorJitter

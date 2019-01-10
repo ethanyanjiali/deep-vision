@@ -91,7 +91,7 @@ make train_inception1
 make train_resnet34
 ```
 
-- This model is trained by an old training script (`train_old.py`), therefore some log format might differ from those newer ones.
+- This model is trained with an old training script (`train_old.py`), therefore some log format might differ from those newer ones.
 - Unlike the new training config, I trained resnet-34 with a batch size of 512. Since I used 8 GPUs, it's 64 batch size per GPU. Kaiming did mentioned that different batch size might degrad the accuracy. So I advice still stick to batch size of 256 when you use 8 GPUs.
 - The best accuracy is achieved at epoch 93, but I trained until epoch 129
 - Color jittering was not applied for this training
@@ -105,6 +105,19 @@ make train_resnet34
 **Notebook Visualization**: [ResNet34.ipynb](notebooks/ResNet34.ipynb)
 
 ### ResNet-50
+```
+make train_resnet34
+```
+
+- This model is trained with the new training script `train.py`
+
+**Val Accuracy**: 73.93% (Top-1), 91.54% (Top-5)
+
+**Training Log**: [resnet50-yanjiali-010919.log](logs/resnet50-yanjiali-010919.log)
+
+**Pretrained Model File**: [resnet50-pt-yanjiali-010919.pt](https://drive.google.com/file/d/1f8ms4mK_y6ydBYM-_SMyddru7drZw4xX/view?usp=sharing)
+
+**Notebook Visualization**: [ResNet50.ipynb](notebooks/ResNet50.ipynb)
 
 ## Load Pretrained Model
 
