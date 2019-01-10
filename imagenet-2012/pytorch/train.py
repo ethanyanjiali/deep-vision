@@ -100,7 +100,7 @@ training_config = {
     'vgg19': {
         'name': 'vgg19',
         # Please refer to vgg16
-        'batch_size': 128,
+        'batch_size': 64,
         'num_workers': 16,
         'model': VGG19,
         'optimizer': optim.SGD,
