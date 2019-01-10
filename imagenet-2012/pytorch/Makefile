@@ -35,6 +35,10 @@ train_vgg19:
 	mkdir -p ./saved_models
 	nohup python -u train.py -m vgg19 > "vgg19-${TIME}".log &
 
+resume_vgg19:
+	mkdir -p ./saved_models
+	nohup python -u train.py -m vgg19 -c /home/yanjia.li/image-classification/imagenet-2012/pytorch/saved_models/vgg19-2019-01-04T06:49:36-epoch-42.pt > "vgg19-${TIME}".log &
+
 train_inception1:
 	mkdir -p ./saved_models
 	nohup python -u train.py -m inception1 > "inception1-${TIME}".log &
