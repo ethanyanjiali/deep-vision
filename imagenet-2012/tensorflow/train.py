@@ -99,7 +99,7 @@ class LoggersCallback(Callback):
 
 def _parse_function(proto):
     # define your tfrecord again. Remember that you saved your image as a string.
-    keys_to_features = {
+    feature_map = {
         'image/height': tf.FixedLenFeature([], tf.int64),
         'image/width': tf.FixedLenFeature([], tf.int64),
         'image/colorspace': tf.FixedLenFeature([], tf.string),
@@ -107,10 +107,6 @@ def _parse_function(proto):
         'image/class/label': tf.FixedLenFeature([], tf.int64),
         'image/class/synset': tf.FixedLenFeature([], tf.string),
         'image/class/text': tf.FixedLenFeature([], tf.string),
-        'image/object/bbox/xmin': tf.FixedLenFeature([], tf.float32),
-        'image/object/bbox/xmax': tf.FixedLenFeature([], tf.float32),
-        'image/object/bbox/ymin': tf.FixedLenFeature([], tf.float32),
-        'image/object/bbox/ymax': tf.FixedLenFeature([], tf.float32),
         'image/object/bbox/label': tf.FixedLenFeature([], tf.int64),
         'image/format': tf.FixedLenFeature([], tf.string),
         'image/filename': tf.FixedLenFeature([], tf.string),
