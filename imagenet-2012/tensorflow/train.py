@@ -189,9 +189,14 @@ def run_epochs(config, checkpoint_path):
 
     steps_per_epoch = 1281167 // config.get('batch_size')
 
-    train_image, train_label = create_dataset(config,
-                                              '../dataset/tfrecord_train')
-    val_image, val_label = create_dataset(config, '../dataset/tfrecord_val')
+    train_image, train_label = create_dataset(
+        '../dataset/tfrecord_train',
+        config,
+    )
+    val_image, val_label = create_dataset(
+        '../dataset/tfrecord_val',
+        config,
+    )
 
     # Create a the neural network
     Mdl = config.get('model')
