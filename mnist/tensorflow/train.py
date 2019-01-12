@@ -132,7 +132,7 @@ def run_epochs(config, checkpoint_path):
 
     # Define generate tensorboard log callback
     tb_callback = TensorBoard(
-        log_dir='./tensorboard_logs/{}'.format(model_filename))
+        log_dir='./tensorboard/{}'.format(model_filename))
 
     # Compile the model and generate computation graph
     model.compile(

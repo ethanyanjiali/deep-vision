@@ -14,3 +14,6 @@ mount-imagenet-aws:
 train_alexnet2:
 	mkdir -p ./saved_models
 	nohup python -u train.py -m alexnet2 > "alexnet2-${TIME}".log &
+
+tensorboard:
+	tensorboard --logdir=./tensorboard

@@ -220,7 +220,7 @@ def run_epochs(config, checkpoint_path):
 
     # Define generate tensorboard log callback
     tb_callback = TensorBoard(
-        log_dir='./tensorboard_logs/{}'.format(model_filename))
+        log_dir='./tensorboard/{}'.format(model_filename))
 
     lr_callback = ReduceLROnPlateau(
         monitor='val_loss', factor=0.1, patience=10, min_lr=0.00001)
