@@ -83,6 +83,11 @@ class LoggersCallback(Callback):
         logger = self.loggers.get(name)
         logger.get('epochs').append(epoch)
         logger.get('value').append(value)
+        print('Epoch: {}, {}: {}'.format(
+            epoch,
+            name,
+            value,
+        ))
 
     def on_epoch_end(self, epoch, logs={}):
         real_epoch = epoch + 1
@@ -95,18 +100,6 @@ class LoggersCallback(Callback):
                           real_epoch)
         print('Time: {}'.format(
             time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())))
-        print('Epoch: {}, Validation Top 1 acc: {}'.format(
-            real_epoch,
-            logs['val_acc'],
-        ))
-        print('Epoch: {}, Validation Top 5 acc: {}'.format(
-            real_epoch,
-            logs['val_top_5_accuracy'],
-        ))
-        print('Epoch: {}, Validation Set Loss: {}'.format(
-            real_epoch,
-            logs['val_loss'],
-        ))
         with open(
                 '{}-loggers-epoch-{}.pkl'.format(self.path, real_epoch),
                 'wb',
