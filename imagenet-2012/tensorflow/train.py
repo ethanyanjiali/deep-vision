@@ -17,6 +17,7 @@ training_config = {
         'name': 'alexnet2',
         'model': AlexNetV2,
         'batch_size': 128,
+        'num_workers': 8,
         'optimizer': optimizers.SGD,
         # "...momentum may be less necessary...but in my experiments I used mu = 0.9..." alexnet2.[1]
         'optimizer_params': {
@@ -188,8 +189,9 @@ def run_epochs(config, checkpoint_path):
 
     steps_per_epoch = 1281167 // config.get('batch_size')
 
-    train_image, train_label = create_dataset('../dataset/tfrecord_train')
-    val_image, val_label = create_dataset('../dataset/tfrecord_val')
+    train_image, train_label = create_dataset(config,
+                                              '../dataset/tfrecord_train')
+    val_image, val_label = create_dataset(config, '../dataset/tfrecord_val')
 
     # Create a the neural network
     Mdl = config.get('model')
