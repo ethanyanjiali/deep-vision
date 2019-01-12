@@ -183,6 +183,7 @@ def top_5_accuracy(y_true, y_pred):
 def run_epochs(config, checkpoint_path):
 
     steps_per_epoch = 1281167 // config.get('batch_size')
+    validation_steps = 50000 // config.get('batch_size')
 
     train_image, train_label = create_dataset(
         '../dataset/tfrecord/tfrecord_train/*',
@@ -245,6 +246,7 @@ def run_epochs(config, checkpoint_path):
             lr_callback,
         ],
         validation_data=(val_image, val_label),
+        validation_steps=validation_steps
         verbose=1,
         steps_per_epoch=steps_per_epoch,
     )
