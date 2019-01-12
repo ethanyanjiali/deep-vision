@@ -97,7 +97,8 @@ class LoggersCallback(Callback):
             pickle.dump(self.loggers, f, pickle.HIGHEST_PROTOCOL)
 
 
-def _parse_function(proto):
+# https://github.com/tensorflow/models/blob/master/official/resnet/imagenet_main.py#L62
+def _parse_function(proto, is_training):
     # define your tfrecord again. Remember that you saved your image as a string.
     feature_map = {
         'image/height': tf.FixedLenFeature([], tf.int64),
@@ -107,61 +108,37 @@ def _parse_function(proto):
         'image/class/label': tf.FixedLenFeature([], tf.int64),
         'image/class/synset': tf.FixedLenFeature([], tf.string),
         'image/class/text': tf.FixedLenFeature([], tf.string),
-        'image/object/bbox/label': tf.FixedLenFeature([], tf.int64),
-        'image/format': tf.FixedLenFeature([], tf.string),
         'image/filename': tf.FixedLenFeature([], tf.string),
         'image/encoded': tf.FixedLenFeature([], tf.string),
     }
 
-    sparse_float32 = tf.VarLenFeature(dtype=tf.float32)
-    # Sparse features in Example proto.
-    feature_map.update({
-        k: sparse_float32
-        for k in [
-            'image/object/bbox/xmin', 'image/object/bbox/ymin',
-            'image/object/bbox/xmax', 'image/object/bbox/ymax'
-        ]
-    })
-
-    features = tf.parse_single_example(example_serialized, feature_map)
-
-    xmin = tf.expand_dims(features['image/object/bbox/xmin'].values, 0)
-    ymin = tf.expand_dims(features['image/object/bbox/ymin'].values, 0)
-    xmax = tf.expand_dims(features['image/object/bbox/xmax'].values, 0)
-    ymax = tf.expand_dims(features['image/object/bbox/ymax'].values, 0)
-
-    # Note that we impose an ordering of (y, x) just to make life difficult.
-    bbox = tf.concat([ymin, xmin, ymax, xmax], 0)
-
-    # Force the variable number of bounding boxes into the shape
-    # [1, num_boxes, coords].
-    bbox = tf.expand_dims(bbox, 0)
-    bbox = tf.transpose(bbox, [0, 2, 1])
-
+    features = tf.parse_single_example(proto, feature_map)
     label = tf.cast(features['image/class/label'], dtype=tf.int32)
-
     image = features['image/encoded']
     image = preprocess_image(
-        image_buffer=image_buffer,
-        bbox=bbox,
+        image_buffer=image,
+        bbox=None,
         output_height=224,
         output_width=224,
         num_channels=3,
         is_training=is_training,
     )
-    image = tf.cast(image, dtype)
+    image = tf.cast(image, tf.float32)
 
     return image, label
 
 
-def create_dataset(filepath, config):
+# https://medium.com/@moritzkrger/speeding-up-keras-with-tfrecord-datasets-5464f9836c36
+def create_dataset(filepath, config, is_training):
 
     # This works with arrays as well
-    dataset = tf.data.TFRecordDataset(filepath)
+    dataset = tf.data.TFRecordDataset(tf.data.Dataset.list_files(filepath))
 
     # Maps the parser on every filepath in the array. You can set the number of parallel loaders here
     dataset = dataset.map(
-        _parse_function, num_parallel_calls=config.get('num_workers'))
+        lambda x: _parse_function(x, is_training),
+        num_parallel_calls=config.get('num_workers'),
+    )
 
     # This dataset will go on forever
     dataset = dataset.repeat()
@@ -178,6 +155,8 @@ def create_dataset(filepath, config):
     # Create your tf representation of the iterator
     image, label = iterator.get_next()
 
+    label = tf.one_hot(label, 1000)
+
     return image, label
 
 
@@ -186,12 +165,14 @@ def run_epochs(config, checkpoint_path):
     steps_per_epoch = 1281167 // config.get('batch_size')
 
     train_image, train_label = create_dataset(
-        '../dataset/tfrecord_train',
+        '../dataset/tfrecord/tfrecord_train/*',
         config,
+        True,
     )
     val_image, val_label = create_dataset(
-        '../dataset/tfrecord_val',
+        '../dataset/tfrecord/tfrecord_val/*',
         config,
+        False,
     )
 
     # Create a the neural network
@@ -229,6 +210,7 @@ def run_epochs(config, checkpoint_path):
     model.summary()
 
     # Start training
+    print(train_image)
     model.fit(
         train_image,
         train_label,
@@ -238,9 +220,9 @@ def run_epochs(config, checkpoint_path):
             tb_callback,
             lg_callback,
         ],
-        batch_size=config.get('batch_size'),
         validation_data=(val_image, val_label),
         verbose=1,
+        steps_per_epoch=steps_per_epoch,
     )
 
 

@@ -12,13 +12,6 @@ class LocalResponseNorm(Layer):
         self.output_dim = output_dim
 
     def build(self, input_shape):
-        # Create a trainable weight variable for this layer.
-        self.kernel = self.add_weight(
-            name='kernel',
-            shape=(input_shape[1], self.output_dim),
-            initializer='uniform',
-            trainable=True,
-        )
         # Be sure to call this at the end
         super(LocalResponseNorm, self).build(input_shape)
 
