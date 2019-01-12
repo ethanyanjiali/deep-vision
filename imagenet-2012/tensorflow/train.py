@@ -4,7 +4,7 @@ import pickle
 
 import tensorflow as tf
 from tensorflow.keras import optimizers
-from tensorflow.keras.callbacks import Callback, ModelCheckpoint, TensorBoard
+from tensorflow.keras.callbacks import Callback, ModelCheckpoint, TensorBoard, ReduceLROnPlateau
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.utils import multi_gpu_model
 from tensorflow.keras.metrics import top_k_categorical_accuracy
@@ -221,6 +221,9 @@ def run_epochs(config, checkpoint_path):
     tb_callback = TensorBoard(
         log_dir='./tensorboard_logs/{}'.format(model_filename))
 
+    lr_callback = ReduceLROnPlateau(
+        monitor='val_loss', factor=0.1, patience=10, min_lr=0.00001)
+
     # Compile the model and generate computation graph
     model.compile(
         optimizer=optimizer,
@@ -239,6 +242,7 @@ def run_epochs(config, checkpoint_path):
             cp_callback,
             tb_callback,
             lg_callback,
+            lr_callback,
         ],
         validation_data=(val_image, val_label),
         verbose=1,
