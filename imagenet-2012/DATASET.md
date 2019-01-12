@@ -62,6 +62,11 @@ tfrecord/validation-00001-of-00128
 ...
 tfrecord/validation-00127-of-00128
 ```
+finally, move them to their own folder:
+```
+sudo mkdir -p tfrecord_train && sudo mv train* tfrecord_train
+sudo mkdir -p tfrecord_val && sudo mv validation* tfrecord_val
+```
 ## PyTorch
 
 You might need `sudo` if you have permission issue, or `nohup` if you need to walk away while waiting
