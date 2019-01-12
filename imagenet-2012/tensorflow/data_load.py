@@ -156,7 +156,6 @@ def _resize_image(image, height, width):
 
 
 def preprocess_image(image_buffer,
-                     bbox,
                      output_height,
                      output_width,
                      num_channels,
@@ -167,9 +166,6 @@ def preprocess_image(image_buffer,
   distortion of the image to improve accuracy.
   Args:
     image_buffer: scalar string Tensor representing the raw JPEG image buffer.
-    bbox: 3-D float Tensor of bounding boxes arranged [1, num_boxes, coords]
-      where each coordinate is [0, 1) and the coordinates are arranged as
-      [ymin, xmin, ymax, xmax].
     output_height: The height of the image after preprocessing.
     output_width: The width of the image after preprocessing.
     num_channels: Integer depth of the image buffer for decoding.

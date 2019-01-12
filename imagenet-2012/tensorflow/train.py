@@ -6,6 +6,8 @@ import tensorflow as tf
 from tensorflow.keras import optimizers
 from tensorflow.keras.callbacks import Callback, ModelCheckpoint, TensorBoard
 from tensorflow.keras.datasets import mnist
+from tensorflow.keras.utils import multi_gpu_model
+from tensorflow.keras.metrics import top_k_categorical_accuracy
 import numpy as np
 from models.alexnet_v2 import AlexNetV2
 from data_load import preprocess_image
@@ -59,11 +61,19 @@ class LoggersCallback(Callback):
                 'epochs': [],
                 'value': [],
             },
+            'train_top5_acc': {
+                'epochs': [],
+                'value': [],
+            },
             'val_loss': {
                 'epochs': [],
                 'value': [],
             },
             'val_top1_acc': {
+                'epochs': [],
+                'value': [],
+            },
+            'val_top5_acc': {
                 'epochs': [],
                 'value': [],
             },
@@ -78,13 +88,20 @@ class LoggersCallback(Callback):
         real_epoch = epoch + 1
         self._log_metrics('train_loss', logs['loss'], real_epoch)
         self._log_metrics('train_top1_acc', logs['acc'], real_epoch)
+        self._log_metrics('train_top5_acc', logs['top_5_accuracy'], real_epoch)
         self._log_metrics('val_loss', logs['val_loss'], real_epoch)
         self._log_metrics('val_top1_acc', logs['val_acc'], real_epoch)
+        self._log_metrics('val_top5_acc', logs['val_top_5_accuracy'],
+                          real_epoch)
         print('Time: {}'.format(
             time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())))
         print('Epoch: {}, Validation Top 1 acc: {}'.format(
             real_epoch,
             logs['val_acc'],
+        ))
+        print('Epoch: {}, Validation Top 1 acc: {}'.format(
+            real_epoch,
+            logs['val_top_5_accuracy'],
         ))
         print('Epoch: {}, Validation Set Loss: {}'.format(
             real_epoch,
@@ -117,7 +134,6 @@ def _parse_function(proto, is_training):
     image = features['image/encoded']
     image = preprocess_image(
         image_buffer=image,
-        bbox=None,
         output_height=224,
         output_width=224,
         num_channels=3,
@@ -158,6 +174,10 @@ def create_dataset(filepath, config, is_training):
     label = tf.one_hot(label, 1000)
 
     return image, label
+
+
+def top_5_accuracy(y_true, y_pred):
+    return top_k_categorical_accuracy(y_true, y_pred, k=5)
 
 
 def run_epochs(config, checkpoint_path):
@@ -205,7 +225,7 @@ def run_epochs(config, checkpoint_path):
     model.compile(
         optimizer=optimizer,
         loss='categorical_crossentropy',
-        metrics=['accuracy'],
+        metrics=['accuracy', top_5_accuracy],
     )
     model.summary()
 
