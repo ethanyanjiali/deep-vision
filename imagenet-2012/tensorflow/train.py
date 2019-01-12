@@ -246,7 +246,7 @@ def run_epochs(config, checkpoint_path):
             lr_callback,
         ],
         validation_data=(val_image, val_label),
-        validation_steps=validation_steps
+        validation_steps=validation_steps,
         verbose=1,
         steps_per_epoch=steps_per_epoch,
     )
