@@ -99,7 +99,7 @@ class LoggersCallback(Callback):
             real_epoch,
             logs['val_acc'],
         ))
-        print('Epoch: {}, Validation Top 1 acc: {}'.format(
+        print('Epoch: {}, Validation Top 5 acc: {}'.format(
             real_epoch,
             logs['val_top_5_accuracy'],
         ))
@@ -247,7 +247,7 @@ def run_epochs(config, checkpoint_path):
         ],
         validation_data=(val_image, val_label),
         validation_steps=validation_steps,
-        verbose=1,
+        verbose=2,
         steps_per_epoch=steps_per_epoch,
     )
 
