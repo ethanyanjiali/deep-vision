@@ -119,9 +119,9 @@ make train_resnet50
 
 **Notebook Visualization**: [ResNet50.ipynb](notebooks/ResNet50.ipynb)
 
-### MobileNet
+## MobileNet
 
-### MobileNetV1 1.0
+### MobileNet V1 1.0
 ```
 make train_mobilenet1
 ```
