@@ -20,5 +20,6 @@ I've made the networks and training scripts in multiple frameworks. Please refer
     - ResNet-34
     - ResNet-50
     - ResNet-152
+    - MobileNet V1
 - [TensorFlow](tensorflow)
     - N/A

@@ -119,6 +119,23 @@ make train_resnet50
 
 **Notebook Visualization**: [ResNet50.ipynb](notebooks/ResNet50.ipynb)
 
+### MobileNet
+
+### MobileNetV1 1.0
+```
+make train_mobilenet1
+```
+
+- This model is trained with the new training script `train.py`
+
+**Val Accuracy**: 63.37% (Top-1), 84.81% (Top-5)
+
+**Training Log**: [mobilenet1-yanjiali-011119.log](logs/mobilenet1-yanjiali-011119.log)
+
+**Pretrained Model File**: [mobilenet1-pt-yanjiali-011119.pt](https://drive.google.com/file/d/1j716uPovKbQWpnp1pKJHGWpfbrBbzpEz/view?usp=sharing)
+
+**Notebook Visualization**: [MobileNetV1.ipynb](notebooks/MobileNetV1.ipynb)
+
 ## Load Pretrained Model
 
 To load the model file I trained, please do:

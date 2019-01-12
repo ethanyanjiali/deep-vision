@@ -9,6 +9,7 @@
     - VGG
     - GoogLeNet, Inception
     - ResNet
+    - MobileNet
 - [CIFAR-10](cifar-10)
 - [MNIST](mnist)
     - LeNet
