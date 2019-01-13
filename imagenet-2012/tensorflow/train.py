@@ -106,6 +106,10 @@ class LoggersCallback(Callback):
                 'epochs': [],
                 'value': [],
             },
+            'lr': {
+                'epochs': [],
+                'value': [],
+            },
         }
 
     def _log_metrics(self, name, value, epoch):
@@ -120,6 +124,7 @@ class LoggersCallback(Callback):
 
     def on_epoch_end(self, epoch, logs={}):
         real_epoch = epoch + 1
+        lr = self.model.optimizer.lr
         self._log_metrics('train_loss', logs['loss'], real_epoch)
         self._log_metrics('train_top1_acc', logs['acc'], real_epoch)
         self._log_metrics('train_top5_acc', logs['top_5_accuracy'], real_epoch)
@@ -127,6 +132,7 @@ class LoggersCallback(Callback):
         self._log_metrics('val_top1_acc', logs['val_acc'], real_epoch)
         self._log_metrics('val_top5_acc', logs['val_top_5_accuracy'],
                           real_epoch)
+        self._log_metrics('lr', lr, real_epoch)
         print('Time: {}'.format(
             time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())))
         with open(
