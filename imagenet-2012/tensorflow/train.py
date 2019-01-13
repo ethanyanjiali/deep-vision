@@ -23,7 +23,7 @@ training_config = {
         'name': 'alexnet2',
         'model': AlexNetV2,
         'batch_size': 128,
-        'num_workers': 8,
+        'num_workers': 16,
         'optimizer': optimizers.SGD,
         # "...momentum may be less necessary...but in my experiments I used mu = 0.9..." alexnet2.[1]
         'optimizer_params': {
@@ -36,7 +36,7 @@ training_config = {
         'name': 'resnet50',
         'model': ResNet50,
         'batch_size': 128,
-        'num_workers': 8,
+        'num_workers': 16,
         'optimizer': optimizers.SGD,
         # "...momentum may be less necessary...but in my experiments I used mu = 0.9..." alexnet2.[1]
         'optimizer_params': {
@@ -49,7 +49,7 @@ training_config = {
         'name': 'resnet152',
         'model': ResNet152,
         'batch_size': 128,
-        'num_workers': 8,
+        'num_workers': 16,
         'optimizer': optimizers.SGD,
         # "...momentum may be less necessary...but in my experiments I used mu = 0.9..." alexnet2.[1]
         'optimizer_params': {
@@ -276,7 +276,7 @@ def run_epochs(config, checkpoint_path):
         ],
         validation_data=(val_image, val_label),
         validation_steps=validation_steps,
-        verbose=2,
+        verbose=1,
         steps_per_epoch=steps_per_epoch,
     )
 
