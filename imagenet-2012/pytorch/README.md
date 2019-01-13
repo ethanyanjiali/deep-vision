@@ -30,6 +30,7 @@ This repo implements many different models. Once you have the dataset ready, you
 There're few tips before you acutally start training:
 
 - There're multiple options defined in `train.py`. For example, model to train `-m`, and checkpoint file to use `-c`.
+- There's an older version of training script called `train_old.py` which is used when I train some model. You should use `train.py` though because it's a refactored and improved version.
 - There're also some examples for how to resume previous paused training in the Makefile.
 - To run the notebook, please download the pretrained model to `saved_model` directory first.
 - `data_load.py` implements some common data preprocessing and augmentation by using numpy. I could have use PyTorch built-in utils but this makes the process more clear
@@ -56,11 +57,32 @@ Among two versions, I trained AlexNet V2 which achieves. Some training notes:
 
 **Training Log**: [alexnet2-yanjiali-010319.log](logs/alexnet2-yanjiali-010319.log)
 
-**Pretrained Model File**: [alexnet_v2_yanjiali_12_26_18.pt](https://drive.google.com/file/d/1_leXoq7fAisfrK_ChZW5ziOzuO0kbb8N/view?usp=sharing)
+**Pretrained Model File**: [alexnet2-pt-yanjiali-010319.pt](https://drive.google.com/file/d/1_leXoq7fAisfrK_ChZW5ziOzuO0kbb8N/view?usp=sharing)
 
 **Notebook Visualization**: [AlexNetV2.ipynb](notebooks/AlexNetV2.ipynb)
 
 ## VGG
+
+### VGG-16
+```bash
+make train_vgg16
+```
+
+- I modified the data_load.py during training to fix that corrupted EXIF issue. So the second half of the training log doesn't have that warning. Also it used the old training script `train_old.py`.
+- Color jittering was not applied for this training
+
+**Val Accuracy**: 69.21% (Top-1), 88.67% (Top-5)
+
+**Training Log**: [vgg16-yanjiali-011219.log](logs/vgg16-yanjiali-011219.log)
+
+**Pretrained Model File**: [vgg16-pt-yanjiali-011219.pt](https://drive.google.com/file/d/1774N5eUqXhPvcb2NJg6e3412ddNesGEW/view?usp=sharing)
+
+**Notebook Visualization**: [VGG16.ipynb](notebooks/VGG16.ipynb)
+
+### VGG-19
+```bash
+make train_vgg19
+```
 
 ## Inception
 
