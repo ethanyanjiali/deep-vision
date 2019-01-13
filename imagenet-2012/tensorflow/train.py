@@ -9,6 +9,7 @@ from tensorflow.keras.datasets import mnist
 from tensorflow.keras.utils import multi_gpu_model
 from tensorflow.keras.metrics import top_k_categorical_accuracy
 from tensorflow.keras import regularizers
+import tensorflow.keras.backend as K
 import numpy as np
 from models.alexnet_v2 import AlexNetV2
 from models.resnet50 import ResNet50
@@ -124,7 +125,7 @@ class LoggersCallback(Callback):
 
     def on_epoch_end(self, epoch, logs={}):
         real_epoch = epoch + 1
-        lr = self.model.optimizer.lr
+        lr = K.eval(self.model.optimizer.lr)
         self._log_metrics('train_loss', logs['loss'], real_epoch)
         self._log_metrics('train_top1_acc', logs['acc'], real_epoch)
         self._log_metrics('train_top5_acc', logs['top_5_accuracy'], real_epoch)
