@@ -9,7 +9,7 @@ from tensorflow.keras import regularizers
 weight_decay = 0.0001
 
 
-def ResNet152(input_shape):
+def ResNet50(input_shape):
     inputs = layers.Input(shape=input_shape)
     # floor[(224 - 7 + 2 * 3) / 2] + 1 = 112, it becomes 112x112x64
     # here we maunally add padding=3
@@ -32,8 +32,8 @@ def ResNet152(input_shape):
 
     # this refers to Table 1 in [1] 152-layer column
     x = _residual_blocks(x, 3, 64, 256, strides=1)
-    x = _residual_blocks(x, 8, 128, 512, strides=2)
-    x = _residual_blocks(x, 36, 256, 1024, strides=2)
+    x = _residual_blocks(x, 4, 128, 512, strides=2)
+    x = _residual_blocks(x, 6, 256, 1024, strides=2)
     x = _residual_blocks(x, 3, 512, 2048, strides=2)
 
     # average poorling with a 1000-way softmax
@@ -41,7 +41,7 @@ def ResNet152(input_shape):
     # this avg pool has already flatten the output
     outputs = layers.Dense(1000, activation='softmax')(x)
 
-    model = Model(inputs, outputs, name='resnet152')
+    model = Model(inputs, outputs, name='resnet50')
     return model
 
 

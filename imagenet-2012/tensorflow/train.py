@@ -8,8 +8,11 @@ from tensorflow.keras.callbacks import Callback, ModelCheckpoint, TensorBoard, R
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.utils import multi_gpu_model
 from tensorflow.keras.metrics import top_k_categorical_accuracy
+from tensorflow.keras import regularizers
 import numpy as np
 from models.alexnet_v2 import AlexNetV2
+from models.resnet50 import ResNet50
+from models.resnet152 import ResNet152
 from data_load import preprocess_image
 
 model_dir = './saved_models/'
@@ -18,6 +21,32 @@ training_config = {
     'alexnet2': {
         'name': 'alexnet2',
         'model': AlexNetV2,
+        'batch_size': 128,
+        'num_workers': 8,
+        'optimizer': optimizers.SGD,
+        # "...momentum may be less necessary...but in my experiments I used mu = 0.9..." alexnet2.[1]
+        'optimizer_params': {
+            'lr': 0.01,
+            'momentum': 0.9,
+        },
+        'total_epochs': 200,
+    },
+    'resnet50': {
+        'name': 'resnet50',
+        'model': ResNet50,
+        'batch_size': 128,
+        'num_workers': 8,
+        'optimizer': optimizers.SGD,
+        # "...momentum may be less necessary...but in my experiments I used mu = 0.9..." alexnet2.[1]
+        'optimizer_params': {
+            'lr': 0.01,
+            'momentum': 0.9,
+        },
+        'total_epochs': 200,
+    },
+    'resnet152': {
+        'name': 'resnet152',
+        'model': ResNet152,
         'batch_size': 128,
         'num_workers': 8,
         'optimizer': optimizers.SGD,
