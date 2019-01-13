@@ -32,6 +32,8 @@ Training Command for LeNet-5:
 ```
 make train_lenet5
 ```
+[Source Code](models/lenet5.py)
+
 There're multiple variation of LeNet, and here I've only implemented LeNet-5 as an example. Unlike mordern deep learning network architecture (as of 2018), LeNet was introduced in 1998, therefore some caveats needs to be mentioned:
 
 - Part of the implementation is different from the original [paper](http://vision.stanford.edu/cs598_spring07/papers/Lecun98.pdf). I tried my best to mimic the original design but some old techniques are not supported in PyTorch which is a relative new framework. Also it helps to avoid some hassle.

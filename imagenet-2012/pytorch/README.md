@@ -42,11 +42,14 @@ Training Command for V1 and V2:
 ```
 make train_alexnet1
 ```
+[Source Code](models/alexnet_v1.py)
 
 ### AlexNet V2
 ```
 make train_alexnet2
 ```
+[Source Code](models/alexnet_v2.py)
+
 Among two versions, I trained AlexNet V2 which achieves. Some training notes: 
 
 - The model could be further trained with smaller learning rate, but I stopped early to save computation resource
@@ -67,6 +70,7 @@ Among two versions, I trained AlexNet V2 which achieves. Some training notes:
 ```bash
 make train_vgg16
 ```
+[Source Code](models/vgg16.py)
 
 - I modified the data_load.py during training to fix that corrupted EXIF issue. So the second half of the training log doesn't have that warning. Also it used the old training script `train_old.py`.
 - Color jittering was not applied for this training
@@ -83,6 +87,7 @@ make train_vgg16
 ```bash
 make train_vgg19
 ```
+[Source Code](models/vgg19.py)
 
 ## Inception
 
@@ -90,6 +95,7 @@ make train_vgg19
 ```bash
 make train_inception1
 ```
+[Source Code](models/inception_v1.py)
 
 - This GoogLeNet is trained by an old training script (`train_old.py`), therefore some log format might differ from those newer ones.
 - From the notebook loss visualization, it seems like if I set max_epochs for lr policy to bigger number, maybe 90, could improve the performance when converge
@@ -112,6 +118,7 @@ make train_inception1
 ```
 make train_resnet34
 ```
+[Source Code](models/resnet34.py)
 
 - This model is trained with an old training script (`train_old.py`), therefore some log format might differ from those newer ones.
 - Unlike the new training config, I trained resnet-34 with a batch size of 512. Since I used 8 GPUs, it's 64 batch size per GPU. Kaiming did mentioned that different batch size might degrad the accuracy. So I advice still stick to batch size of 256 when you use 8 GPUs.
@@ -130,6 +137,7 @@ make train_resnet34
 ```
 make train_resnet50
 ```
+[Source Code](models/resnet50.py)
 
 - This model is trained with the new training script `train.py`
 
@@ -147,6 +155,7 @@ make train_resnet50
 ```
 make train_mobilenet1
 ```
+[Source Code](models/mobilenet_v1.py)
 
 - This model is trained with the new training script `train.py`
 
