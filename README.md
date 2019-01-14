@@ -1,18 +1,31 @@
-# Classification
+# Deep Learning in Computer Vision 
 
-[PyTorch](https://github.com/pytorch/pytorch) / [Tensorflow](https://github.com/tensorflow/tensorflow) implementation of common image classification models and training scripts categorized by datasets. If you think my work is helpful, please ⭐star⭐ this repo. If you have any questions regarding the code, feel free create an issue.
+[PyTorch](https://github.com/pytorch/pytorch) / [Tensorflow](https://github.com/tensorflow/tensorflow) implementation of common deep learning models and training scripts for computer vision tasks. This is used to ease the learning curve for new DL practitioners. If you think my work is helpful, please ⭐star⭐ this repo. If you have any questions regarding the code, feel free create an issue.
 
-## Datasets
+The repo is categorized by datasets, then further by framework. Some pretrained models, Jupyter notebook visuliazation script, and training logs are also provided for your reference.
 
-- [ImageNet ILSVRC2012](imagenet-2012) 
-    - AlexNet
-    - VGG
-    - GoogLeNet, Inception
-    - ResNet
-    - MobileNet
+## Image Classification
+
+- [ImageNet ILSVRC2012](imagenet-2012)
+    - [PyTorch](imagenet-2012/pytorch)
+        - AlexNet
+        - VGG
+        - GoogLeNet, Inception
+        - ResNet
+        - MobileNet
+    - [TensorFlow](imagenet-2012/tensorflow)
+        - AlexNet
+        - ResNet
 - [CIFAR-10](cifar-10)
 - [MNIST](mnist)
-    - LeNet
+    - [PyTorch](mnist/pytorch)
+        - LeNet
+    - [TensorFlow](mnist/tensorflow)
+        - LeNet
+
+## Object Detection
+
+WIP
 
 ## Setup
 
