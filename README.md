@@ -25,7 +25,7 @@ The repo is categorized by datasets, then further by framework. Some pretrained 
 
 ## Object Detection
 
-WIP
+- [Pascal VOC2007](voc-2007)
 
 ## Setup
 
