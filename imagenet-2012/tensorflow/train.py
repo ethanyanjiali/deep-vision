@@ -64,17 +64,17 @@ training_config = {
 class ModelHdf5Checkpoint(Callback):
     '''
     Save model as hdf5 format. The standard callback ModelCheckpoint saves in ckpt format
-    path: path to save hdf5 model file
     '''
 
-    def __init__(self, model_dir, model_filename):
+    def __init__(self, model_dir, model_filename, model_to_save):
         self.model_dir = model_dir
         self.model_filename = model_filename
+        self.model_to_save = model_to_save
 
     def on_epoch_end(self, epoch, logs={}):
         save_path = self.model_dir + self.model_filename + '-checkpoint-epoch-{}.hdf5'.format(
             epoch + 1)
-        self.model.save(save_path)
+        self.model_to_save.save(save_path)
 
 
 class LoggersCallback(Callback):
@@ -232,6 +232,9 @@ def run_epochs(config, checkpoint_path):
         model = Mdl(input_shape=(224, 224, 3), **model_params)
     else:
         model = Mdl(input_shape=(224, 224, 3))
+    # Using all visible GPUs when not specifying `gpus`
+    # https://github.com/keras-team/keras/blob/master/keras/utils/multi_gpu_utils.py#L154
+    parallel_model = multi_gpu_model(model)
 
     # Define the optimizer
     Optim = config.get('optimizer')
@@ -243,7 +246,7 @@ def run_epochs(config, checkpoint_path):
     model_filename = '{}-tf-{}'.format(model_name, model_id)
 
     # Define save checkpoint callback
-    cp_callback = ModelHdf5Checkpoint(model_dir, model_filename)
+    cp_callback = ModelHdf5Checkpoint(model_dir, model_filename, model_to_save)
     # Define save custom loggers callback
     lg_callback = LoggersCallback(model_dir + model_filename)
 
