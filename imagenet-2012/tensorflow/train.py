@@ -177,7 +177,10 @@ def _parse_function(proto, is_training):
 def create_dataset(filepath, config, is_training):
 
     # This works with arrays as well
-    dataset = tf.data.TFRecordDataset(tf.data.Dataset.list_files(filepath))
+    dataset = tf.data.TFRecordDataset(
+        tf.data.Dataset.list_files(filepath),
+        num_parallel_reads=config.get('num_workers'),
+    )
 
     # Maps the parser on every filepath in the array. You can set the number of parallel loaders here
     dataset = dataset.map(
@@ -232,9 +235,14 @@ def run_epochs(config, checkpoint_path):
         model = Mdl(input_shape=(224, 224, 3), **model_params)
     else:
         model = Mdl(input_shape=(224, 224, 3))
-    # Using all visible GPUs when not specifying `gpus`
-    # https://github.com/keras-team/keras/blob/master/keras/utils/multi_gpu_utils.py#L154
-    parallel_model = multi_gpu_model(model)
+    if checkpoint_path is not None:
+        model.load_weights(checkpoint_path)
+
+    devices = K.get_session().list_devices()
+    model_to_use = model
+    if 'GPU' in str(devices):
+        gpus = len(devices)
+        model_to_use = multi_gpu_model(model, gpus=gpus)
 
     # Define the optimizer
     Optim = config.get('optimizer')
@@ -246,7 +254,7 @@ def run_epochs(config, checkpoint_path):
     model_filename = '{}-tf-{}'.format(model_name, model_id)
 
     # Define save checkpoint callback
-    cp_callback = ModelHdf5Checkpoint(model_dir, model_filename, model_to_save)
+    cp_callback = ModelHdf5Checkpoint(model_dir, model_filename, model)
     # Define save custom loggers callback
     lg_callback = LoggersCallback(model_dir + model_filename)
 
@@ -258,16 +266,15 @@ def run_epochs(config, checkpoint_path):
         monitor='val_loss', factor=0.1, patience=10, min_lr=0.00001)
 
     # Compile the model and generate computation graph
-    model.compile(
+    model_to_use.compile(
         optimizer=optimizer,
         loss='categorical_crossentropy',
         metrics=['accuracy', top_5_accuracy],
     )
-    model.summary()
+    model_to_use.summary()
 
     # Start training
-    print(train_image)
-    model.fit(
+    model_to_use.fit(
         train_image,
         train_label,
         epochs=config.get('total_epochs'),
