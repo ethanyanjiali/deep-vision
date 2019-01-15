@@ -241,7 +241,7 @@ def run_epochs(config, checkpoint_path):
 
     devices = K.get_session().list_devices()
     model_to_use = model
-    if 'GPU' in str(devices):
+    if 'GPU' in str(devices) and config.get('gpus') > 1:
         gpus = len(devices)
         model_to_use = multi_gpu_model(model, gpus=config.get('gpus'))
 
