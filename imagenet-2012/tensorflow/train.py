@@ -31,6 +31,7 @@ training_config = {
             'momentum': 0.9,
         },
         'total_epochs': 200,
+        'gpus': 1,
     },
     'resnet50': {
         'name': 'resnet50',
@@ -242,7 +243,7 @@ def run_epochs(config, checkpoint_path):
     model_to_use = model
     if 'GPU' in str(devices):
         gpus = len(devices)
-        model_to_use = multi_gpu_model(model, gpus=gpus)
+        model_to_use = multi_gpu_model(model, gpus=config.get('gpus'))
 
     # Define the optimizer
     Optim = config.get('optimizer')
