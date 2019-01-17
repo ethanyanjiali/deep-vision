@@ -1,5 +1,8 @@
 TIME := `/bin/date "+%Y-%m-%d-%H-%M-%S"`
 
+gpu:
+	nvidia-smi -q -g 0 -d UTILIZATION -l
+
 find-python:
 	ps -ef | grep python
 

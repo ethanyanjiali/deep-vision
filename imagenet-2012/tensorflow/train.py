@@ -177,6 +177,8 @@ def _parse_function(proto, is_training):
 # https://medium.com/@moritzkrger/speeding-up-keras-with-tfrecord-datasets-5464f9836c36
 def create_dataset(filepath, config, is_training):
 
+    print('num_workers: ' + str(config.get('num_workers')))
+    
     # This works with arrays as well
     dataset = tf.data.TFRecordDataset(
         tf.data.Dataset.list_files(filepath),
@@ -197,6 +199,9 @@ def create_dataset(filepath, config, is_training):
 
     # Set the batchsize
     dataset = dataset.batch(config.get('batch_size'))
+
+    # prefetch 1 batch
+    dataset = dataset.prefetch(1)
 
     # Create an iterator
     iterator = dataset.make_one_shot_iterator()
