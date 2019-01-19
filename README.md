@@ -44,6 +44,6 @@ The repo is categorized by datasets, then further by framework. Some pretrained 
 
 Without the following resources I wouldn't be able to finish this project:
 
-- [Deep Learning Specialization by deeplearning.ai and Coursera](https://www.deeplearning.ai/deep-learning-specialization/)
-- [Computer Vision Nanodegree by Udacity](https://www.udacity.com/course/computer-vision-nanodegree--nd891)
-- [Hands-On Machine Learning with Scikit-Learn and TensorFlow by Aurélien Géron](https://www.amazon.com/Hands-Machine-Learning-Scikit-Learn-TensorFlow/dp/1491962291?keywords=hands+on+machine+learning&qid=1547709501&s=Books&sr=1-3&ref=sr_1_3)
+- [Deep Learning Specialization](https://www.deeplearning.ai/deep-learning-specialization/) by deeplearning.ai and Coursera
+- [Computer Vision Nanodegree](https://www.udacity.com/course/computer-vision-nanodegree--nd891) by Udacity
+- [Hands-On Machine Learning with Scikit-Learn and TensorFlow](https://www.amazon.com/Hands-Machine-Learning-Scikit-Learn-TensorFlow/dp/1491962291?keywords=hands+on+machine+learning&qid=1547709501&s=Books&sr=1-3&ref=sr_1_3) by Aurélien Géron
