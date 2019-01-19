@@ -26,6 +26,8 @@ The repo is categorized by datasets, then further by framework. Some pretrained 
 ## Object Detection
 
 - [Pascal VOC2007](voc-2007)
+    - [TensorFlow](voc-2007/tensorflow)
+        - YOLO V2
 
 ## Setup
 
@@ -37,3 +39,11 @@ The repo is categorized by datasets, then further by framework. Some pretrained 
 
 - This repo is mainly for study purpose. Hence I write the code in a readable and understandable way, but may not be scalable and reusable. I've also added comments and referrence for those catches I ran into during replication.
 - I'm not a researcher so don't have that much of time to tune the training and achieve the best benchmark. If you are looking for pre-trained models for transfer learning, there're some good ones from [PyTorch torchvision](https://pytorch.org/docs/stable/torchvision/models.html) or [TensorFlow slim](https://github.com/tensorflow/models/tree/master/research/slim).
+
+## Acknowledgement
+
+Without the following resources I wouldn't be able to finish this project:
+
+- [Deep Learning Specialization by deeplearning.ai and Coursera](https://www.deeplearning.ai/deep-learning-specialization/)
+- [Computer Vision Nanodegree by Udacity](https://www.udacity.com/course/computer-vision-nanodegree--nd891)
+- [Hands-On Machine Learning with Scikit-Learn and TensorFlow by Aurélien Géron](https://www.amazon.com/Hands-Machine-Learning-Scikit-Learn-TensorFlow/dp/1491962291?keywords=hands+on+machine+learning&qid=1547709501&s=Books&sr=1-3&ref=sr_1_3)

@@ -36,7 +36,6 @@ There're few tips before you acutally start training:
 - `data_load.py` implements some common data preprocessing and augmentation by using numpy. I could have use PyTorch built-in utils but this makes the process more clear
 
 ## AlexNet
-Training Command for V1 and V2:
 
 ### AlexNet V1
 ```
@@ -88,6 +87,17 @@ make train_vgg16
 make train_vgg19
 ```
 [Source Code](models/vgg19.py)
+
+- This model is trained with the new training script `train.py`
+- I modified the batch size from 128 to 64 in the middle of the training because I got a CUDA memory error
+
+**Val Accuracy**: 70.04% (Top-1), 89.30% (Top-5)
+
+**Training Log**: [vgg19-yanjiali-011819.log](logs/vgg19-yanjiali-011819.log)
+
+**Pretrained Model File**: [vgg19-pt-yanjiali-011819.pt](https://drive.google.com/file/d/1cIfy6QuF_b9BMdHORuCkjCsRz3nx2RHG/view?usp=sharing)
+
+**Notebook Visualization**: [VGG19.ipynb](notebooks/VGG19.ipynb)
 
 ## Inception
 
