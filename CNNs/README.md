@@ -2,7 +2,7 @@
 
 [PyTorch](https://github.com/pytorch/pytorch) / [Tensorflow](https://github.com/tensorflow/tensorflow) implementation of common CNN models and training scripts for computer vision tasks. This is used to ease the learning curve for new DL practitioners. If you think my work is helpful, please ⭐star⭐ this repo. If you have any questions regarding the code, feel free create an issue.
 
-The repo is categorized by datasets, then further by framework. Some pretrained models, Jupyter notebook visuliazation script, and training logs are also provided for your reference.
+The directory is categorized by datasets, then further by framework. Some pretrained models, Jupyter notebook visuliazation script, and training logs are also provided for your reference.
 
 ## Image Classification
 
