@@ -32,15 +32,13 @@ def main():
     discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
     checkpoint_dir = './checkpoints'
-    checkpoint_prefix = os.path.join(checkpoint_dir, 'ckpt')
     checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
                                      discriminator_optimizer=discriminator_optimizer,
                                      generator=generator,
                                      discriminator=discriminator,
-                                     step=tf.Variable(1))
+                                     step=tf.Variable(0))
     checkpoint_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
 
-    seed = tf.random.normal([NUM_EXAMPLES_TO_GENERATE, NOISE_DIM])
     cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
     # Try to recognize real ones as real, and fake ones as fake

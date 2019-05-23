@@ -49,7 +49,7 @@ class Discriminator(tf.keras.Model):
         self.conv1 = tf.keras.layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', input_shape=[28, 28, 1])
         self.relu_dropout1 = make_leaky_relu_and_dropout()
 
-        self.conv2 = tf.keras.layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same', input_shape=[28, 28, 1])
+        self.conv2 = tf.keras.layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same')
         self.relu_dropout2 = make_leaky_relu_and_dropout()
 
         self.flatten = tf.keras.layers.Flatten()

@@ -25,10 +25,8 @@ def main():
     noise = tf.random.normal([1, 100])
     generated_image = generator(noise, training=False)
 
-    tf.train.list_variables(tf.train.latest_checkpoint(checkpoint_dir, latest_filename='ckpt-3.index'))
-
-    # plt.imshow(generated_image[0, :, :, 0], cmap='gray')
-    # plt.show()
+    plt.imshow(generated_image[0, :, :, 0] * 127.5 + 127.5, cmap='gray')
+    plt.show()
 
 
 if __name__ == '__main__':
