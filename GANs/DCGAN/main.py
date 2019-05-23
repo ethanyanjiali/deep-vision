@@ -5,9 +5,7 @@ https://arxiv.org/pdf/1511.06434.pdf
 import os
 
 import tensorflow as tf
-import glob
 import time
-import matplotlib.pyplot as plt
 from models import Generator, Discriminator
 
 print(tf.__version__)
@@ -38,7 +36,9 @@ def main():
     checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
                                      discriminator_optimizer=discriminator_optimizer,
                                      generator=generator,
-                                     discriminator=discriminator)
+                                     discriminator=discriminator,
+                                     step=tf.Variable(1))
+    checkpoint_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
 
     seed = tf.random.normal([NUM_EXAMPLES_TO_GENERATE, NOISE_DIM])
     cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
@@ -72,16 +72,6 @@ def main():
         generator_optimizer.apply_gradients(zip(generator_gradients, generator.trainable_variables))
         discriminator_optimizer.apply_gradients(zip(discriminator_gradients, discriminator.trainable_variables))
 
-    def generate_and_save_images(model, epoch, test_input):
-        predictions = model(test_input, training=False)
-        fig = plt.figure(figsize=(4, 4))
-
-        for i in range(predictions.shape[0]):
-            plt.subplot(4, 4, i + 1)
-            plt.axis('off')
-
-        plt.savefig('image_at_epoch_{:04d}.png'.format(epoch))
-
     def train(dataset, epochs):
         for epoch in range(1, epochs+1):
             start = time.time()
@@ -89,10 +79,10 @@ def main():
             for image_batch in dataset:
                 train_step(image_batch)
 
-            generate_and_save_images(generator, epoch, seed)
-
+            checkpoint.step.assign_add(1)
             if epoch % 15 == 0:
-                checkpoint.save(file_prefix=checkpoint_prefix)
+                save_path = checkpoint_manager.save()
+                print("Saved checkpoint for step {}: {}".format(int(checkpoint.step), save_path))
 
             print('Time for epoch {} is {} sec'.format(epoch, time.time() - start))
 
