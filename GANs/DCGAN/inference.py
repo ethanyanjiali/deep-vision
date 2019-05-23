@@ -1,12 +1,12 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-from models import Generator, Discriminator
+from models import make_generator_model, make_discriminator_model
 
 
 def main():
-    generator = Generator()
-    discriminator = Discriminator()
+    generator = make_generator_model()
+    discriminator = make_discriminator_model()
     generator_optimizer = tf.keras.optimizers.Adam(1e-4)
     discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 

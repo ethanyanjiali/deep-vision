@@ -6,7 +6,7 @@ import os
 
 import tensorflow as tf
 import time
-from models import Generator, Discriminator, make_generator_model, make_discriminator_model
+from models import make_generator_model, make_discriminator_model
 
 print(tf.__version__)
 
@@ -78,7 +78,7 @@ def main():
                 train_step(image_batch)
 
             checkpoint.step.assign_add(1)
-            if epoch % 15 == 0:
+            if epoch % 2 == 0:
                 save_path = checkpoint_manager.save()
                 print("Saved checkpoint for step {}: {}".format(int(checkpoint.step), save_path))
 
