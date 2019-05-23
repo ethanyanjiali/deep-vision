@@ -6,7 +6,7 @@ import os
 
 import tensorflow as tf
 import time
-from models import Generator, Discriminator
+from models import Generator, Discriminator, make_generator_model, make_discriminator_model
 
 print(tf.__version__)
 
@@ -25,8 +25,8 @@ def main():
     # Batch and shuffle the data
     train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
 
-    generator = Generator()
-    discriminator = Discriminator()
+    generator = make_generator_model()
+    discriminator = make_discriminator_model()
 
     generator_optimizer = tf.keras.optimizers.Adam(1e-4)
     discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
