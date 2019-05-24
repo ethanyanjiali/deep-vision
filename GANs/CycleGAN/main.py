@@ -1,12 +1,14 @@
 import time
 import random
 import argparse
+import os
 
 import tensorflow as tf
 
 from models import make_discriminator_model, make_generator_model
 
 print(tf.__version__)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 LEARNING_RATE = 0.0002
 BETA_1 = 0.5
@@ -14,7 +16,7 @@ LAMBDA_A = 10.0
 LAMBDA_B = 10.0
 LAMBDA_ID = 0.5
 POOL_SIZE = 50
-EPOCHS = 50
+EPOCHS = 100
 BATCH_SIZE = 32
 SHUFFLE_SIZE = 10000
 
@@ -151,7 +153,7 @@ def main():
                 train_step(batch[0], batch[1])
 
             checkpoint.step.assign_add(1)
-            if epoch % 2 == 0:
+            if epoch % 5 == 0:
                 save_path = checkpoint_manager.save()
                 print("Saved checkpoint for step {}: {}".format(int(checkpoint.step), save_path))
 
@@ -189,7 +191,7 @@ def main():
     train_B = make_dataset('tfrecords/{}/trainB.tfrecord'.format(args.dataset))
     combined_dataset = tf.data.Dataset.zip((train_A, train_B)).shuffle(SHUFFLE_SIZE).batch(BATCH_SIZE)
 
-    train(combined_dataset, 50)
+    train(combined_dataset, EPOCHS)
     print('Finished training.')
 
 
