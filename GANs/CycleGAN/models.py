@@ -39,8 +39,13 @@ class ResNetBlock(tf.keras.Model):
 
 
 def make_generator_model(n_blocks):
+    # 6 residual blocks
+    # c7s1-64,d128,d256,R256,R256,R256,R256,R256,R256,u128,u64,c7s1-3
+    # 9 residual blocks
+    # c7s1-64,d128,d256,R256,R256,R256,R256,R256,R256,R256,R256,R256,u128,u64,c7s1-3
     model = tf.keras.Sequential()
 
+    # Encoding
     model.add(ReflectionPad2d(3))
     model.add(tf.keras.layers.Conv2D(64, (7, 7), strides=(1, 1), padding='valid', use_bias=False))
     model.add(tf.keras.layers.BatchNormalization())
@@ -54,9 +59,11 @@ def make_generator_model(n_blocks):
     model.add(tf.keras.layers.BatchNormalization())
     model.add(tf.keras.layers.ReLU())
 
+    # Transformation
     for i in range(n_blocks):
         model.add(ResNetBlock(256))
 
+    # Decoding
     model.add(tf.keras.layers.Conv2DTranspose(128, (3, 3), strides=(2, 2), padding='same', use_bias=False))
     model.add(tf.keras.layers.BatchNormalization())
     model.add(tf.keras.layers.ReLU())
@@ -72,7 +79,26 @@ def make_generator_model(n_blocks):
 
 
 def make_discriminator_model():
+    # C64-C128-C256-C512
     model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Conv2D(64, (4, 4), strides=(2, 2), padding='same'))
+    model.add(tf.keras.layers.LeakyReLU(alpha=0.2))
+
+    model.add(tf.keras.layers.Conv2D(128, (4, 4), strides=(2, 2), padding='same', use_bias=False))
     model.add(tf.keras.layers.BatchNormalization())
-    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.LeakyReLU(alpha=0.2))
+
+    model.add(tf.keras.layers.Conv2D(256, (4, 4), strides=(2, 2), padding='same', use_bias=False))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.LeakyReLU(alpha=0.2))
+
+    model.add(tf.keras.layers.Conv2D(512, (4, 4), strides=(1, 1), padding='same', use_bias=False))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.LeakyReLU(alpha=0.2))
+
+    # This last conv net is the PatchGAN
+    # https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/issues/39#issuecomment-305575964
+    # https://github.com/phillipi/pix2pix/blob/master/scripts/receptive_field_sizes.m
+    model.add(tf.keras.layers.Conv2D(1, (4, 4), strides=(1, 1), padding='same'))
+
     return model
