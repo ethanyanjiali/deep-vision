@@ -17,14 +17,14 @@ LAMBDA_B = 10.0
 LAMBDA_ID = 0.5
 POOL_SIZE = 50
 EPOCHS = 100
-BATCH_SIZE = 32
+BATCH_SIZE = 8
 SHUFFLE_SIZE = 10000
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Convert iFood 2018 dataset to TFRecord files.')
+    parser = argparse.ArgumentParser(description='Convert TFRecords for CycleGAN dataset.')
     parser.add_argument(
-        '--dataset', help='The name of the dataset')
+        '--dataset', help='The name of the dataset', required=True)
     args = parser.parse_args()
 
     mse_loss = tf.keras.losses.MeanSquaredError()
