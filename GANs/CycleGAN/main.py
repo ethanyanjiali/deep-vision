@@ -75,7 +75,7 @@ def main():
     optimizer_G_B = tf.keras.optimizers.Adam(LEARNING_RATE, BETA_1)
     optimizer_D_B = tf.keras.optimizers.Adam(LEARNING_RATE, BETA_1)
 
-    checkpoint_dir = './checkpoints'
+    checkpoint_dir = './checkpoints-{}'.format(args.dataset)
     checkpoint = tf.train.Checkpoint(netG_A=netG_A,
                                      netG_B=netG_B,
                                      netD_A=netD_A,
