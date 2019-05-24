@@ -1,4 +1,5 @@
 import random
+import tensorflow as tf
 
 
 class ImagePool():
@@ -6,6 +7,7 @@ class ImagePool():
         self.pool_size = pool_size
         self.count = 0
         self.images = []
+        print(tf.autograph.to_code(self.query))
 
     def query(self, images):
         if self.pool_size == 0:

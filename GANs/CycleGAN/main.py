@@ -1,10 +1,10 @@
 import time
+import random
+import argparse
 
 import tensorflow as tf
-import matplotlib.pyplot as plt
 
 from models import make_discriminator_model, make_generator_model
-from pool import ImagePool
 
 print(tf.__version__)
 
@@ -15,12 +15,40 @@ LAMBDA_B = 10.0
 LAMBDA_ID = 0.5
 POOL_SIZE = 50
 EPOCHS = 50
+BATCH_SIZE = 32
+SHUFFLE_SIZE = 10000
+
 
 def main():
+    parser = argparse.ArgumentParser(description='Convert iFood 2018 dataset to TFRecord files.')
+    parser.add_argument(
+        '--dataset', help='The name of the dataset')
+    args = parser.parse_args()
+
     mse_loss = tf.keras.losses.MeanSquaredError()
     mae_loss = tf.keras.losses.MeanAbsoluteError()
-    image_pool_fake_A = ImagePool(0)
-    image_pool_fake_B = ImagePool(0)
+    image_pool_fake_A = []
+    image_pool_fake_B = []
+
+    def query_image_pool(fake_images, fake_pool):
+        if len(fake_pool) < POOL_SIZE:
+            fake_pool.append(fake_images)
+            return fake_images
+        else:
+            p = random.random()
+            if p > 0.5:
+                random_id = random.randint(0, POOL_SIZE-1)
+                temp = fake_pool[random_id]
+                fake_pool[random_id] = fake_images
+                return temp
+            else:
+                return fake_images
+
+    def query_image_pool_A(fake_images):
+        return query_image_pool(fake_images, image_pool_fake_A)
+
+    def query_image_pool_B(fake_images):
+        return query_image_pool(fake_images, image_pool_fake_B)
 
     def calc_gan_loss(prediction, is_real):
         # Typical GAN loss to set objectives for generator and discriminator
@@ -29,14 +57,14 @@ def main():
         else:
             return mse_loss(prediction, tf.zeros_like(prediction))
 
-    def calc_cycle_loss(reconstructed_image, real_image):
+    def calc_cycle_loss(reconstructed_images, real_images):
         # Cycle loss to make sure reconstructed image looks real
-        return mae_loss(reconstructed_image, real_image)
+        return mae_loss(reconstructed_images, real_images)
 
-    def calc_identity_loss(identity_image, real_image):
+    def calc_identity_loss(identity_images, real_images):
         # Identity loss to make sure generator won't do unnecessary change
         # Ideally, feeding a real image to generator should generate itself
-        return mae_loss(identity_image, real_image)
+        return mae_loss(identity_images, real_images)
 
     netG_A = make_generator_model(n_blocks=9)
     netG_B = make_generator_model(n_blocks=9)
@@ -88,7 +116,7 @@ def main():
                 loss_G_A = loss_gan_G_A + loss_cycle_A * LAMBDA_A + loss_identity_A * LAMBDA_A * LAMBDA_ID
                 loss_G_B = loss_gan_G_B + loss_cycle_B * LAMBDA_B + loss_identity_B * LAMBDA_B * LAMBDA_ID
 
-                fake_A_to_inspect = image_pool_fake_A.query(fake_A)
+                fake_A_to_inspect = query_image_pool_A(fake_A)
                 decision_B_real = netD_B(real_A)
                 decision_B_fake = netD_B(fake_A_to_inspect)
                 # For discriminator, true is true, false is false
@@ -96,7 +124,7 @@ def main():
                 loss_gan_D_B_fake = calc_gan_loss(decision_B_fake, False)
                 loss_D_B = (loss_gan_D_B_real + loss_gan_D_B_fake) * 0.5
 
-                fake_B_to_inspect = image_pool_fake_B.query(fake_B)
+                fake_B_to_inspect = query_image_pool_B(fake_B)
                 decision_A_real = netD_A(real_B)
                 decision_A_fake = netD_A(fake_B_to_inspect)
                 # For discriminator, true is true, false is false
@@ -118,18 +146,51 @@ def main():
         for epoch in range(1, epochs+1):
             start = time.time()
 
-            for image_batch in dataset:
-                train_step(image_batch)
+            for batch in dataset:
+                print(batch[0].shape, batch[1].shape)
+                train_step(batch[0], batch[1])
 
             checkpoint.step.assign_add(1)
-            if epoch % 10 == 0:
+            if epoch % 2 == 0:
                 save_path = checkpoint_manager.save()
                 print("Saved checkpoint for step {}: {}".format(int(checkpoint.step), save_path))
 
             print('Time for epoch {} is {} sec'.format(epoch, time.time() - start))
 
-    seed = tf.random.normal([1, 256, 256, 3])
-    train_step(seed, seed)
+    def make_dataset(filepath):
+        raw_dataset = tf.data.TFRecordDataset(filepath)
+
+        image_feature_description = {
+            'image/height': tf.io.FixedLenFeature([], tf.int64),
+            'image/width': tf.io.FixedLenFeature([], tf.int64),
+            'image/format': tf.io.FixedLenFeature([], tf.string),
+            'image/encoded': tf.io.FixedLenFeature([], tf.string),
+        }
+
+        def preprocess_image(encoded_image):
+            image = tf.image.decode_jpeg(encoded_image, 3)
+            # resize to 256x256
+            image = tf.image.resize(image, [256, 256])
+            # normalize from 0-255 to 0-1
+            image = image / 127.5 - 1
+            return image
+
+        def parse_image_function(example_proto):
+            # Parse the input tf.Example proto using the dictionary above.
+            features = tf.io.parse_single_example(example_proto, image_feature_description)
+            encoded_image = features['image/encoded']
+            image = preprocess_image(encoded_image)
+            return image
+
+        parsed_image_dataset = raw_dataset.map(parse_image_function)
+        return parsed_image_dataset
+
+    train_A = make_dataset('tfrecords/{}/trainA.tfrecord'.format(args.dataset))
+    train_B = make_dataset('tfrecords/{}/trainB.tfrecord'.format(args.dataset))
+    combined_dataset = tf.data.Dataset.zip((train_A, train_B)).shuffle(SHUFFLE_SIZE).batch(BATCH_SIZE)
+
+    train(combined_dataset, 50)
+    print('Finished training.')
 
 
 if __name__ == '__main__':
