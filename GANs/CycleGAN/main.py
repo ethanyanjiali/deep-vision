@@ -98,45 +98,44 @@ def main():
         # method is called. To compute multiple gradients over the same computation, create a persistent gradient tape.
         # This allows multiple calls to the gradient() method as resources are released
         # when the tape object is garbage collected.
-        with tf.GradientTape() as tapeG_A, tf.GradientTape() as tapeG_B, \
-                tf.GradientTape() as tapeD_A, tf.GradientTape() as tapeD_B:
-                # Cycle A -> B -> A
-                fake_B = netG_A(real_A)
-                recon_A = netG_B(fake_B)
-                # Cycle B -> A -> B
-                fake_A = netG_B(real_B)
-                recon_B = netG_A(fake_A)
+        with tf.GradientTape() as tapeG_A, tf.GradientTape() as tapeG_B, tf.GradientTape() as tapeD_A, tf.GradientTape() as tapeD_B:
+            # Cycle A -> B -> A
+            fake_B = netG_A(real_A, training=True)
+            recon_A = netG_B(fake_B, training=True)
+            # Cycle B -> A -> B
+            fake_A = netG_B(real_B, training=True)
+            recon_B = netG_A(fake_A, training=True)
 
-                # Use real B to generate B should be identical
-                identity_A = netG_A(real_B)
-                identity_B = netG_B(real_A)
-                loss_identity_A = calc_identity_loss(identity_A, real_B)
-                loss_identity_B = calc_identity_loss(identity_B, real_A)
+            # Use real B to generate B should be identical
+            identity_A = netG_A(real_B, training=True)
+            identity_B = netG_B(real_A, training=True)
+            loss_identity_A = calc_identity_loss(identity_A, real_B)
+            loss_identity_B = calc_identity_loss(identity_B, real_A)
 
-                # Generator tries to trick Discriminator
-                loss_gan_G_A = calc_gan_loss(netD_A(fake_B), True)
-                loss_gan_G_B = calc_gan_loss(netD_B(fake_A), True)
-                loss_cycle_A = calc_cycle_loss(recon_A, real_A)
-                loss_cycle_B = calc_cycle_loss(recon_B, real_B)
+            # Generator tries to trick Discriminator
+            loss_gan_G_A = calc_gan_loss(netD_A(fake_B), True)
+            loss_gan_G_B = calc_gan_loss(netD_B(fake_A), True)
+            loss_cycle_A = calc_cycle_loss(recon_A, real_A)
+            loss_cycle_B = calc_cycle_loss(recon_B, real_B)
 
-                loss_G_A = loss_gan_G_A + loss_cycle_A * LAMBDA_A + loss_identity_A * LAMBDA_A * LAMBDA_ID
-                loss_G_B = loss_gan_G_B + loss_cycle_B * LAMBDA_B + loss_identity_B * LAMBDA_B * LAMBDA_ID
+            loss_G_A = loss_gan_G_A + loss_cycle_A * LAMBDA_A + loss_identity_A * LAMBDA_A * LAMBDA_ID
+            loss_G_B = loss_gan_G_B + loss_cycle_B * LAMBDA_B + loss_identity_B * LAMBDA_B * LAMBDA_ID
 
-                fake_A_to_inspect = query_image_pool_A(fake_A)
-                decision_B_real = netD_B(real_A)
-                decision_B_fake = netD_B(fake_A_to_inspect)
-                # For discriminator, true is true, false is false
-                loss_gan_D_B_real = calc_gan_loss(decision_B_real, True)
-                loss_gan_D_B_fake = calc_gan_loss(decision_B_fake, False)
-                loss_D_B = (loss_gan_D_B_real + loss_gan_D_B_fake) * 0.5
+            fake_A_to_inspect = query_image_pool_A(fake_A)
+            decision_B_real = netD_B(real_A, training=True)
+            decision_B_fake = netD_B(fake_A_to_inspect, training=True)
+            # For discriminator, true is true, false is false
+            loss_gan_D_B_real = calc_gan_loss(decision_B_real, True)
+            loss_gan_D_B_fake = calc_gan_loss(decision_B_fake, False)
+            loss_D_B = (loss_gan_D_B_real + loss_gan_D_B_fake) * 0.5
 
-                fake_B_to_inspect = query_image_pool_B(fake_B)
-                decision_A_real = netD_A(real_B)
-                decision_A_fake = netD_A(fake_B_to_inspect)
-                # For discriminator, true is true, false is false
-                loss_gan_D_A_real = calc_gan_loss(decision_A_real, True)
-                loss_gan_D_A_fake = calc_gan_loss(decision_A_fake, False)
-                loss_D_A = (loss_gan_D_A_real + loss_gan_D_A_fake) * 0.5
+            fake_B_to_inspect = query_image_pool_B(fake_B)
+            decision_A_real = netD_A(real_B, training=True)
+            decision_A_fake = netD_A(fake_B_to_inspect, training=True)
+            # For discriminator, true is true, false is false
+            loss_gan_D_A_real = calc_gan_loss(decision_A_real, True)
+            loss_gan_D_A_fake = calc_gan_loss(decision_A_fake, False)
+            loss_D_A = (loss_gan_D_A_real + loss_gan_D_A_fake) * 0.5
 
         gradientG_A = tapeG_A.gradient(loss_G_A, netG_A.trainable_variables)
         gradientG_B = tapeG_B.gradient(loss_G_B, netG_B.trainable_variables)
@@ -148,10 +147,10 @@ def main():
         optimizer_G_B.apply_gradients(zip(gradientG_B, netG_A.trainable_variables))
         optimizer_D_B.apply_gradients(zip(gradientD_B, netD_A.trainable_variables))
 
-        print('loss_G_A: %s' % format(float(loss_G_A)))
-        print('loss_G_B: %s' % format(float(loss_G_B)))
-        print('loss_D_A: %s' % format(float(loss_D_A)))
-        print('loss_D_B: %s' % format(float(loss_D_B)))
+        tf.print('loss_G_A: ', loss_G_A)
+        tf.print('loss_G_B: ', loss_G_B)
+        tf.print('loss_D_A: ', loss_D_A)
+        tf.print('loss_D_B: ', loss_D_B)
 
     def train(dataset, epochs):
         for epoch in range(1, epochs+1):
@@ -199,7 +198,11 @@ def main():
     train_B = make_dataset('tfrecords/{}/trainB.tfrecord'.format(args.dataset))
     combined_dataset = tf.data.Dataset.zip((train_A, train_B)).shuffle(SHUFFLE_SIZE).batch(BATCH_SIZE)
 
-    train(combined_dataset, EPOCHS)
+    seed1 = tf.random.normal([1, 256, 256, 3])
+    seed2 = tf.random.normal([1, 256, 256, 3])
+    combined_dataset = [(seed1, seed2)]
+
+    train(combined_dataset, 1)
     print('Finished training.')
 
 
