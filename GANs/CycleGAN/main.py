@@ -147,10 +147,7 @@ def main():
         optimizer_G_B.apply_gradients(zip(gradientG_B, netG_A.trainable_variables))
         optimizer_D_B.apply_gradients(zip(gradientD_B, netD_A.trainable_variables))
 
-        tf.print('loss_G_A: ', loss_G_A)
-        tf.print('loss_G_B: ', loss_G_B)
-        tf.print('loss_D_A: ', loss_D_A)
-        tf.print('loss_D_B: ', loss_D_B)
+        tf.print('loss_G_A: ', loss_G_A, ' loss_G_B: ', loss_G_B,' loss_D_A: ', loss_D_A, ' loss_D_B: ', loss_D_B)
 
     def train(dataset, epochs):
         for epoch in range(1, epochs+1):
