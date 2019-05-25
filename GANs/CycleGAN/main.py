@@ -203,7 +203,7 @@ def main():
     # seed2 = tf.random.normal([1, 256, 256, 3])
     # combined_dataset = [(seed1, seed2)]
 
-    train(combined_dataset, 1)
+    train(combined_dataset, EPOCHS)
     print('Finished training.')
 
 
