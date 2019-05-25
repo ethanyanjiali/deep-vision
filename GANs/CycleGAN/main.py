@@ -198,9 +198,10 @@ def main():
     train_B = make_dataset('tfrecords/{}/trainB.tfrecord'.format(args.dataset))
     combined_dataset = tf.data.Dataset.zip((train_A, train_B)).shuffle(SHUFFLE_SIZE).batch(BATCH_SIZE)
 
-    seed1 = tf.random.normal([1, 256, 256, 3])
-    seed2 = tf.random.normal([1, 256, 256, 3])
-    combined_dataset = [(seed1, seed2)]
+    # for local testing
+    # seed1 = tf.random.normal([1, 256, 256, 3])
+    # seed2 = tf.random.normal([1, 256, 256, 3])
+    # combined_dataset = [(seed1, seed2)]
 
     train(combined_dataset, 1)
     print('Finished training.')
