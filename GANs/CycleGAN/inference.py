@@ -30,9 +30,9 @@ def main():
     generated = outputs[0]
     generated = (generated + 1) * 127.5
     generated = tf.cast(generated, tf.uint8)
-    print(generated)
-    plt.imshow(generated)
-    plt.show()
+    print(outputs)
+    # plt.imshow(generated)
+    # plt.show()
 
 
 if __name__ == '__main__':
