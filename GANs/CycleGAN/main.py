@@ -94,8 +94,12 @@ def main():
         real_A = images_A
         real_B = images_B
 
-        with tf.GradientTape() as tapeG_A, tf.GradientTape() as tapeG_B:
-            with tf.GradientTape() as tapeD_A, tf.GradientTape() as tapeD_B:
+        # By default, the resources held by a GradientTape are released as soon as GradientTape.gradient()
+        # method is called. To compute multiple gradients over the same computation, create a persistent gradient tape.
+        # This allows multiple calls to the gradient() method as resources are released
+        # when the tape object is garbage collected.
+        with tf.GradientTape() as tapeG_A, tf.GradientTape() as tapeG_B, \
+                tf.GradientTape() as tapeD_A, tf.GradientTape() as tapeD_B:
                 # Cycle A -> B -> A
                 fake_B = netG_A(real_A)
                 recon_A = netG_B(fake_B)
