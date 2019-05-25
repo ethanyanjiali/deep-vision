@@ -144,12 +144,16 @@ def main():
         optimizer_G_B.apply_gradients(zip(gradientG_B, netG_A.trainable_variables))
         optimizer_D_B.apply_gradients(zip(gradientD_B, netD_A.trainable_variables))
 
+        print('loss_G_A: {}'.format(loss_G_A))
+        print('loss_G_B: {}'.format(loss_G_B))
+        print('loss_D_A: {}'.format(loss_D_A))
+        print('loss_D_B: {}'.format(loss_D_B))
+
     def train(dataset, epochs):
         for epoch in range(1, epochs+1):
             start = time.time()
 
             for batch in dataset:
-                print(batch[0].shape, batch[1].shape)
                 train_step(batch[0], batch[1])
 
             checkpoint.step.assign_add(1)
@@ -173,7 +177,7 @@ def main():
             image = tf.image.decode_jpeg(encoded_image, 3)
             # resize to 256x256
             image = tf.image.resize(image, [256, 256])
-            # normalize from 0-255 to 0-1
+            # normalize from 0-255 to -1 ~ +1
             image = image / 127.5 - 1
             return image
 
