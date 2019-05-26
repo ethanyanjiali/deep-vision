@@ -32,6 +32,11 @@ def train():
 
     return loss
 
-loss = train()
-tf.print('outest tf print', loss)
-print("outest py print", loss)
+# loss = train()
+# tf.print('outest tf print', loss)
+# print("outest py print", loss)
+
+
+a = tf.constant([[2, 0], [1, -1]])
+print(tf.math.squared_difference(a, 1).numpy)
+# print(tf.math.diff(a, 1))

@@ -6,6 +6,7 @@ import os
 import tensorflow as tf
 
 from models import make_discriminator_model, make_generator_model
+from pool import ImagePool
 
 print(tf.__version__)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -29,21 +30,27 @@ def main():
 
     mse_loss = tf.keras.losses.MeanSquaredError()
     mae_loss = tf.keras.losses.MeanAbsoluteError()
-    image_pool_fake_A = []
-    image_pool_fake_B = []
+    fake_pool_A = ImagePool(POOL_SIZE)
+    fake_pool_B = ImagePool(POOL_SIZE)
+    # image_pool_fake_A = []
+    # image_pool_fake_B = []
 
     def query_image_pool(fake_images, fake_pool):
         if len(fake_pool) < POOL_SIZE:
             fake_pool.append(fake_images)
+            tf.print('here 1', len(fake_pool))
             return fake_images
         else:
+            tf.print('here 2', len(fake_pool))
             p = random.random()
             if p > 0.5:
+                tf.print('here 3')
                 random_id = random.randint(0, POOL_SIZE-1)
                 temp = fake_pool[random_id]
                 fake_pool[random_id] = fake_images
                 return temp
             else:
+                tf.print('here 4')
                 return fake_images
 
     def query_image_pool_A(fake_images):
@@ -89,7 +96,6 @@ def main():
                                      step=tf.Variable(0))
     checkpoint_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
 
-    @tf.function
     def train_step(images_A, images_B):
         real_A = images_A
         real_B = images_B
@@ -121,7 +127,8 @@ def main():
             loss_G_A = loss_gan_G_A + loss_cycle_A * LAMBDA_A + loss_identity_A * LAMBDA_A * LAMBDA_ID
             loss_G_B = loss_gan_G_B + loss_cycle_B * LAMBDA_B + loss_identity_B * LAMBDA_B * LAMBDA_ID
 
-            fake_A_to_inspect = query_image_pool_A(fake_A)
+            # fake_A_to_inspect = query_image_pool_A(fake_A)
+            fake_A_to_inspect = fake_pool_A.query(fake_A)
             decision_B_real = netD_B(real_A, training=True)
             decision_B_fake = netD_B(fake_A_to_inspect, training=True)
             # For discriminator, true is true, false is false
@@ -129,7 +136,8 @@ def main():
             loss_gan_D_B_fake = calc_gan_loss(decision_B_fake, False)
             loss_D_B = (loss_gan_D_B_real + loss_gan_D_B_fake) * 0.5
 
-            fake_B_to_inspect = query_image_pool_B(fake_B)
+            # fake_B_to_inspect = query_image_pool_B(fake_B)
+            fake_B_to_inspect = fake_pool_A.query(fake_B)
             decision_A_real = netD_A(real_B, training=True)
             decision_A_fake = netD_A(fake_B_to_inspect, training=True)
             # For discriminator, true is true, false is false
@@ -196,11 +204,11 @@ def main():
     combined_dataset = tf.data.Dataset.zip((train_A, train_B)).shuffle(SHUFFLE_SIZE).batch(BATCH_SIZE)
 
     # for local testing
-    # seed1 = tf.random.normal([1, 256, 256, 3])
-    # seed2 = tf.random.normal([1, 256, 256, 3])
+    # seed1 = tf.random.normal([2, 256, 256, 3])
+    # seed2 = tf.random.normal([2, 256, 256, 3])
     # combined_dataset = [(seed1, seed2)]
 
-    train(combined_dataset, EPOCHS)
+    train(combined_dataset, 50)
     print('Finished training.')
 
 
