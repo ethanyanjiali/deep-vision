@@ -1,4 +1,5 @@
 import random
+import tensorflow as tf
 
 
 # This image pool only works in TF eager mode. Not graph mode (tf.function)
@@ -31,4 +32,4 @@ class ImagePool:
                 else:
                     # by another 50% chance, the buffer will return the current image
                     return_images.append(image)
-        return return_images
+        return tf.stack(return_images, axis=0)
