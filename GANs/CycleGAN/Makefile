@@ -1,5 +1,5 @@
 train:
-	nohup python -u main.py --dataset=horse2zebra --batch_size=4 &
+	nohup python -u main.py --dataset=horse2zebra --batch_size=8 &
 
 ps:
 	ps -ef | grep python
