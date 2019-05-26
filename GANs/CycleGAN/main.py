@@ -19,7 +19,7 @@ LAMBDA_B = 10.0
 LAMBDA_ID = 0.5
 POOL_SIZE = 50
 EPOCHS = 100
-BATCH_SIZE = 4
+BATCH_SIZE = 2
 SHUFFLE_SIZE = 10000
 
 
@@ -237,7 +237,7 @@ def main():
     # seed2 = tf.random.normal([2, 256, 256, 3])
     # combined_dataset = [(seed1, seed2)]
 
-    train(combined_dataset, 50)
+    train(combined_dataset, EPOCHS)
     print('Finished training.')
 
 
