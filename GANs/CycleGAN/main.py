@@ -14,8 +14,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 LEARNING_RATE = 0.0002
 BETA_1 = 0.5
-LAMBDA = 10.0
-LAMBDA_ID = 0.5
+LAMBDA_CYCLE = 10.0
+LAMBDA_ID = 5
 POOL_SIZE = 50
 EPOCHS = 100
 SHUFFLE_SIZE = 10000
@@ -29,6 +29,10 @@ def main():
         '--batch_size', help='The batch size of input data', default='2')
     args = parser.parse_args()
 
+    loss_gen_total_metrics = tf.keras.metrics.Mean('loss_gen_total_metrics', dtype=tf.float32)
+    loss_dis_total_metrics = tf.keras.metrics.Mean('loss_dis_total_metrics', dtype=tf.float32)
+    loss_cycle_a2b2a_metrics = tf.keras.metrics.Mean('loss_cycle_a2b2a_metrics', dtype=tf.float32)
+    loss_cycle_b2a2b_metrics = tf.keras.metrics.Mean('loss_cycle_b2a2b_metrics', dtype=tf.float32)
     loss_gen_a2b_metrics = tf.keras.metrics.Mean('loss_gen_a2b_metrics', dtype=tf.float32)
     loss_gen_b2a_metrics = tf.keras.metrics.Mean('loss_gen_b2a_metrics', dtype=tf.float32)
     loss_dis_b_metrics = tf.keras.metrics.Mean('loss_dis_b_metrics', dtype=tf.float32)
@@ -60,32 +64,25 @@ def main():
     generator_b2a = make_generator_model(n_blocks=9)
     discriminator_b = make_discriminator_model()
     discriminator_a = make_discriminator_model()
-    optimizer_gen_a2b = tf.keras.optimizers.Adam(LEARNING_RATE, BETA_1)
-    optimizer_dis_b = tf.keras.optimizers.Adam(LEARNING_RATE, BETA_1)
-    optimizer_gen_b2a = tf.keras.optimizers.Adam(LEARNING_RATE, BETA_1)
-    optimizer_dis_a = tf.keras.optimizers.Adam(LEARNING_RATE, BETA_1)
+    optimizer_gen = tf.keras.optimizers.Adam(LEARNING_RATE, BETA_1)
+    optimizer_dis = tf.keras.optimizers.Adam(LEARNING_RATE, BETA_1)
 
     checkpoint_dir = './checkpoints-{}'.format(args.dataset)
     checkpoint = tf.train.Checkpoint(generator_a2b=generator_a2b,
                                      generator_b2a=generator_b2a,
                                      discriminator_b=discriminator_b,
                                      discriminator_a=discriminator_a,
-                                     optimizer_gen_a2b=optimizer_gen_a2b,
-                                     optimizer_dis_b=optimizer_dis_b,
-                                     optimizer_gen_b2a=optimizer_gen_b2a,
-                                     optimizer_dis_a=optimizer_dis_a,
+                                     optimizer_gen=optimizer_gen,
+                                     optimizer_dis=optimizer_dis,
                                      step=tf.Variable(0))
     checkpoint_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
 
-    def train_step(images_a, images_b):
+    @tf.function
+    def train_generator(images_a, images_b):
         real_a = images_a
         real_b = images_b
 
-        # By default, the resources held by a GradientTape are released as soon as GradientTape.gradient()
-        # method is called. To compute multiple gradients over the same computation, create a persistent gradient tape.
-        # This allows multiple calls to the gradient() method as resources are released
-        # when the tape object is garbage collected.
-        with tf.GradientTape() as tape_gen_a2b, tf.GradientTape() as tape_gen_b2a, tf.GradientTape() as tape_dis_b, tf.GradientTape() as tape_dis_a:
+        with tf.GradientTape() as tape:
             # Cycle A -> B -> A
             fake_a2b = generator_a2b(real_a, training=True)
             recon_b2a = generator_b2a(fake_a2b, training=True)
@@ -100,66 +97,101 @@ def main():
             loss_identity_b2a = calc_identity_loss(identity_b2a, real_a)
 
             # Generator A2B tries to trick Discriminator B that the generated image is B
-            loss_gan_gen_a2b = calc_gan_loss(discriminator_b(fake_a2b), True)
+            loss_gan_gen_a2b = calc_gan_loss(discriminator_b(fake_a2b, training=True), True)
             # Generator B2A tries to trick Discriminator A that the generated image is A
-            loss_gan_gen_b2a = calc_gan_loss(discriminator_a(fake_b2a), True)
+            loss_gan_gen_b2a = calc_gan_loss(discriminator_a(fake_b2a, training=True), True)
             loss_cycle_a2b2a = calc_cycle_loss(recon_b2a, real_a)
             loss_cycle_b2a2b = calc_cycle_loss(recon_a2b, real_b)
 
             # Total generator loss
-            loss_gen_a2b = loss_gan_gen_a2b + (loss_cycle_a2b2a + loss_cycle_b2a2b) * LAMBDA + loss_identity_a2b * LAMBDA * LAMBDA_ID
-            loss_gen_b2a = loss_gan_gen_b2a + (loss_cycle_a2b2a + loss_cycle_b2a2b) * LAMBDA + loss_identity_b2a * LAMBDA * LAMBDA_ID
+            loss_gen_total = loss_gan_gen_a2b + loss_gan_gen_b2a \
+                + (loss_cycle_a2b2a + loss_cycle_b2a2b) * LAMBDA_CYCLE \
+                + (loss_identity_a2b + loss_identity_b2a) * LAMBDA_ID
 
-            fake_b2a_from_pool = fake_pool_b2a.query(fake_b2a)
+        trainable_variables = generator_a2b.trainable_variables + generator_b2a.trainable_variables
+        gradient_gen = tape.gradient(loss_gen_total, trainable_variables)
+        optimizer_gen.apply_gradients(zip(gradient_gen, trainable_variables))
+
+        # Metrics
+        loss_gen_a2b_metrics(loss_gan_gen_a2b)
+        loss_gen_b2a_metrics(loss_gan_gen_b2a)
+        loss_id_b2a_metrics(loss_identity_b2a)
+        loss_id_a2b_metrics(loss_identity_a2b)
+        loss_cycle_a2b2a_metrics(loss_cycle_a2b2a)
+        loss_cycle_b2a2b_metrics(loss_cycle_b2a2b)
+        loss_gen_total_metrics(loss_gen_total)
+
+        loss_dict = {
+            'loss_gen_a2b': loss_gan_gen_a2b,
+            'loss_gen_b2a': loss_gan_gen_b2a,
+            'loss_id_a2b': loss_identity_a2b,
+            'loss_id_b2a': loss_identity_b2a,
+            'loss_cycle_a2b2a': loss_cycle_a2b2a,
+            'loss_cycle_b2a2b': loss_cycle_b2a2b,
+            'loss_gen_total': loss_gen_total,
+        }
+        return fake_a2b, fake_b2a, loss_dict
+
+    @tf.function
+    def train_discriminator(images_a, images_b, fake_a2b, fake_b2a):
+        real_a = images_a
+        real_b = images_b
+
+        with tf.GradientTape() as tape:
+
             # Discriminator A should classify real_a as A
             loss_gan_dis_a_real = calc_gan_loss(discriminator_a(real_a, training=True), True)
             # Discriminator A should classify generated fake_b2a as not A
-            loss_gan_dis_a_fake = calc_gan_loss(discriminator_a(fake_b2a_from_pool, training=True), False)
+            loss_gan_dis_a_fake = calc_gan_loss(discriminator_a(fake_b2a, training=True), False)
 
-            fake_a2b_from_pool = fake_pool_a2b.query(fake_a2b)
             # Discriminator B should classify real_b as B
             loss_gan_dis_b_real = calc_gan_loss(discriminator_b(real_b, training=True), True)
-            loss_gan_dis_b_fake = calc_gan_loss(discriminator_b(fake_a2b_from_pool, training=True), False)
+            # Discriminator B should classify generated fake_a2b as not B
+            loss_gan_dis_b_fake = calc_gan_loss(discriminator_b(fake_a2b, training=True), False)
 
             # Total discriminator loss
             loss_dis_a = (loss_gan_dis_a_real + loss_gan_dis_a_fake) * 0.5
             loss_dis_b = (loss_gan_dis_b_real + loss_gan_dis_b_fake) * 0.5
+            loss_dis_total = loss_dis_a + loss_dis_b
 
-        gradient_gen_a2b = tape_gen_a2b.gradient(loss_gen_a2b, generator_a2b.trainable_variables)
-        gradient_gen_b2a = tape_gen_b2a.gradient(loss_gen_b2a, generator_b2a.trainable_variables)
-        gradient_dis_a = tape_dis_a.gradient(loss_dis_a, discriminator_a.trainable_variables)
-        gradient_dis_b = tape_dis_b.gradient(loss_dis_b, discriminator_b.trainable_variables)
+        trainable_variables = discriminator_a.trainable_variables + discriminator_b.trainable_variables
+        gradient_dis = tape.gradient(loss_dis_total, trainable_variables)
+        optimizer_dis.apply_gradients(zip(gradient_dis, trainable_variables))
 
-        optimizer_gen_a2b.apply_gradients(zip(gradient_gen_a2b, generator_a2b.trainable_variables))
-        optimizer_gen_b2a.apply_gradients(zip(gradient_gen_b2a, generator_b2a.trainable_variables))
-        optimizer_dis_a.apply_gradients(zip(gradient_dis_a, discriminator_a.trainable_variables))
-        optimizer_dis_b.apply_gradients(zip(gradient_dis_b, discriminator_b.trainable_variables))
-
-        loss_gen_a2b_metrics(loss_gen_a2b)
-        loss_gen_b2a_metrics(loss_gen_b2a)
+        # Metrics
         loss_dis_a_metrics(loss_dis_a)
         loss_dis_b_metrics(loss_dis_b)
-        loss_id_b2a_metrics(loss_identity_b2a)
-        loss_id_a2b_metrics(loss_identity_a2b)
-        tf.print('loss_gen_a2b: ', loss_gen_a2b,
-                 ' loss_gen_b2a: ', loss_gen_b2a,
-                 ' loss_dis_b: ', loss_dis_b,
-                 ' loss_dis_a: ', loss_dis_a,
-                 ' loss_id_a2b: ', loss_identity_a2b,
-                 ' loss_id_b2a: ', loss_identity_b2a,
-                 )
+        loss_dis_total_metrics(loss_dis_total)
+
+        return {
+            'loss_dis_b': loss_dis_b,
+            'loss_dis_a': loss_dis_a,
+            'loss_dis_total': loss_dis_total
+        }
+
+    def train_step(images_a, images_b, epoch, step):
+        fake_a2b, fake_b2a, gen_loss_dict = train_generator(images_a, images_b)
+
+        fake_b2a_from_pool = fake_pool_b2a.query(fake_b2a)
+        fake_a2b_from_pool = fake_pool_a2b.query(fake_a2b)
+
+        dis_loss_dict = train_discriminator(images_a, images_b, fake_a2b_from_pool, fake_b2a_from_pool)
+
+        gen_loss_list = ['{}:{} '.format(k, v) for k, v in gen_loss_dict]
+        dis_loss_list = ['{}:{} '.format(k, v) for k, v in dis_loss_dict]
+
+        tf.print('Epoch {} Step {} '.format(epoch, step), gen_loss_list + dis_loss_list)
 
     current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
-    train_log_dir = 'logs/horse2zebra/' + current_time + '/train'
+    train_log_dir = 'logs/{}/{}/train'.format(args.dataset, current_time)
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
 
-    # Eager mode
     def train(dataset, epochs):
         for epoch in range(1, epochs+1):
             start = time.time()
 
-            for batch in dataset:
-                train_step(batch[0], batch[1])
+            for (i, batch) in enumerate(dataset):
+                train_step(batch[0], batch[1], i)
 
             with train_summary_writer.as_default():
                 tf.summary.scalar('loss_gen_a2b', loss_gen_a2b_metrics.result(), step=epoch)
@@ -168,14 +200,11 @@ def main():
                 tf.summary.scalar('loss_dis_a', loss_dis_a_metrics.result(), step=epoch)
                 tf.summary.scalar('loss_id_a2b', loss_id_a2b_metrics.result(), step=epoch)
                 tf.summary.scalar('loss_id_b2a', loss_id_b2a_metrics.result(), step=epoch)
+                tf.summary.scalar('loss_gen_total', loss_gen_total_metrics.result(), step=epoch)
+                tf.summary.scalar('loss_dis_total', loss_dis_total_metrics.result(), step=epoch)
+                tf.summary.scalar('loss_cycle_a2b2a', loss_cycle_a2b2a_metrics.result(), step=epoch)
+                tf.summary.scalar('loss_cycle_b2a2b', loss_cycle_b2a2b_metrics.result(), step=epoch)
 
-            tf.print('Epoch ', epoch,
-                     ' avg loss_gen_a2b: ', loss_gen_a2b_metrics.result(),
-                     ' avg loss_gen_b2a: ', loss_gen_b2a_metrics.result(),
-                     ' avg loss_dis_b: ', loss_dis_b_metrics.result(),
-                     ' avg loss_dis_a: ', loss_dis_a_metrics.result(),
-                     ' avg loss_id_a2b: ', loss_id_a2b_metrics.result(),
-                     ' avg loss_id_b2a: ', loss_id_b2a_metrics.result())
             loss_gen_a2b_metrics.reset_states()
             loss_gen_b2a_metrics.reset_states()
             loss_dis_b_metrics.reset_states()
@@ -190,6 +219,7 @@ def main():
 
             print('Time for epoch {} is {} sec'.format(epoch, time.time() - start))
 
+    @tf.function
     def make_dataset(filepath):
         raw_dataset = tf.data.TFRecordDataset(filepath)
 

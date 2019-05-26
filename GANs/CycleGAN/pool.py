@@ -1,5 +1,4 @@
 import random
-import tensorflow as tf
 
 
 # This image pool only works in TF eager mode. Not graph mode (tf.function)
@@ -26,7 +25,7 @@ class ImagePool:
                     # and insert the current image into the buffer
                     # randint is inclusive
                     random_id = random.randint(0, self.pool_size - 1)
-                    tmp = tf.identity(self.pool[random_id])
+                    tmp = self.pool[random_id]
                     self.pool[random_id] = image
                     return_images.append(tmp)
                 else:
