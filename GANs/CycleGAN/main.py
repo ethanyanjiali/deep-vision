@@ -16,10 +16,9 @@ LEARNING_RATE = 0.0002
 BETA_1 = 0.5
 LAMBDA_A = 10.0
 LAMBDA_B = 10.0
-LAMBDA_ID = 0.5
+LAMBDA_ID = 0
 POOL_SIZE = 50
 EPOCHS = 100
-BATCH_SIZE = 2
 SHUFFLE_SIZE = 10000
 
 
@@ -27,6 +26,8 @@ def main():
     parser = argparse.ArgumentParser(description='Convert TFRecords for CycleGAN dataset.')
     parser.add_argument(
         '--dataset', help='The name of the dataset', required=True)
+    parser.add_argument(
+        '--batch_size', help='The batch size of input data', default='2')
     args = parser.parse_args()
 
     loss_G_A_metrics = tf.keras.metrics.Mean('loss_G_A_metrics', dtype=tf.float32)
@@ -220,7 +221,7 @@ def main():
 
     train_A = make_dataset('tfrecords/{}/trainA.tfrecord'.format(args.dataset))
     train_B = make_dataset('tfrecords/{}/trainB.tfrecord'.format(args.dataset))
-    combined_dataset = tf.data.Dataset.zip((train_A, train_B)).shuffle(SHUFFLE_SIZE).batch(BATCH_SIZE)
+    combined_dataset = tf.data.Dataset.zip((train_A, train_B)).shuffle(SHUFFLE_SIZE).batch(int(args.batch_size))
 
     # for local testing
     # seed1 = tf.random.normal([2, 256, 256, 3])
