@@ -5,4 +5,4 @@ ps:
 	ps -ef | grep python
 
 tb:
-	tensorboard --logdir=./tensorboard_logs
+	tensorboard --logdir=./logs
