@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 import random
 import argparse
 import os
@@ -28,6 +29,10 @@ def main():
         '--dataset', help='The name of the dataset', required=True)
     args = parser.parse_args()
 
+    loss_G_A_metrics = tf.keras.metrics.Mean('loss_G_A_metrics', dtype=tf.float32)
+    loss_G_B_metrics = tf.keras.metrics.Mean('loss_G_B_metrics', dtype=tf.float32)
+    loss_D_A_metrics = tf.keras.metrics.Mean('loss_D_A_metrics', dtype=tf.float32)
+    loss_D_B_metrics = tf.keras.metrics.Mean('loss_D_B_metrics', dtype=tf.float32)
     mse_loss = tf.keras.losses.MeanSquaredError()
     mae_loss = tf.keras.losses.MeanAbsoluteError()
     fake_pool_A = ImagePool(POOL_SIZE)
@@ -53,11 +58,11 @@ def main():
                 tf.print('here 4')
                 return fake_images
 
-    def query_image_pool_A(fake_images):
-        return query_image_pool(fake_images, image_pool_fake_A)
-
-    def query_image_pool_B(fake_images):
-        return query_image_pool(fake_images, image_pool_fake_B)
+    # def query_image_pool_A(fake_images):
+    #     return query_image_pool(fake_images, image_pool_fake_A)
+    #
+    # def query_image_pool_B(fake_images):
+    #     return query_image_pool(fake_images, image_pool_fake_B)
 
     def calc_gan_loss(prediction, is_real):
         # Typical GAN loss to set objectives for generator and discriminator
@@ -137,7 +142,7 @@ def main():
             loss_D_B = (loss_gan_D_B_real + loss_gan_D_B_fake) * 0.5
 
             # fake_B_to_inspect = query_image_pool_B(fake_B)
-            fake_B_to_inspect = fake_pool_A.query(fake_B)
+            fake_B_to_inspect = fake_pool_B.query(fake_B)
             decision_A_real = netD_A(real_B, training=True)
             decision_A_fake = netD_A(fake_B_to_inspect, training=True)
             # For discriminator, true is true, false is false
@@ -155,7 +160,15 @@ def main():
         optimizer_G_B.apply_gradients(zip(gradientG_B, netG_B.trainable_variables))
         optimizer_D_B.apply_gradients(zip(gradientD_B, netD_B.trainable_variables))
 
+        loss_G_A_metrics(loss_G_A)
+        loss_G_B_metrics(loss_G_B)
+        loss_D_A_metrics(loss_D_A)
+        loss_D_B_metrics(loss_D_B)
         tf.print('loss_G_A: ', loss_G_A, ' loss_G_B: ', loss_G_B, ' loss_D_A: ', loss_D_A, ' loss_D_B: ', loss_D_B)
+
+    current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
+    train_log_dir = 'logs/horse2zebra/' + current_time + '/train'
+    train_summary_writer = tf.summary.create_file_writer(train_log_dir)
 
     def train(dataset, epochs):
         for epoch in range(1, epochs+1):
@@ -163,6 +176,22 @@ def main():
 
             for batch in dataset:
                 train_step(batch[0], batch[1])
+
+            with train_summary_writer.as_default():
+                tf.summary.scalar('loss_G_A', loss_G_A_metrics.result(), step=epoch)
+                tf.summary.scalar('loss_G_B', loss_G_B_metrics.result(), step=epoch)
+                tf.summary.scalar('loss_D_A', loss_D_A_metrics.result(), step=epoch)
+                tf.summary.scalar('loss_D_B', loss_D_B_metrics.result(), step=epoch)
+
+            tf.print('Epoch ', epoch,
+                     ' avg loss_G_A: ', loss_G_A_metrics.result(),
+                     ' avg loss_G_B: ', loss_G_B_metrics.result(),
+                     ' avg loss_D_A: ', loss_D_A_metrics.result(),
+                     ' avg loss_D_B: ', loss_D_B_metrics.result())
+            loss_G_A_metrics.reset_states()
+            loss_G_B_metrics.reset_states()
+            loss_D_A_metrics.reset_states()
+            loss_D_B_metrics.reset_states()
 
             checkpoint.step.assign_add(1)
             if epoch % 5 == 0:
