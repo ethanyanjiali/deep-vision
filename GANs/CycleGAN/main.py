@@ -252,10 +252,10 @@ def main():
     combined_dataset = tf.data.Dataset.zip((train_a, train_b)).shuffle(SHUFFLE_SIZE).batch(int(args.batch_size))
 
     # for local testing
-    seed1 = tf.random.normal([2, 256, 256, 3])
-    seed2 = tf.random.normal([2, 256, 256, 3])
-    combined_dataset = [(seed1, seed2)]
-    EPOCHS = 2
+    # seed1 = tf.random.normal([2, 256, 256, 3])
+    # seed2 = tf.random.normal([2, 256, 256, 3])
+    # combined_dataset = [(seed1, seed2)]
+    # EPOCHS = 2
 
     train(combined_dataset, EPOCHS)
     print('Finished training.')
