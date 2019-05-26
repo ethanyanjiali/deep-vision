@@ -177,10 +177,10 @@ def main():
 
         dis_loss_dict = train_discriminator(images_a, images_b, fake_a2b_from_pool, fake_b2a_from_pool)
 
-        gen_loss_list = ['{}:{} '.format(k, v) for k, v in gen_loss_dict]
-        dis_loss_list = ['{}:{} '.format(k, v) for k, v in dis_loss_dict]
+        gen_loss_list = ['{}:{} '.format(k, v) for k, v in gen_loss_dict.items()]
+        dis_loss_list = ['{}:{} '.format(k, v) for k, v in dis_loss_dict.items()]
 
-        tf.print('Epoch {} Step {} '.format(epoch, step), gen_loss_list + dis_loss_list)
+        tf.print('Epoch {} Step {} '.format(epoch, step), ' '.join(gen_loss_list + dis_loss_list))
 
     current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
     train_log_dir = 'logs/{}/{}/train'.format(args.dataset, current_time)
@@ -190,8 +190,8 @@ def main():
         for epoch in range(1, epochs+1):
             start = time.time()
 
-            for (i, batch) in enumerate(dataset):
-                train_step(batch[0], batch[1], i)
+            for (step, batch) in enumerate(dataset):
+                train_step(batch[0], batch[1], epoch, step)
 
             with train_summary_writer.as_default():
                 tf.summary.scalar('loss_gen_a2b', loss_gen_a2b_metrics.result(), step=epoch)
@@ -219,7 +219,6 @@ def main():
 
             print('Time for epoch {} is {} sec'.format(epoch, time.time() - start))
 
-    @tf.function
     def make_dataset(filepath):
         raw_dataset = tf.data.TFRecordDataset(filepath)
 
@@ -253,10 +252,10 @@ def main():
     combined_dataset = tf.data.Dataset.zip((train_a, train_b)).shuffle(SHUFFLE_SIZE).batch(int(args.batch_size))
 
     # for local testing
-    # seed1 = tf.random.normal([2, 256, 256, 3])
-    # seed2 = tf.random.normal([2, 256, 256, 3])
-    # combined_dataset = [(seed1, seed2)]
-    # EPOCHS = 2
+    seed1 = tf.random.normal([2, 256, 256, 3])
+    seed2 = tf.random.normal([2, 256, 256, 3])
+    combined_dataset = [(seed1, seed2)]
+    EPOCHS = 2
 
     train(combined_dataset, EPOCHS)
     print('Finished training.')
