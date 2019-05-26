@@ -16,7 +16,7 @@ LEARNING_RATE = 0.0002
 BETA_1 = 0.5
 LAMBDA_A = 10.0
 LAMBDA_B = 10.0
-LAMBDA_ID = 0
+LAMBDA_ID = 0.5
 POOL_SIZE = 50
 EPOCHS = 100
 SHUFFLE_SIZE = 10000
@@ -224,9 +224,10 @@ def main():
     combined_dataset = tf.data.Dataset.zip((train_A, train_B)).shuffle(SHUFFLE_SIZE).batch(int(args.batch_size))
 
     # for local testing
-    # seed1 = tf.random.normal([2, 256, 256, 3])
-    # seed2 = tf.random.normal([2, 256, 256, 3])
-    # combined_dataset = [(seed1, seed2)]
+    seed1 = tf.random.normal([2, 256, 256, 3])
+    seed2 = tf.random.normal([2, 256, 256, 3])
+    combined_dataset = [(seed1, seed2)]
+    EPOCHS = 2
 
     train(combined_dataset, EPOCHS)
     print('Finished training.')

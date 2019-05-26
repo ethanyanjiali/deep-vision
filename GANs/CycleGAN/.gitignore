@@ -1,4 +1,5 @@
 tfrecords
 datasets
 env
+logs
 checkpoints
