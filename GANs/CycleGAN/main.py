@@ -37,8 +37,6 @@ def main():
     mae_loss = tf.keras.losses.MeanAbsoluteError()
     fake_pool_A = ImagePool(POOL_SIZE)
     fake_pool_B = ImagePool(POOL_SIZE)
-    # image_pool_fake_A = []
-    # image_pool_fake_B = []
 
     def query_image_pool(fake_images, fake_pool):
         if len(fake_pool) < POOL_SIZE:
@@ -57,12 +55,6 @@ def main():
             else:
                 tf.print('here 4')
                 return fake_images
-
-    # def query_image_pool_A(fake_images):
-    #     return query_image_pool(fake_images, image_pool_fake_A)
-    #
-    # def query_image_pool_B(fake_images):
-    #     return query_image_pool(fake_images, image_pool_fake_B)
 
     def calc_gan_loss(prediction, is_real):
         # Typical GAN loss to set objectives for generator and discriminator
@@ -132,7 +124,6 @@ def main():
             loss_G_A = loss_gan_G_A + loss_cycle_A * LAMBDA_A + loss_identity_A * LAMBDA_A * LAMBDA_ID
             loss_G_B = loss_gan_G_B + loss_cycle_B * LAMBDA_B + loss_identity_B * LAMBDA_B * LAMBDA_ID
 
-            # fake_A_to_inspect = query_image_pool_A(fake_A)
             fake_A_to_inspect = fake_pool_A.query(fake_A)
             decision_B_real = netD_B(real_A, training=True)
             decision_B_fake = netD_B(fake_A_to_inspect, training=True)
@@ -141,7 +132,6 @@ def main():
             loss_gan_D_B_fake = calc_gan_loss(decision_B_fake, False)
             loss_D_B = (loss_gan_D_B_real + loss_gan_D_B_fake) * 0.5
 
-            # fake_B_to_inspect = query_image_pool_B(fake_B)
             fake_B_to_inspect = fake_pool_B.query(fake_B)
             decision_A_real = netD_A(real_B, training=True)
             decision_A_fake = netD_A(fake_B_to_inspect, training=True)
