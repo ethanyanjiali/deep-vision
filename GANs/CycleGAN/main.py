@@ -103,6 +103,7 @@ def main():
     train_b = make_dataset('tfrecords/{}/trainB.tfrecord'.format(args.dataset))
     combined_dataset = tf.data.Dataset.zip((train_a, train_b)).shuffle(SHUFFLE_SIZE).batch(int(args.batch_size))
     total_batches = count_dataset_batches(combined_dataset)
+    print('Batch size: {}, Total batches per epoch: {}'.format(args.batch_size, total_batches))
 
     generator_a2b = make_generator_model(n_blocks=9)
     generator_b2a = make_generator_model(n_blocks=9)
