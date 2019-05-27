@@ -121,8 +121,6 @@ def main():
                                      discriminator_a=discriminator_a,
                                      optimizer_gen=optimizer_gen,
                                      optimizer_dis=optimizer_dis,
-                                     gen_lr_scheduler=gen_lr_scheduler,
-                                     dis_lr_scheduler=dis_lr_scheduler,
                                      epoch=tf.Variable(0))
     checkpoint_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
     checkpoint.restore(checkpoint_manager.latest_checkpoint)
