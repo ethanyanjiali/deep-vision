@@ -301,7 +301,7 @@ def main():
             write_metrics(epoch)
 
             # Generate some samples images
-            generate_samples(samples_a, samples_b)
+            generate_samples(samples_a, samples_b, epoch)
 
             # Save checkpoint
             checkpoint.epoch.assign_add(1)
