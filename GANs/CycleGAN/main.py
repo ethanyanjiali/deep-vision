@@ -317,7 +317,7 @@ def main():
     # combined_dataset = [(seed1, seed2)]
     # EPOCHS = 102
 
-    train(combined_dataset, EPOCHS, total_batches)
+    train(combined_dataset, EPOCHS)
     print('Finished training.')
 
 
