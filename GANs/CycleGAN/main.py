@@ -3,7 +3,6 @@ from datetime import datetime
 import argparse
 import os
 
-from PIL import Image
 import tensorflow as tf
 
 from models import make_discriminator_model, make_generator_model
@@ -250,6 +249,8 @@ def main():
             tf.summary.scalar('loss_dis_total', loss_dis_total_metrics.result(), step=epoch)
             tf.summary.scalar('loss_cycle_a2b2a', loss_cycle_a2b2a_metrics.result(), step=epoch)
             tf.summary.scalar('loss_cycle_b2a2b', loss_cycle_b2a2b_metrics.result(), step=epoch)
+            tf.summary.scalar('gen_learning_rate', gen_lr_scheduler.current_learning_rate, step=epoch)
+            tf.summary.scalar('dis_learning_rate', dis_lr_scheduler.current_learning_rate, step=epoch)
 
         loss_gen_a2b_metrics.reset_states()
         loss_gen_b2a_metrics.reset_states()
@@ -259,49 +260,18 @@ def main():
         loss_id_b2a_metrics.reset_states()
         return
 
-    def generate_samples(samples_a, samples_b, epoch):
-        samples_a2b = generator_a2b(tf.stack(samples_a, axis=0), training=False)
-        samples_b2a = generator_b2a(tf.stack(samples_b, axis=0), training=False)
-        samples_a2b2a = generator_b2a(samples_a2b, training=False)
-        samples_b2a2b = generator_a2b(samples_b2a, training=False)
-
-        for (i, sample) in enumerate(samples_a2b):
-            im = Image.fromarray(sample.numpy())
-            im.save('samples/EPOCH_{}_A2B_{}.JPEG'.format(epoch, i))
-        for (i, sample) in enumerate(samples_b2a):
-            im = Image.fromarray(sample.numpy())
-            im.save('samples/EPOCH_{}_B2A_{}.JPEG'.format(epoch, i))
-        for (i, sample) in enumerate(samples_a2b2a):
-            im = Image.fromarray(sample.numpy())
-            im.save('samples/EPOCH_{}_A2B2A_{}.JPEG'.format(epoch, i))
-        for (i, sample) in enumerate(samples_b2a2b):
-            im = Image.fromarray(sample.numpy())
-            im.save('samples/EPOCH_{}_B2A2B_{}.JPEG'.format(epoch, i))
-        for (i, sample) in enumerate(samples_a):
-            im = Image.fromarray(sample.numpy())
-            im.save('samples/EPOCH_{}_A_{}.JPEG'.format(epoch, i))
-        for (i, sample) in enumerate(samples_b):
-            im = Image.fromarray(sample.numpy())
-            im.save('samples/EPOCH_{}_A_{}.JPEG'.format(epoch, i))
-
     def train(dataset, epochs):
         for epoch in range(checkpoint.epoch+1, epochs+1):
             start = time.time()
-            samples_a = []
-            samples_b = []
+            print('Epoch {} starts. Learning rate: {}, {}'
+                  .format(epoch, gen_lr_scheduler.current_learning_rate, dis_lr_scheduler.current_learning_rate))
 
             # Training
             for (step, batch) in enumerate(dataset):
                 train_step(batch[0], batch[1], epoch, step)
-                if step % 20 == 0:
-                    samples_a.append(batch[0][0])
-                    samples_b.append(batch[1][0])
 
             # Update TensorBoard metrics
             write_metrics(epoch)
-
-            # Generate some samples images
-            generate_samples(samples_a, samples_b, epoch)
 
             # Save checkpoint
             checkpoint.epoch.assign_add(1)
