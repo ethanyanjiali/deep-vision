@@ -2,4 +2,5 @@ tfrecords
 datasets
 env
 logs
-checkpoints
+checkpoints-horse2zebra
+

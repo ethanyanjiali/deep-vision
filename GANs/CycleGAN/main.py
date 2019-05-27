@@ -1,13 +1,13 @@
 import time
 from datetime import datetime
-import random
 import argparse
 import os
 
+from PIL import Image
 import tensorflow as tf
 
 from models import make_discriminator_model, make_generator_model
-from pool import ImagePool
+from utils import ImagePool, LinearDecay
 
 print(tf.__version__)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -17,7 +17,8 @@ BETA_1 = 0.5
 LAMBDA_CYCLE = 10.0
 LAMBDA_ID = 5
 POOL_SIZE = 50
-EPOCHS = 100
+EPOCHS = 200
+DECAY_EPOCHS = 100
 SHUFFLE_SIZE = 10000
 
 
@@ -26,7 +27,7 @@ def main():
     parser.add_argument(
         '--dataset', help='The name of the dataset', required=True)
     parser.add_argument(
-        '--batch_size', help='The batch size of input data', default='2')
+        '--batch_size', help='The batch size of input data', default='4')
     args = parser.parse_args()
 
     loss_gen_total_metrics = tf.keras.metrics.Mean('loss_gen_total_metrics', dtype=tf.float32)
@@ -60,12 +61,57 @@ def main():
         # Ideally, feeding a real image to generator should generate itself
         return mae_loss(identity_images, real_images)
 
+    def make_dataset(filepath):
+        raw_dataset = tf.data.TFRecordDataset(filepath)
+
+        image_feature_description = {
+            'image/height': tf.io.FixedLenFeature([], tf.int64),
+            'image/width': tf.io.FixedLenFeature([], tf.int64),
+            'image/format': tf.io.FixedLenFeature([], tf.string),
+            'image/encoded': tf.io.FixedLenFeature([], tf.string),
+        }
+
+        def preprocess_image(encoded_image):
+            image = tf.image.decode_jpeg(encoded_image, 3)
+            # random flip left or right
+            image = tf.image.random_flip_left_right(image)
+            # resize to 286x286
+            image = tf.image.resize(image, [286, 286])
+            # random crop a 256x256 area
+            image = tf.image.random_crop(image, [256, 256, tf.shape(image)[-1]])
+            # normalize from 0-255 to -1 ~ +1
+            image = image / 127.5 - 1
+            return image
+
+        def parse_image_function(example_proto):
+            # Parse the input tf.Example proto using the dictionary above.
+            features = tf.io.parse_single_example(example_proto, image_feature_description)
+            encoded_image = features['image/encoded']
+            image = preprocess_image(encoded_image)
+            return image
+
+        parsed_image_dataset = raw_dataset.map(parse_image_function)
+        return parsed_image_dataset
+
+    def count_dataset_batches(dataset):
+        size = 0
+        for _ in dataset:
+            size += 1
+        return size
+
+    train_a = make_dataset('tfrecords/{}/trainA.tfrecord'.format(args.dataset))
+    train_b = make_dataset('tfrecords/{}/trainB.tfrecord'.format(args.dataset))
+    combined_dataset = tf.data.Dataset.zip((train_a, train_b)).shuffle(SHUFFLE_SIZE).batch(int(args.batch_size))
+    total_batches = count_dataset_batches(combined_dataset)
+
     generator_a2b = make_generator_model(n_blocks=9)
     generator_b2a = make_generator_model(n_blocks=9)
     discriminator_b = make_discriminator_model()
     discriminator_a = make_discriminator_model()
-    optimizer_gen = tf.keras.optimizers.Adam(LEARNING_RATE, BETA_1)
-    optimizer_dis = tf.keras.optimizers.Adam(LEARNING_RATE, BETA_1)
+    gen_lr_scheduler = LinearDecay(LEARNING_RATE, EPOCHS * total_batches, DECAY_EPOCHS * total_batches)
+    dis_lr_scheduler = LinearDecay(LEARNING_RATE, EPOCHS * total_batches, DECAY_EPOCHS * total_batches)
+    optimizer_gen = tf.keras.optimizers.Adam(gen_lr_scheduler, BETA_1)
+    optimizer_dis = tf.keras.optimizers.Adam(dis_lr_scheduler, BETA_1)
 
     checkpoint_dir = './checkpoints-{}'.format(args.dataset)
     checkpoint = tf.train.Checkpoint(generator_a2b=generator_a2b,
@@ -74,8 +120,15 @@ def main():
                                      discriminator_a=discriminator_a,
                                      optimizer_gen=optimizer_gen,
                                      optimizer_dis=optimizer_dis,
-                                     step=tf.Variable(0))
+                                     gen_lr_scheduler=gen_lr_scheduler,
+                                     dis_lr_scheduler=dis_lr_scheduler,
+                                     epoch=tf.Variable(0))
     checkpoint_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
+    checkpoint.restore(checkpoint_manager.latest_checkpoint)
+    if checkpoint_manager.latest_checkpoint:
+        print("Restored from {}".format(checkpoint_manager.latest_checkpoint))
+    else:
+        print("Initializing from scratch.")
 
     @tf.function
     def train_generator(images_a, images_b):
@@ -186,78 +239,86 @@ def main():
     train_log_dir = 'logs/{}/{}/train'.format(args.dataset, current_time)
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
 
-    def train(dataset, epochs):
-        for epoch in range(1, epochs+1):
-            start = time.time()
+    def write_metrics(epoch):
+        with train_summary_writer.as_default():
+            tf.summary.scalar('loss_gen_a2b', loss_gen_a2b_metrics.result(), step=epoch)
+            tf.summary.scalar('loss_gen_b2a', loss_gen_b2a_metrics.result(), step=epoch)
+            tf.summary.scalar('loss_dis_b', loss_dis_b_metrics.result(), step=epoch)
+            tf.summary.scalar('loss_dis_a', loss_dis_a_metrics.result(), step=epoch)
+            tf.summary.scalar('loss_id_a2b', loss_id_a2b_metrics.result(), step=epoch)
+            tf.summary.scalar('loss_id_b2a', loss_id_b2a_metrics.result(), step=epoch)
+            tf.summary.scalar('loss_gen_total', loss_gen_total_metrics.result(), step=epoch)
+            tf.summary.scalar('loss_dis_total', loss_dis_total_metrics.result(), step=epoch)
+            tf.summary.scalar('loss_cycle_a2b2a', loss_cycle_a2b2a_metrics.result(), step=epoch)
+            tf.summary.scalar('loss_cycle_b2a2b', loss_cycle_b2a2b_metrics.result(), step=epoch)
 
+        loss_gen_a2b_metrics.reset_states()
+        loss_gen_b2a_metrics.reset_states()
+        loss_dis_b_metrics.reset_states()
+        loss_dis_a_metrics.reset_states()
+        loss_id_a2b_metrics.reset_states()
+        loss_id_b2a_metrics.reset_states()
+        return
+
+    def generate_samples(samples_a, samples_b, epoch):
+        samples_a2b = generator_a2b(tf.stack(samples_a, axis=0), training=False)
+        samples_b2a = generator_b2a(tf.stack(samples_b, axis=0), training=False)
+        samples_a2b2a = generator_b2a(samples_a2b, training=False)
+        samples_b2a2b = generator_a2b(samples_b2a, training=False)
+
+        for (i, sample) in enumerate(samples_a2b):
+            im = Image.fromarray(sample.numpy())
+            im.save('samples/EPOCH_{}_A2B_{}.JPEG'.format(epoch, i))
+        for (i, sample) in enumerate(samples_b2a):
+            im = Image.fromarray(sample.numpy())
+            im.save('samples/EPOCH_{}_B2A_{}.JPEG'.format(epoch, i))
+        for (i, sample) in enumerate(samples_a2b2a):
+            im = Image.fromarray(sample.numpy())
+            im.save('samples/EPOCH_{}_A2B2A_{}.JPEG'.format(epoch, i))
+        for (i, sample) in enumerate(samples_b2a2b):
+            im = Image.fromarray(sample.numpy())
+            im.save('samples/EPOCH_{}_B2A2B_{}.JPEG'.format(epoch, i))
+        for (i, sample) in enumerate(samples_a):
+            im = Image.fromarray(sample.numpy())
+            im.save('samples/EPOCH_{}_A_{}.JPEG'.format(epoch, i))
+        for (i, sample) in enumerate(samples_b):
+            im = Image.fromarray(sample.numpy())
+            im.save('samples/EPOCH_{}_A_{}.JPEG'.format(epoch, i))
+
+    def train(dataset, epochs):
+        for epoch in range(checkpoint.epoch+1, epochs+1):
+            start = time.time()
+            samples_a = []
+            samples_b = []
+
+            # Training
             for (step, batch) in enumerate(dataset):
                 train_step(batch[0], batch[1], epoch, step)
+                if step % 20 == 0:
+                    samples_a.append(batch[0][0])
+                    samples_b.append(batch[1][0])
 
-            with train_summary_writer.as_default():
-                tf.summary.scalar('loss_gen_a2b', loss_gen_a2b_metrics.result(), step=epoch)
-                tf.summary.scalar('loss_gen_b2a', loss_gen_b2a_metrics.result(), step=epoch)
-                tf.summary.scalar('loss_dis_b', loss_dis_b_metrics.result(), step=epoch)
-                tf.summary.scalar('loss_dis_a', loss_dis_a_metrics.result(), step=epoch)
-                tf.summary.scalar('loss_id_a2b', loss_id_a2b_metrics.result(), step=epoch)
-                tf.summary.scalar('loss_id_b2a', loss_id_b2a_metrics.result(), step=epoch)
-                tf.summary.scalar('loss_gen_total', loss_gen_total_metrics.result(), step=epoch)
-                tf.summary.scalar('loss_dis_total', loss_dis_total_metrics.result(), step=epoch)
-                tf.summary.scalar('loss_cycle_a2b2a', loss_cycle_a2b2a_metrics.result(), step=epoch)
-                tf.summary.scalar('loss_cycle_b2a2b', loss_cycle_b2a2b_metrics.result(), step=epoch)
+            # Update TensorBoard metrics
+            write_metrics(epoch)
 
-            loss_gen_a2b_metrics.reset_states()
-            loss_gen_b2a_metrics.reset_states()
-            loss_dis_b_metrics.reset_states()
-            loss_dis_a_metrics.reset_states()
-            loss_id_a2b_metrics.reset_states()
-            loss_id_b2a_metrics.reset_states()
+            # Generate some samples images
+            generate_samples(samples_a, samples_b)
 
-            checkpoint.step.assign_add(1)
+            # Save checkpoint
+            checkpoint.epoch.assign_add(1)
             if epoch % 5 == 0:
                 save_path = checkpoint_manager.save()
-                print("Saved checkpoint for step {}: {}".format(int(checkpoint.step), save_path))
+                print("Saved checkpoint for epoch {}: {}".format(int(checkpoint.epoch), save_path))
 
             print('Time for epoch {} is {} sec'.format(epoch, time.time() - start))
-
-    def make_dataset(filepath):
-        raw_dataset = tf.data.TFRecordDataset(filepath)
-
-        image_feature_description = {
-            'image/height': tf.io.FixedLenFeature([], tf.int64),
-            'image/width': tf.io.FixedLenFeature([], tf.int64),
-            'image/format': tf.io.FixedLenFeature([], tf.string),
-            'image/encoded': tf.io.FixedLenFeature([], tf.string),
-        }
-
-        def preprocess_image(encoded_image):
-            image = tf.image.decode_jpeg(encoded_image, 3)
-            # resize to 256x256
-            image = tf.image.resize(image, [256, 256])
-            # normalize from 0-255 to -1 ~ +1
-            image = image / 127.5 - 1
-            return image
-
-        def parse_image_function(example_proto):
-            # Parse the input tf.Example proto using the dictionary above.
-            features = tf.io.parse_single_example(example_proto, image_feature_description)
-            encoded_image = features['image/encoded']
-            image = preprocess_image(encoded_image)
-            return image
-
-        parsed_image_dataset = raw_dataset.map(parse_image_function)
-        return parsed_image_dataset
-
-    train_a = make_dataset('tfrecords/{}/trainA.tfrecord'.format(args.dataset))
-    train_b = make_dataset('tfrecords/{}/trainB.tfrecord'.format(args.dataset))
-    combined_dataset = tf.data.Dataset.zip((train_a, train_b)).shuffle(SHUFFLE_SIZE).batch(int(args.batch_size))
 
     # for local testing
     # seed1 = tf.random.normal([2, 256, 256, 3])
     # seed2 = tf.random.normal([2, 256, 256, 3])
     # combined_dataset = [(seed1, seed2)]
-    # EPOCHS = 2
+    # EPOCHS = 102
 
-    train(combined_dataset, EPOCHS)
+    train(combined_dataset, EPOCHS, total_batches)
     print('Finished training.')
 
 

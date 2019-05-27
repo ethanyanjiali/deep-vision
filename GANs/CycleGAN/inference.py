@@ -1,6 +1,7 @@
 import glob
 import os
 
+from PIL import Image
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
@@ -11,7 +12,7 @@ def main():
     generator_a2b = make_generator_model(n_blocks=9)
     generator_b2a = make_generator_model(n_blocks=9)
 
-    checkpoint_dir = './checkpoints'
+    checkpoint_dir = './checkpoints-horse2zebra'
     checkpoint = tf.train.Checkpoint(generator_a2b=generator_a2b,
                                      generator_b2a=generator_b2a)
     manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
@@ -33,15 +34,15 @@ def main():
     generated = outputs[0]
     generated = (generated + 1) * 127.5
     generated = tf.cast(generated, tf.uint8)
-    # print(generated)
     # plt.imshow(original)
     # plt.show()
     # plt.imshow(generated)
     # plt.show()
-    # print(netD_A(inputs))
-    # print(netD_A(outputs).shape)
-    print(len(generator_a2b.trainable_variables))
-    print(len(generator_b2a.trainable_variables))
+    # tf.saved_model.save(generator_a2b, "./saved_models/horse2zebra/1/")
+    im1 = Image.fromarray(original.numpy())
+    im1.save('test_original.JPEG')
+    im2 = Image.fromarray(generated.numpy())
+    im2.save('test_generated.JPEG')
 
 
 if __name__ == '__main__':
