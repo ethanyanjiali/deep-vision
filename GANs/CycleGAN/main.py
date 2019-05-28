@@ -121,7 +121,7 @@ def main():
                                      optimizer_gen=optimizer_gen,
                                      optimizer_dis=optimizer_dis,
                                      epoch=tf.Variable(0))
-    checkpoint_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
+    checkpoint_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=None)
     checkpoint.restore(checkpoint_manager.latest_checkpoint)
     if checkpoint_manager.latest_checkpoint:
         print("Restored from {}".format(checkpoint_manager.latest_checkpoint))
