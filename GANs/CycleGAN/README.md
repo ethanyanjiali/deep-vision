@@ -6,7 +6,33 @@
 
 Raw: https://people.eecs.berkeley.edu/~taesung_park/CycleGAN/datasets/horse2zebra.zip
 
-TFRecords:
+Also added 54 horses images to `horse2zebra/trainA`: https://drive.google.com/file/d/1n81lzXAFSP71yZKghTiOJ_dHRoJfkNE6/view?usp=sharing
+
+Use `tfrecords.py` to generate TFRecords before training
+
+## Examples
+
+### Horse to Zebra
+
+![horse2zebra](samples_good/a2b_2_original.JPEG)
+![horse2zebra](samples_good/a2b_2_generated.JPEG)
+
+![horse2zebra](samples_good/a2b_30_original.JPEG)
+![horse2zebra](samples_good/a2b_30_generated.JPEG)
+
+![horse2zebra](samples_good/a2b_118_original.JPEG)
+![horse2zebra](samples_good/a2b_118_generated.JPEG)
+
+ ### Zebra to Horse
+
+![zebra2horse](samples_good/b2a_27_original.JPEG)
+![zebra2horse](samples_good/b2a_27_generated.JPEG)
+
+![zebra2horse](samples_good/b2a_58_original.JPEG)
+![zebra2horse](samples_good/b2a_58_generated.JPEG)
+
+![zebra2horse](samples_good/b2a_95_original.JPEG)
+![zebra2horse](samples_good/b2a_95_generated.JPEG)
 
 ## Reference
 

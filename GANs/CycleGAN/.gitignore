@@ -3,4 +3,4 @@ datasets
 env
 logs
 checkpoints-horse2zebra
-*.JPEG
+samples
