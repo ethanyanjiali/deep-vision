@@ -10,10 +10,12 @@ with open('./list_attr_celeba.txt') as fp:
         print(gender)
         if int(gender) == -1:
             print(filename, 'female')
-            copyfile('./img_align_celeba/{}'.format(filename), './datasets/celeba/trainB/{}'.format(filename))
+            # copyfile('./img_align_celeba/{}'.format(filename), './datasets/celeba/trainB/{}'.format(filename))
+            copyfile('./img_align_celeba_partial/{}'.format(filename), './datasets/celeba_partial/trainB/{}'.format(filename))
         elif int(gender) == 1:
             print(filename, 'male')
-            copyfile('./img_align_celeba/{}'.format(filename), './datasets/celeba/trainA/{}'.format(filename))
+            # copyfile('./img_align_celeba/{}'.format(filename), './datasets/celeba/trainB/{}'.format(filename))
+            copyfile('./img_align_celeba_partial/{}'.format(filename), './datasets/celeba_partial/trainA/{}'.format(filename))
         else:
             raise Exception('Unknown gender')
         line = fp.readline()

@@ -4,6 +4,9 @@ train_horse:
 train_celeba:
 	nohup python -u main.py --dataset=celeba --batch_size=4 &
 
+train_celeba_p:
+	nohup python -u main.py --dataset=celeba_partial --batch_size=4 &
+
 ps:
 	ps -ef | grep python
 
