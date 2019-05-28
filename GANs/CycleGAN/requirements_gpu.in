@@ -2,3 +2,4 @@ tensorflow-gpu==2.0.0-alpha0
 matplotlib
 Pillow
 numpy
+pandas

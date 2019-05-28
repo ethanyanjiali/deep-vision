@@ -4,3 +4,4 @@ env
 logs
 checkpoints-horse2zebra
 samples
+list_attr_celeba.txt

@@ -12,6 +12,13 @@ Also added 54 horses images to `horse2zebra/trainA`: https://drive.google.com/fi
 
 Use `tfrecords.py` to generate TFRecords before training
 
+### CelebA
+
+https://drive.google.com/open?id=1P0mYEE5xVAHL9laE2kbRDZEU9x9VAEed
+
+to download through wget, please refer to this:
+https://gist.github.com/vladalive/535cc2aff8a9527f1d9443b036320672
+
 ## Training
 
 ```bash
