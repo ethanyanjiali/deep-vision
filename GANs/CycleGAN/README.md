@@ -11,6 +11,9 @@ Raw: https://people.eecs.berkeley.edu/~taesung_park/CycleGAN/datasets/horse2zebr
 Also added 54 horses images to `horse2zebra/trainA`: https://drive.google.com/file/d/1n81lzXAFSP71yZKghTiOJ_dHRoJfkNE6/view?usp=sharing
 
 Use `tfrecords.py` to generate TFRecords before training
+```bash
+python tfrecords.py --dataset=horse2zebra
+```
 
 ### CelebA
 
@@ -24,6 +27,8 @@ Extract it to a directory called `img_align_celeba`, then
 mkdir -p ./datasets/celeba/trainA/
 mkdir -p ./datasets/celeba/trainB/
 python celeba.py
+python tfrecords.py --dataset=celeba
+
 ```
 ## Training
 
