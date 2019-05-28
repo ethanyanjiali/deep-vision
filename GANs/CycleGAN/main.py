@@ -275,7 +275,7 @@ def main():
 
             # Save checkpoint
             checkpoint.epoch.assign_add(1)
-            if epoch % 5 == 0:
+            if epoch % 2 == 0:
                 save_path = checkpoint_manager.save()
                 print("Saved checkpoint for epoch {}: {}".format(int(checkpoint.epoch), save_path))
 
