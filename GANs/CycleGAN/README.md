@@ -17,6 +17,10 @@ python tfrecords.py --dataset=horse2zebra
 
 ### CelebA
 
+labels:
+https://drive.google.com/file/d/1v7UkkwpAe-vDqEqArGFM1MBs5FLEa3re/view?usp=sharing
+
+images:
 https://drive.google.com/open?id=1P0mYEE5xVAHL9laE2kbRDZEU9x9VAEed
 
 to download through wget, please refer to this:
