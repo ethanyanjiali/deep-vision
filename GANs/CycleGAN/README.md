@@ -27,8 +27,8 @@ Extract it to a directory called `img_align_celeba`, then
 mkdir -p ./datasets/celeba/trainA/
 mkdir -p ./datasets/celeba/trainB/
 python celeba.py
+mkdir -p ./tfrecords/celeba/
 python tfrecords.py --dataset=celeba
-
 ```
 ## Training
 
