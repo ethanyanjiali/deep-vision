@@ -36,13 +36,16 @@ python tfrecords.py --dataset=celeba
 ```
 ## Training
 
+### horse2zebra
+
 ```bash
-make train
+make train_horse
 ```
 
 log: https://drive.google.com/file/d/19w2EyoCbvKIgoXdEkKYWAxMs8Sc1erCU/view?usp=sharing
 
 tensorboard: https://drive.google.com/file/d/13aybrJh0MCENnuhL3VjoBd2yBhtONZV5/view?usp=sharing
+
 
 ## Examples
 
