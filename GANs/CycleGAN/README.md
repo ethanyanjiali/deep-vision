@@ -19,6 +19,12 @@ https://drive.google.com/open?id=1P0mYEE5xVAHL9laE2kbRDZEU9x9VAEed
 to download through wget, please refer to this:
 https://gist.github.com/vladalive/535cc2aff8a9527f1d9443b036320672
 
+Extract it to a directory called `img_align_celeba`, then
+```bash
+mkdir -p ./datasets/celeba/trainA/
+mkdir -p ./datasets/celeba/trainB/
+python celeba.py
+```
 ## Training
 
 ```bash
