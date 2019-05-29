@@ -6,8 +6,8 @@ import tensorflow as tf
 
 
 class ReflectionPad2d(tf.keras.layers.Layer):
-    def __init__(self, padding):
-        super(ReflectionPad2d, self).__init__()
+    def __init__(self, padding, **kwargs):
+        super(ReflectionPad2d, self).__init__(**kwargs)
         self.padding = [[0, 0], [padding, padding], [padding, padding], [0, 0]]
 
     def call(self, inputs, **kwargs):
@@ -46,7 +46,7 @@ def make_generator_model(n_blocks):
     model = tf.keras.Sequential()
 
     # Encoding
-    model.add(ReflectionPad2d(3))
+    model.add(ReflectionPad2d(3, input_shape=(256, 256, 3)))
     model.add(tf.keras.layers.Conv2D(64, (7, 7), strides=(1, 1), padding='valid', use_bias=False))
     model.add(tf.keras.layers.BatchNormalization())
     model.add(tf.keras.layers.ReLU())
@@ -81,7 +81,7 @@ def make_generator_model(n_blocks):
 def make_discriminator_model():
     # C64-C128-C256-C512
     model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Conv2D(64, (4, 4), strides=(2, 2), padding='same'))
+    model.add(tf.keras.layers.Conv2D(64, (4, 4), strides=(2, 2), padding='same'), input_shape=(256, 256, 3))
     model.add(tf.keras.layers.LeakyReLU(alpha=0.2))
 
     model.add(tf.keras.layers.Conv2D(128, (4, 4), strides=(2, 2), padding='same', use_bias=False))

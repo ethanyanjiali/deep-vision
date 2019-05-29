@@ -3,4 +3,7 @@ datasets
 env
 logs
 checkpoints-horse2zebra
+checkpoints-celeba
 samples
+samples_celeba
+converted_model.tflite
