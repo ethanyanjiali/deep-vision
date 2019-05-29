@@ -81,7 +81,7 @@ def make_generator_model(n_blocks):
 def make_discriminator_model():
     # C64-C128-C256-C512
     model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Conv2D(64, (4, 4), strides=(2, 2), padding='same'), input_shape=(256, 256, 3))
+    model.add(tf.keras.layers.Conv2D(64, (4, 4), strides=(2, 2), padding='same', input_shape=(256, 256, 3)))
     model.add(tf.keras.layers.LeakyReLU(alpha=0.2))
 
     model.add(tf.keras.layers.Conv2D(128, (4, 4), strides=(2, 2), padding='same', use_bias=False))
