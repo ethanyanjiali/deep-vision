@@ -4,6 +4,8 @@ env
 logs
 checkpoints-horse2zebra
 checkpoints-celeba
+checkpoints-monet2photo
 samples
 samples_celeba
-converted_model.tflite
+samples_monet2photo
+*.tflite
