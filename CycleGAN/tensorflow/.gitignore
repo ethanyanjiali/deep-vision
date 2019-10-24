@@ -1,0 +1,11 @@
+tfrecords
+datasets
+env
+logs
+checkpoints-horse2zebra
+checkpoints-celeba
+checkpoints-monet2photo
+samples
+samples_celeba
+samples_monet2photo
+*.tflite

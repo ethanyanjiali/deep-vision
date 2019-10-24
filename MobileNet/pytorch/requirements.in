@@ -1,0 +1,15 @@
+pip-tools
+torch
+torchvision
+numpy
+yapf
+flake8
+opencv-python
+opencv-contrib-python
+torchsummary
+matplotlib
+Pillow
+Flask
+jupyter
+ipykernel
+tensorflow
