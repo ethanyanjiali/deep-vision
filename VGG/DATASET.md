@@ -36,7 +36,7 @@ tar xvf ILSVRC2012_bbox_val_v3.tgz -C ./bbox_val
 After downloading and unpacking all data, now you need to preprocess them for different framework
 
 ## TensorFlow
-Inside `dataset_util` directory:
+Inside `../dataset_util` directory:
 
 Generate bbox csv from training bbox xml
 ```bash
