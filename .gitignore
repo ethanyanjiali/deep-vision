@@ -1,4 +1,5 @@
 env
+env-gpu
 .DS_Store
 ssh1.sh
 ssh2.sh

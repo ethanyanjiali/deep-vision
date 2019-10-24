@@ -1,5 +1,10 @@
-# Large Scale Visual Recognition Challenge 2012 (ILSVRC2012)
+# Dataset
 
+PyTorch version of mobilenet is trained using ILSVRC2012, while Tensorflow version is trained using OpenImages V5
+
+## OpenImages V5
+
+## Large Scale Visual Recognition Challenge 2012 (ILSVRC2012)
 ILSVRC2012 dataset is around 150G unpacked. Flatten dataset for PyTorch requires another 150G, and generate TFRecord for TensorFlow requires another 150G
 
 Create a directory to store the dataset under `imagenet-2012` directory. 
@@ -32,42 +37,6 @@ tar xvf ILSVRC2012_bbox_train_v2.tar.gz -C ./bbox_train
 mkdir ./bbox_val
 tar xvf ILSVRC2012_bbox_val_v3.tgz -C ./bbox_val
 ```
-
-After downloading and unpacking all data, now you need to preprocess them for different framework
-
-## TensorFlow
-Inside `../dataset_util` directory:
-
-Generate bbox csv from training bbox xml
-```bash
-sudo python3 process_bounding_boxes.py ../dataset/bbox_train/ ./imagenet_2012_synsets.txt > imagenet_2012_bounding_boxes.csv
-```
-Create a `tfrecord` directory in your `dataset` directory
-```bash
-mkdir -p ../dataset/tfrecord
-```
-Build TFRecord using the following script and command. You might need to tweak num_threads based on your machine CPUs to achieve best performance.
-```bash
-sudo nohup python3 build_imagenet_tfrecord.py --output_directory ../dataset/tfrecord/ --num_threads 16 --train_directory ../dataset/train --validation_directory ../dataset/val &
-```
-Wait for a while, then you will have:
-```
-tfrecord/train-00000-of-01024
-tfrecord/train-00001-of-01024
-...
-tfrecord/train-01023-of-01024
-
-tfrecord/validation-00000-of-00128
-tfrecord/validation-00001-of-00128
-...
-tfrecord/validation-00127-of-00128
-```
-finally, move them to their own folder:
-```
-sudo mkdir -p tfrecord_train && sudo mv train* tfrecord_train
-sudo mkdir -p tfrecord_val && sudo mv validation* tfrecord_val
-```
-## PyTorch
 
 You might need `sudo` if you have permission issue, or `nohup` if you need to walk away while waiting
 
