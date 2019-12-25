@@ -12,6 +12,10 @@ This directory contains the PyTorch implementation of LeNet using public MNIST d
 |__train.py         // single machine training script
 ```
 
+## Set up Dataset
+
+Follow this [DATASET.md](../../Datasets/MNIST/DATASET.md)
+
 ## System Requirement
 
 MNIST dataset doesn't require GPU and high-end hardware like other dataset. You should be able to converge within reasonable amount of time by using your own machine CPU.

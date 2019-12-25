@@ -17,7 +17,7 @@ pytorch
 
 ## Set Up Dataset
 
-Follow the instruction here [DATASET.md](../DATASET.md) to download the ILSVRC2012 dataset first.
+Follow the instruction here [DATASET.md](../../Datasets/ILSVRC2012/DATASET.md) to download the ILSVRC2012 dataset first.
 
 ## System Requirement
 
