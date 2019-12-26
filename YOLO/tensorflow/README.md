@@ -10,4 +10,4 @@ Once all TF Records are generated, you could start training by:
 make train
 ```
 
-Please note that multi GPU training isn't performing well as of Dec 2019 since TF 2.0 still has some problems of distributed dataset and graph mode. Running distributed dataset in eager model would receive significant performance penalty because it's basically just run sequentially.
+Please note that this training script support Multi-GPU training. But if you only have one GPU, it should still work.

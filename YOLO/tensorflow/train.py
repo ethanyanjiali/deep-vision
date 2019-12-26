@@ -114,7 +114,7 @@ class Trainer(object):
         return total_loss
 
     def run(self, train_dist_dataset, val_dist_dataset):
-        # @tf.function
+        @tf.function
         def distributed_train_epoch(dataset):
             total_loss = 0.0
             num_train_batches = 0.0
