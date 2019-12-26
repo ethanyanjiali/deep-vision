@@ -13,7 +13,7 @@ import tensorflow as tf
 num_train_shards = 64
 num_val_shards = 8
 ray.init()
-tf.logging.set_verbosity(tf.logging.ERROR)
+tf.get_logger().setLevel('ERROR')
 
 
 def chunkify(l, n):
