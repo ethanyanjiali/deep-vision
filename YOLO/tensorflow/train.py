@@ -119,7 +119,6 @@ class Trainer(object):
             total_loss = 0.0
             num_train_batches = 0.0
             for one_batch in dataset:
-                t0 = tf.timestamp()
                 per_replica_losses, per_replica_losses_breakdown = self.strategy.experimental_run_v2(
                     self.train_step, args=(one_batch, ))
                 per_replica_xy_losses, per_replica_wh_losses, per_replica_class_losses, per_replica_obj_losses = per_replica_losses_breakdown
@@ -143,14 +142,11 @@ class Trainer(object):
                     axis=None)
                 total_loss += batch_loss
                 num_train_batches += 1
-                t1 = tf.timestamp()
                 tf.print('Trained batch:', num_train_batches, 'batch loss:',
                          batch_loss, 'batch xy loss', batch_xy_loss,
                          'batch wh loss', batch_wh_loss, 'batch obj loss',
                          batch_obj_loss, 'batch_class_loss', batch_class_loss,
-                         'epoch total loss:', total_loss, 'duration seconds:',
-                         t1 - t0, 'examples/seconds:',
-                         self.global_batch_size / (t1 - t0))
+                         'epoch total loss:', total_loss)
             return total_loss, num_train_batches
 
         @tf.function
