@@ -4,6 +4,7 @@ import json
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from PIL import Image
 import ray
@@ -12,8 +13,7 @@ import tensorflow as tf
 num_train_shards = 64
 num_val_shards = 8
 ray.init()
-tf.get_logger().setLevel('INFO')
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+tf.logging.set_verbosity(tf.logging.ERROR)
 
 
 def chunkify(l, n):
