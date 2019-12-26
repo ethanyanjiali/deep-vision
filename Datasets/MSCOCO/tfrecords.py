@@ -91,7 +91,6 @@ def genreate_tfexample(anno_list):
 
 @ray.remote
 def build_single_tfrecord(chunk, path):
-    name, chunk = params
     print('start to build tf records for ' + path)
 
     with tf.io.TFRecordWriter(path) as writer:
