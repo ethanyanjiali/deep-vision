@@ -17,8 +17,7 @@ unzip annotations_trainval2017.zip
 ```
 
 ## Creating TF Record
-Copy `mscoco.py` and `tfrecords.py` to your newly created `dataset` folder. Run `mscoco.py` to parse coco annotation into a CSV. Run `tfrecords.py` to generate TF Records.
+Copy `tfrecords.py` to your newly created `dataset` folder. Run `tfrecords.py` to generate TF Records. Make sure that all dependecies have been installed (eg. ray, PIL)
 ```bash
-python mscoco.py
 python tfrecords.py
 ```
