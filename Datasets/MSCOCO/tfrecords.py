@@ -3,7 +3,6 @@ import json
 import os
 
 import ray
-from tqdm import tqdm
 import tensorflow as tf
 
 num_train_shards = 64
@@ -95,9 +94,7 @@ def build_single_tfrecord(chunk, path):
     print('start to build tf records for ' + path)
 
     with tf.io.TFRecordWriter(path) as writer:
-        for anno_list in tqdm(chunk):
-            if '.DS_Store' in image_path:
-                continue
+        for anno_list in chunk:
             tf_example = genreate_tfexample(anno_list)
             writer.write(tf_example.SerializeToString())
 
