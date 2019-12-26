@@ -4,6 +4,7 @@ import os
 
 import ray
 from tqdm import tqdm
+import tensorflow as tf
 
 num_train_shards = 64
 num_val_shards = 8
@@ -99,6 +100,8 @@ def build_single_tfrecord(chunk, path):
                 continue
             tf_example = genreate_tfexample(anno_list)
             writer.write(tf_example.SerializeToString())
+
+    print('finished building tf records for ' + path)
 
 
 def build_tf_records(annotations, total_shards, split):
