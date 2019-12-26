@@ -40,10 +40,10 @@ def genreate_tfexample(anno_list):
         content = image_file.read()
 
     image = Image.open(filename)
-    if image.format != 'JPEG':
+    if image.format != 'JPEG' or image.mode != 'RGB':
         image_rgb = image.convert('RGB')
         with io.BytesIO() as output:
-            image_rgb.save(output, format="JPEG")
+            image_rgb.save(output, format="JPEG", quality=95)
             content = output.getvalue()
 
     width, height = image.size
