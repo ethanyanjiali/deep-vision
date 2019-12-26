@@ -102,17 +102,22 @@ def build_single_tfrecord(chunk, path):
             writer.write(tf_example.SerializeToString())
 
 
-def build_tf_records(annotations, shards):
+def build_tf_records(annotations, total_shards, split):
     annotations_by_image = {}
     for annotation in annotations:
         if annotation['filename'] in annotations_by_image:
             annotations_by_image[annotation['filename']].append(annotation)
         else:
             annotations_by_image[annotation['filename']] = [annotation]
-    chunks = chunkify(list(annotations_by_image.values()), shards)
+    chunks = chunkify(list(annotations_by_image.values()), total_shards)
     futures = [
-        build_single_tfrecord.remote(chunk, 'train', './train2017')
-        for chunk in chunks
+        # train_0001_of_0064.tfrecords
+        build_single_tfrecord.remote(
+            chunk, './tfrecords/{}_{}_of_{}.tfrecords'.format(
+                split,
+                str(i + 1).zfill(4),
+                str(total_shards).zfill(4),
+            )) for i, chunk in enumerate(chunks)
     ]
     ray.get(futures)
 
@@ -154,8 +159,8 @@ def main():
         del (val_annos)
 
     print('Start to build TF Records.')
-    build_tf_records(train_annotations, num_train_shards)
-    build_tf_records(val_annotations, num_val_shards)
+    build_tf_records(train_annotations, num_train_shards, 'train')
+    build_tf_records(val_annotations, num_val_shards, 'val')
 
     print('Successfully wrote {} annotations for {} images to label file.'.
           format(all_annos, len(all_files)))
