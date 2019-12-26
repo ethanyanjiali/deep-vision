@@ -90,7 +90,7 @@ def genreate_tfexample(anno_list):
         'image/object/class/label':
         tf.train.Feature(int64_list=tf.train.Int64List(value=class_ids)),
         'image/object/class/text':
-        tf.train.Feature(bytes_list=tf.train.BytesList(value=class_texts))
+        tf.train.Feature(bytes_list=tf.train.BytesList(value=class_texts)),
         'image/encoded':
         _bytes_feature(content),
         'image/filename':
