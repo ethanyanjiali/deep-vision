@@ -109,7 +109,7 @@ def build_tf_records(annotations, shards):
             annotations_by_image[annotation['filename']].append(annotation)
         else:
             annotations_by_image[annotation['filename']] = [annotation]
-    chunks = chunkify(annotations_by_image.values(), shards)
+    chunks = chunkify(list(annotations_by_image.values()), shards)
     futures = [
         build_single_tfrecord.remote(anno, 'train', './train2017')
         for anno in train_annos['annotations']
@@ -118,7 +118,7 @@ def build_tf_records(annotations, shards):
 
 
 @ray.remote
-def parse_one_annotation(anno, split, dir):
+def parse_one_annotation(anno, dir):
     category_id = anno['category_id']
     bbox = anno['bbox']
     filename = '{}/{}.jpg'.format(dir, str(anno['image_id']).rjust(12, '0'))
@@ -131,7 +131,6 @@ def parse_one_annotation(anno, split, dir):
         'ymin': float(bbox[1]),
         'xmax': float(bbox[0]) + float(bbox[2]),
         'ymax': float(bbox[1]) + float(bbox[3]),
-        'split': split,
     }
     return annotation
 
@@ -142,7 +141,7 @@ def main():
     with open('./annotations/instances_train2017.json') as train_json:
         train_annos = json.load(train_json)
         futures = [
-            parse_one_annotation.remote(anno, 'train', './train2017')
+            parse_one_annotation.remote(anno, './train2017')
             for anno in train_annos['annotations']
         ]
         train_annotations = ray.get(futures)
@@ -151,7 +150,7 @@ def main():
     with open('./annotations/instances_val2017.json') as val_json:
         val_annos = json.load(val_json)
         futures = [
-            parse_one_annotation.remote(anno, 'test', './val2017')
+            parse_one_annotation.remote(anno, './val2017')
             for anno in val_annos['annotations']
         ]
         val_annotations = ray.get(futures)
