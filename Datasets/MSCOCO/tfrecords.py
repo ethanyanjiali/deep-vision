@@ -2,6 +2,7 @@ import csv
 import json
 import os
 
+from PIL import Image
 import ray
 import tensorflow as tf
 
