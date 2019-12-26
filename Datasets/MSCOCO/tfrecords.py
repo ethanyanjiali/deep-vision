@@ -137,6 +137,8 @@ def parse_one_annotation(anno, categories, dir):
     category = categories[category_id]
     # ms coco class id starts from 1 because 0 is reserved for background
     class_id = category_id - 1
+    if class_id < 0:
+        print('ALERT: class is {} is invalid'.format(class_id))
     class_text = category['name']
     bbox = anno['bbox']
     filename = '{}/{}.jpg'.format(dir, str(anno['image_id']).rjust(12, '0'))
