@@ -142,7 +142,7 @@ def main():
     with open('./annotations/instances_train2017.json') as train_json:
         train_annos = json.load(train_json)
         futures = [
-            parse_one_row.remote(anno, 'train', './train2017')
+            parse_one_annotation.remote(anno, 'train', './train2017')
             for anno in train_annos['annotations']
         ]
         train_annotations = ray.get(futures)
@@ -151,7 +151,7 @@ def main():
     with open('./annotations/instances_val2017.json') as val_json:
         val_annos = json.load(val_json)
         futures = [
-            parse_one_row.remote(anno, 'test', './val2017')
+            parse_one_annotation.remote(anno, 'test', './val2017')
             for anno in val_annos['annotations']
         ]
         val_annotations = ray.get(futures)
