@@ -143,6 +143,8 @@ def parse_one_annotation(anno, dir):
 
 def main():
     print('Start to parse annotations.')
+    if not os.path.exists('./tfrecords'):
+        os.makedirs('./tfrecords')
 
     with open('./annotations/instances_train2017.json') as train_json:
         train_annos = json.load(train_json)
