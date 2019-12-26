@@ -2,9 +2,7 @@ import csv
 import json
 import os
 
-from pycocotools.coco import COCO
 import ray
-import requests
 from tqdm import tqdm
 
 num_train_shards = 64
@@ -140,32 +138,31 @@ def parse_one_annotation(anno, split, dir):
 
 def main():
     print('Start to parse annotations.')
-    with open('./ecd/labels/mscoco.csv', 'w') as labelcsv:
-        fieldnames = ['filename', 'class_id', 'xmin', 'ymin', 'xmax', 'ymax']
-        writer = csv.DictWriter(labelcsv, fieldnames=fieldnames)
-        writer.writeheader()
 
-        all_annos = 0
-        all_files = set()
+    with open('./annotations/instances_train2017.json') as train_json:
+        train_annos = json.load(train_json)
+        futures = [
+            parse_one_row.remote(anno, 'train', './train2017')
+            for anno in train_annos['annotations']
+        ]
+        train_annotations = ray.get(futures)
+        del (train_annos)
 
-        with open('./ecd/mscoco/instances_train2017.json') as train_json:
-            train_annos = json.load(train_json)
-            futures = [
-                parse_one_row.remote(anno, 'train', './train2017')
-                for anno in train_annos['annotations']
-            ]
-            train_annotations = ray.get(futures)
+    with open('./annotations/instances_val2017.json') as val_json:
+        val_annos = json.load(val_json)
+        futures = [
+            parse_one_row.remote(anno, 'test', './val2017')
+            for anno in val_annos['annotations']
+        ]
+        val_annotations = ray.get(futures)
+        del (val_annos)
 
-        with open('./ecd/mscoco/instances_val2017.json') as val_json:
-            val_annos = json.load(val_json)
-            futures = [
-                parse_one_row.remote(anno, 'test', './val2017')
-                for anno in val_annos['annotations']
-            ]
-            val_annotations = ray.get(futures)
+    print('Start to build TF Records.')
+    build_tf_records(train_annotations, num_train_shards)
+    build_tf_records(val_annotations, num_val_shards)
 
-        print('Successfully wrote {} annotations for {} images to label file.'.
-              format(all_annos, len(all_files)))
+    print('Successfully wrote {} annotations for {} images to label file.'.
+          format(all_annos, len(all_files)))
 
 
 if __name__ == '__main__':
