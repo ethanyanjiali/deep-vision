@@ -117,7 +117,6 @@ def build_tf_records(annotations, shards):
     ray.get(futures)
 
 
-@ray.remote
 def parse_one_annotation(anno, dir):
     category_id = anno['category_id']
     bbox = anno['bbox']
@@ -140,20 +139,18 @@ def main():
 
     with open('./annotations/instances_train2017.json') as train_json:
         train_annos = json.load(train_json)
-        futures = [
-            parse_one_annotation.remote(anno, './train2017')
+        train_annotations = [
+            parse_one_annotation(anno, './train2017')
             for anno in train_annos['annotations']
         ]
-        train_annotations = ray.get(futures)
         del (train_annos)
 
     with open('./annotations/instances_val2017.json') as val_json:
         val_annos = json.load(val_json)
-        futures = [
-            parse_one_annotation.remote(anno, './val2017')
+        val_annotations = [
+            parse_one_annotation(anno, './val2017')
             for anno in val_annos['annotations']
         ]
-        val_annotations = ray.get(futures)
         del (val_annos)
 
     print('Start to build TF Records.')
