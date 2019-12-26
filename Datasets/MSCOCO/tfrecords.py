@@ -136,10 +136,11 @@ def parse_one_annotation(anno, categories, dir):
     category_id = int(anno['category_id'])
     category = categories[category_id]
     # ms coco class id starts from 1 because 0 is reserved for background
-    class_id = category_id - 1
+    # but i want it to start from 0
+    class_id = category[0]
     if class_id < 0:
         print('ALERT: class is {} is invalid'.format(class_id))
-    class_text = category['name']
+    class_text = category[1]
     bbox = anno['bbox']
     filename = '{}/{}.jpg'.format(dir, str(anno['image_id']).rjust(12, '0'))
     annotation = {
@@ -164,9 +165,10 @@ def main():
     with open('./annotations/instances_train2017.json') as train_json:
         train_annos = json.load(train_json)
         train_categories = {
-            category['id']: category
-            for category in train_annos['categories']
+            category['id']: (i, category['name'])
+            for i, category in enumerate(train_annos['categories'])
         }
+        print(train_categories)
         train_annotations = [
             parse_one_annotation(anno, train_categories, './train2017')
             for anno in train_annos['annotations']
@@ -176,9 +178,10 @@ def main():
     with open('./annotations/instances_val2017.json') as val_json:
         val_annos = json.load(val_json)
         val_categories = {
-            category['id']: category
-            for category in val_annos['categories']
+            category['id']: (i, category['name'])
+            for i, category in enumerate(val_annos['categories'])
         }
+        print(val_categories)
         val_annotations = [
             parse_one_annotation(anno, val_categories, './val2017')
             for anno in val_annos['annotations']
