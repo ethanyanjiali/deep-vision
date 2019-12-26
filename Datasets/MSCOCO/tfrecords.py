@@ -34,7 +34,7 @@ def genreate_tfexample(anno_list):
     with open(filename, 'rb') as image_file:
         image_string = image_file.read()
 
-    image = Image.open(image_path)
+    image = Image.open(filename)
     image_rgb = image.convert('RGB')
     with io.BytesIO() as output:
         image_rgb.save(output, format="JPEG")
