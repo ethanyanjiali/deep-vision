@@ -169,8 +169,8 @@ def main():
     build_tf_records(train_annotations, num_train_shards, 'train')
     build_tf_records(val_annotations, num_val_shards, 'val')
 
-    print('Successfully wrote {} annotations for {} images to label file.'.
-          format(all_annos, len(all_files)))
+    print('Successfully wrote {} annotations to TF Records.'.format(
+        len(train_annotations) + len(val_annotations)))
 
 
 if __name__ == '__main__':
