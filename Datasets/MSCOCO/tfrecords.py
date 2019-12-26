@@ -111,8 +111,8 @@ def build_tf_records(annotations, shards):
             annotations_by_image[annotation['filename']] = [annotation]
     chunks = chunkify(list(annotations_by_image.values()), shards)
     futures = [
-        build_single_tfrecord.remote(anno, 'train', './train2017')
-        for anno in train_annos['annotations']
+        build_single_tfrecord.remote(chunk, 'train', './train2017')
+        for chunk in chunks
     ]
     ray.get(futures)
 
