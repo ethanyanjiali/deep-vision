@@ -149,7 +149,7 @@ class Trainer(object):
                          'batch wh loss', batch_wh_loss, 'batch obj loss',
                          batch_obj_loss, 'batch_class_loss', batch_class_loss,
                          'epoch total loss:', total_loss, 'duration seconds:',
-                         round(t1 - t0, 3), 'examples/seconds:',
+                         t1 - t0, 'examples/seconds:',
                          self.global_batch_size / (t1 - t0))
             return total_loss, num_train_batches
 
