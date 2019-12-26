@@ -1,4 +1,4 @@
-# ImageNet ILSVRC2012 - TensorFlow / Keras 
+# ResNet - ImageNet ILSVRC2012 - TensorFlow / Keras 
 
 This directory contains the TensorFlow implementation (Keras APIs) to replicate ResNet with public ImageNet ILSVRC2012 dataset
 

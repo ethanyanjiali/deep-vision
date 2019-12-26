@@ -1,4 +1,4 @@
-# ImageNet ILSVRC2012 - PyTorch
+# VGG - ImageNet ILSVRC2012 - PyTorch
 
 This directory contains the PyTorch code to replicate VGG model with public ImageNet ILSVRC2012 dataset
 

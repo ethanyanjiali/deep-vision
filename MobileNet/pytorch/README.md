@@ -1,4 +1,4 @@
-# ImageNet ILSVRC2012 - PyTorch
+# MobileNet - ImageNet ILSVRC2012 - PyTorch
 
 This directory contains the PyTorch code to replicate MobileNet with public ImageNet ILSVRC2012 dataset
 

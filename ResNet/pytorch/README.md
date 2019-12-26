@@ -1,4 +1,4 @@
-# ImageNet ILSVRC2012 - PyTorch
+# ResNet - ImageNet ILSVRC2012 - PyTorch
 
 This directory contains the PyTorch code to replicate ResNet with public ImageNet ILSVRC2012 dataset
 

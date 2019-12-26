@@ -1,4 +1,4 @@
-# ImageNet ILSVRC2012 - PyTorch
+# AlexNet - ImageNet ILSVRC2012 - PyTorch
 
 This directory contains the PyTorch code to replicate AlexNet with public ImageNet ILSVRC2012 dataset
 

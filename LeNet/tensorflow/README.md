@@ -1,4 +1,4 @@
-# MNIST - TensorFlow 
+# LeNet - MNIST - TensorFlow 
 
 This directory contains the TensorFlow implementation of LeNet using public MNIST dataset
 

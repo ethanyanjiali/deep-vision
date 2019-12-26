@@ -50,12 +50,14 @@ def genreate_tfexample(anno_list):
     depth = 3
 
     class_ids = []
+    class_texts = []
     bbox_xmins = []
     bbox_ymins = []
     bbox_xmaxs = []
     bbox_ymaxs = []
     for anno in anno_list:
         class_ids.append(anno['class_id'])
+        class_texts.append(anno['class_text'].encode())
         xmin, ymin, xmax, ymax = anno['xmin'], anno['ymin'], anno[
             'xmax'], anno['ymax']
         bbox_xmin, bbox_ymin, bbox_xmax, bbox_ymax = float(
@@ -87,6 +89,8 @@ def genreate_tfexample(anno_list):
         tf.train.Feature(float_list=tf.train.FloatList(value=bbox_ymaxs)),
         'image/object/class/label':
         tf.train.Feature(int64_list=tf.train.Int64List(value=class_ids)),
+        'image/object/class/text':
+        tf.train.Feature(bytes_list=tf.train.BytesList(value=class_texts))
         'image/encoded':
         _bytes_feature(content),
         'image/filename':
@@ -128,13 +132,18 @@ def build_tf_records(annotations, total_shards, split):
     ray.get(futures)
 
 
-def parse_one_annotation(anno, dir):
-    category_id = anno['category_id']
+def parse_one_annotation(anno, categories, dir):
+    category_id = int(anno['category_id'])
+    category = categories[category_id]
+    # ms coco class id starts from 1 because 0 is reserved for background
+    class_id = category_id - 1
+    class_text = category['name']
     bbox = anno['bbox']
     filename = '{}/{}.jpg'.format(dir, str(anno['image_id']).rjust(12, '0'))
     annotation = {
         'filename': filename,
-        'class_id': int(anno['category_id']),
+        'class_id': class_id,
+        'class_text': class_text,
         # http://cocodataset.org/#format-data
         # bbox is in format of (x, y, width, height)
         'xmin': float(bbox[0]),
@@ -152,16 +161,24 @@ def main():
 
     with open('./annotations/instances_train2017.json') as train_json:
         train_annos = json.load(train_json)
+        train_categories = {
+            category['id']: category
+            for category in train_annos['categories']
+        }
         train_annotations = [
-            parse_one_annotation(anno, './train2017')
+            parse_one_annotation(anno, train_categories, './train2017')
             for anno in train_annos['annotations']
         ]
         del (train_annos)
 
     with open('./annotations/instances_val2017.json') as val_json:
         val_annos = json.load(val_json)
+        val_categories = {
+            category['id']: category
+            for category in val_annos['categories']
+        }
         val_annotations = [
-            parse_one_annotation(anno, './val2017')
+            parse_one_annotation(anno, val_categories, './val2017')
             for anno in val_annos['annotations']
         ]
         del (val_annos)

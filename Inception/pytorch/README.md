@@ -1,4 +1,4 @@
-# ImageNet ILSVRC2012 - PyTorch
+# Inception - ImageNet ILSVRC2012 - PyTorch
 
 This directory contains the PyTorch code to replicate Inception model with public ImageNet ILSVRC2012 dataset
 

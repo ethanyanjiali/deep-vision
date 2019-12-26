@@ -1,4 +1,4 @@
-# MNIST - PyTorch
+# LeNet - MNIST - PyTorch
 
 This directory contains the PyTorch implementation of LeNet using public MNIST dataset
 
