@@ -37,13 +37,14 @@ def _bytes_feature(value):
 def genreate_tfexample(anno_list):
     filename = anno_list[0]['filename']
     with open(filename, 'rb') as image_file:
-        image_string = image_file.read()
+        content = image_file.read()
 
     image = Image.open(filename)
-    image_rgb = image.convert('RGB')
-    with io.BytesIO() as output:
-        image_rgb.save(output, format="JPEG")
-        content = output.getvalue()
+    if image.format != 'JPEG':
+        image_rgb = image.convert('RGB')
+        with io.BytesIO() as output:
+            image_rgb.save(output, format="JPEG")
+            content = output.getvalue()
 
     width, height = image.size
     depth = 3
