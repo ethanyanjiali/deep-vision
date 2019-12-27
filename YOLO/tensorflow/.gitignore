@@ -1,0 +1,4 @@
+models/
+nohup.out
+nohup*.out
+test.ipynb
