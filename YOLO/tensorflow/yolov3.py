@@ -27,6 +27,7 @@ def DarknetConv(inputs, filters, kernel_size, strides, name):
         strides=strides,
         padding='same',
         name=name + '_conv2d',
+        use_bias=False,
         # kernel_regularizer=tf.keras.regularizers.l2(0.0005)
     )(inputs)
     # YoloV2:
