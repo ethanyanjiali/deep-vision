@@ -108,16 +108,26 @@ def YoloV3(
 
     backbone = Darknet(shape)
     x_small, x_medium, x_large = backbone(inputs)
-    
+
     # large scale detection
     # https://github.com/pjreddie/darknet/blob/61c9d02ec461e30d55762ec7669d6a1d3c356fb2/cfg/yolov3.cfg#L549-L788
-    x = DarknetConv(x_large, 512, kernel_size=1, strides=1, name='detector_scale_large_1x1_1')
-    x = DarknetConv(x, 1024, kernel_size=3, strides=1, name='detector_scale_large_3x3_1')
-    x = DarknetConv(x, 512, kernel_size=1, strides=1, name='detector_scale_large_1x1_2')
-    x = DarknetConv(x, 1024, kernel_size=3, strides=1, name='detector_scale_large_3x3_2')
-    x = DarknetConv(x, 512, kernel_size=1, strides=1, name='detector_scale_large_1x1_3')
+    x = DarknetConv(
+        x_large,
+        512,
+        kernel_size=1,
+        strides=1,
+        name='detector_scale_large_1x1_1')
+    x = DarknetConv(
+        x, 1024, kernel_size=3, strides=1, name='detector_scale_large_3x3_1')
+    x = DarknetConv(
+        x, 512, kernel_size=1, strides=1, name='detector_scale_large_1x1_2')
+    x = DarknetConv(
+        x, 1024, kernel_size=3, strides=1, name='detector_scale_large_3x3_2')
+    x = DarknetConv(
+        x, 512, kernel_size=1, strides=1, name='detector_scale_large_1x1_3')
 
-    y_large = DarknetConv(x, 1024, kernel_size=3, strides=1, name='detector_scale_large_3x3_3')
+    y_large = DarknetConv(
+        x, 1024, kernel_size=3, strides=1, name='detector_scale_large_3x3_3')
     y_large = Conv2D(
         filters=final_filters,
         kernel_size=1,
@@ -125,7 +135,7 @@ def YoloV3(
         padding='same',
         name='detector_scale_large_final_conv2d',
     )(y_large)
-    
+
     # meidum scale detection
     # YoloV3:
     # "Next we take the feature map from 2 layers previous and upsample it by 2×. We also take a feature map from earlier
@@ -136,21 +146,28 @@ def YoloV3(
     #
     # From the code, 1x1x256 -> upsampling by 2 -> 3 times (1x1x256 -> 3x3x512)
     # https://github.com/pjreddie/darknet/blob/61c9d02ec461e30d55762ec7669d6a1d3c356fb2/cfg/yolov3.cfg#L621
-    x = DarknetConv(x, 256, kernel_size=1, strides=1, name='detector_scale_medium_1x1_0')
-    
+    x = DarknetConv(
+        x, 256, kernel_size=1, strides=1, name='detector_scale_medium_1x1_0')
+
     # Although not explained in the paper, the upsampling mentioned by the author
     # is just interprolation as seen from here
     # https://github.com/pjreddie/darknet/blob/61c9d02ec461e30d55762ec7669d6a1d3c356fb2/src/blas.c#L334
     x = UpSampling2D(size=(2, 2), name='detector_scale_1_upsampling')(x)
     x = Concatenate(name='detector_scale_1_concat')([x, x_medium])
 
-    x = DarknetConv(x, 256, kernel_size=1, strides=1, name='detector_scale_medium_1x1_1')
-    x = DarknetConv(x, 512, kernel_size=3, strides=1, name='detector_scale_medium_3x3_1')
-    x = DarknetConv(x, 256, kernel_size=1, strides=1, name='detector_scale_medium_1x1_2')
-    x = DarknetConv(x, 512, kernel_size=3, strides=1, name='detector_scale_medium_3x3_2')
-    x = DarknetConv(x, 256, kernel_size=1, strides=1, name='detector_scale_medium_1x1_3')
+    x = DarknetConv(
+        x, 256, kernel_size=1, strides=1, name='detector_scale_medium_1x1_1')
+    x = DarknetConv(
+        x, 512, kernel_size=3, strides=1, name='detector_scale_medium_3x3_1')
+    x = DarknetConv(
+        x, 256, kernel_size=1, strides=1, name='detector_scale_medium_1x1_2')
+    x = DarknetConv(
+        x, 512, kernel_size=3, strides=1, name='detector_scale_medium_3x3_2')
+    x = DarknetConv(
+        x, 256, kernel_size=1, strides=1, name='detector_scale_medium_1x1_3')
 
-    y_medium = DarknetConv(x, 512, kernel_size=3, strides=1, name='detector_scale_medium_3x3_3')
+    y_medium = DarknetConv(
+        x, 512, kernel_size=3, strides=1, name='detector_scale_medium_3x3_3')
     y_medium = Conv2D(
         filters=final_filters,
         kernel_size=1,
@@ -158,21 +175,28 @@ def YoloV3(
         padding='same',
         name='detector_scale_medium_final_conv2d',
     )(y_medium)
-    
+
     # small scale detection
     # YoloV3:
     # "We perform the same design one more time to predict boxes for the ﬁnal scale."
-    x = DarknetConv(x, 128, kernel_size=1, strides=1, name='detector_scale_small_1x1_0')
+    x = DarknetConv(
+        x, 128, kernel_size=1, strides=1, name='detector_scale_small_1x1_0')
     x = UpSampling2D(size=(2, 2), name='detector_scale_small_upsampling')(x)
     x = Concatenate(name='detector_scale_small_concat')([x, x_small])
 
-    x = DarknetConv(x, 128, kernel_size=1, strides=1, name='detector_scale_small_1x1_1')
-    x = DarknetConv(x, 256, kernel_size=3, strides=1, name='detector_scale_small_3x3_1')
-    x = DarknetConv(x, 128, kernel_size=1, strides=1, name='detector_scale_small_1x1_2')
-    x = DarknetConv(x, 256, kernel_size=3, strides=1, name='detector_scale_small_3x3_2')
-    x = DarknetConv(x, 128, kernel_size=1, strides=1, name='detector_scale_small_1x1_3')
-    
-    y_small = DarknetConv(x, 256, kernel_size=3, strides=1, name='detector_scale_small_3x3_3')
+    x = DarknetConv(
+        x, 128, kernel_size=1, strides=1, name='detector_scale_small_1x1_1')
+    x = DarknetConv(
+        x, 256, kernel_size=3, strides=1, name='detector_scale_small_3x3_1')
+    x = DarknetConv(
+        x, 128, kernel_size=1, strides=1, name='detector_scale_small_1x1_2')
+    x = DarknetConv(
+        x, 256, kernel_size=3, strides=1, name='detector_scale_small_3x3_2')
+    x = DarknetConv(
+        x, 128, kernel_size=1, strides=1, name='detector_scale_small_1x1_3')
+
+    y_small = DarknetConv(
+        x, 256, kernel_size=3, strides=1, name='detector_scale_small_3x3_3')
     y_small = Conv2D(
         filters=final_filters,
         kernel_size=1,
@@ -191,7 +215,8 @@ def YoloV3(
         y_small, (y_small_shape[0], y_small_shape[1], y_small_shape[2], 3, -1),
         name='detector_reshape_small')
     y_medium = tf.reshape(
-        y_medium, (y_medium_shape[0], y_medium_shape[1], y_medium_shape[2], 3, -1),
+        y_medium,
+        (y_medium_shape[0], y_medium_shape[1], y_medium_shape[2], 3, -1),
         name='detector_reshape_meidum')
     y_large = tf.reshape(
         y_large, (y_large_shape[0], y_large_shape[1], y_large_shape[2], 3, -1),
@@ -368,6 +393,8 @@ class YoloLoss(object):
         self.num_classes = num_classes
         self.ignore_thresh = 0.5
         self.valid_anchors_wh = valid_anchors_wh
+        self.lambda_coord = 5.0
+        self.lamda_noobj = 0.5
 
     def __call__(self, y_true, y_pred):
         """
@@ -441,7 +468,9 @@ class YoloLoss(object):
         obj_loss = self.calc_obj_loss(true_obj, pred_obj, ignore_mask)
 
         # YoloV1: Function (3)
-        return xy_loss + wh_loss + class_loss + obj_loss, (xy_loss, wh_loss, class_loss, obj_loss)
+        return xy_loss + wh_loss + class_loss + obj_loss, (xy_loss, wh_loss,
+                                                           class_loss,
+                                                           obj_loss)
 
     def calc_ignore_mask(self, true_obj, true_box, pred_box):
         # eg. true_obj (1, 13, 13, 3, 1)
@@ -485,8 +514,9 @@ class YoloLoss(object):
         noobj_loss = (1 - true_obj) * obj_entrophy * ignore_mask
 
         obj_loss = tf.reduce_sum(obj_loss, axis=(1, 2, 3))
-        noobj_loss = tf.reduce_sum(noobj_loss, axis=(1, 2, 3))
-        
+        noobj_loss = tf.reduce_sum(
+            noobj_loss, axis=(1, 2, 3)) * self.lamda_noobj
+
         return obj_loss + noobj_loss
 
     def calc_class_loss(self, true_obj, true_class, pred_class):
@@ -538,7 +568,7 @@ class YoloLoss(object):
         # highest IOU of any predictor in that grid cell)."
         xy_loss = true_obj * xy_loss * weight
 
-        xy_loss = tf.reduce_sum(xy_loss, axis=(1, 2, 3))
+        xy_loss = tf.reduce_sum(xy_loss, axis=(1, 2, 3)) * self.lambda_coord
 
         return xy_loss
 
@@ -559,5 +589,5 @@ class YoloLoss(object):
         wh_loss = tf.reduce_sum(tf.square(true_wh - pred_wh), axis=-1)
         true_obj = tf.squeeze(true_obj, axis=-1)
         wh_loss = true_obj * wh_loss * weight
-        wh_loss = tf.reduce_sum(wh_loss, axis=(1, 2, 3))
+        wh_loss = tf.reduce_sum(wh_loss, axis=(1, 2, 3)) * self.lambda_coord
         return wh_loss

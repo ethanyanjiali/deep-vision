@@ -24,7 +24,7 @@ class Trainer(object):
                  epochs,
                  global_batch_size,
                  strategy,
-                 initial_learning_rate=0.001):
+                 initial_learning_rate=0.01):
         self.model = model
         self.epochs = epochs
         self.strategy = strategy
@@ -162,14 +162,14 @@ class Trainer(object):
                 num_val_batches += 1
             return total_loss, num_val_batches
 
-        print('{} Start training...'.format(
+        tf.print('{} Start training...'.format(
             datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
         for epoch in range(1, self.epochs + 1):
             t0 = time.time()
             self.lr_decay()
 
-            print(
-                '{}   Started epoch {} with learning rate {}. Current LR patience count is {} epochs. Last lowest val loss is {}.'
+            tf.print(
+                '{} Started epoch {} with learning rate {}. Current LR patience count is {} epochs. Last lowest val loss is {}.'
                 .format(datetime.now().strftime("%m/%d/%Y %H:%M:%S"), epoch,
                         self.current_learning_rate, self.patience_count,
                         self.lowest_val_loss))
@@ -178,8 +178,8 @@ class Trainer(object):
                 train_dist_dataset)
             t1 = time.time()
             train_loss = train_total_loss / num_train_batches
-            print(
-                '{}   Epoch {} train loss {}, total train batches {}, {} examples per second'
+            tf.print(
+                '{} Epoch {} train loss {}, total train batches {}, {} examples per second'
                 .format(
                     datetime.now().strftime("%m/%d/%Y %H:%M:%S"), epoch,
                     train_loss, num_train_batches,
@@ -190,8 +190,8 @@ class Trainer(object):
 
             t2 = time.time()
             val_loss = val_total_loss / num_val_batches
-            print(
-                '{}   Epoch {} val loss {}, total val batches {}, {} examples per second'
+            tf.print(
+                '{} Epoch {} val loss {}, total val batches {}, {} examples per second'
                 .format(datetime.now().strftime("%m/%d/%Y %H:%M:%S"), epoch,
                         val_loss, num_val_batches,
                         num_val_batches * self.global_batch_size / (t2 - t1)))
@@ -208,10 +208,10 @@ class Trainer(object):
 
     def save_model(self, epoch, loss):
         # https://github.com/tensorflow/tensorflow/issues/33565
-        self.model.save_weights(
-            './models/model-v1.0.8-epoch-{}-loss-{:.4f}.tf'.format(
-                epoch, loss))
-        print("Model saved")
+        model_name = './models/model-v1.0.8-epoch-{}-loss-{:.4f}.tf'.format(
+            epoch, loss)
+        self.model.save_weights(model_name)
+        print("Model {} saved.".format(model_name))
 
 
 def create_dataset(tfrecords, batch_size, is_train):
