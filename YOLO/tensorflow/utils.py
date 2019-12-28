@@ -58,6 +58,6 @@ def broadcast_iou(box1, box2):
     return intersection_area / (box1_area + box2_area - intersection_area)
 
 def binary_cross_entropy(logits, labels):
-    eplison = 1e-7
-    logits = tf.clip_by_value(logits, eplison, 1 - eplison)
+    epsilon = 1e-7
+    logits = tf.clip_by_value(logits, epsilon, 1 - epsilon)
     return -(labels*tf.math.log(logits)+(1-labels)*tf.math.log(1 - logits))

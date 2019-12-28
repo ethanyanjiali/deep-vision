@@ -535,7 +535,7 @@ class YoloLoss(object):
         # "Note that the loss function only penalizes classiﬁcation error
         # if an object is present in that grid cell (hence the conditional
         # class probability discussed earlier).
-        class_loss = binary_cross_entropy(pred_class, true_obj)
+        class_loss = binary_cross_entropy(pred_class, true_class)
         class_loss = true_obj * class_loss
         class_loss = tf.reduce_sum(class_loss, axis=(1, 2, 3, 4))
         return class_loss

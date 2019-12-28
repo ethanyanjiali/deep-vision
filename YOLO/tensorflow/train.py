@@ -1,5 +1,5 @@
 import math
-from datetime import datetime
+import datetime
 import os
 import time
 
@@ -112,12 +112,17 @@ class Trainer(object):
         total_loss = tf.reduce_sum(losses)
 
         return total_loss
+    
+    def get_current_time(self):
+        return datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
     def run(self, train_dist_dataset, val_dist_dataset):
+        total_steps = tf.constant(0, dtype=tf.int64)
+
         @tf.function
-        def distributed_train_epoch(dataset):
+        def distributed_train_epoch(dataset, train_summary_writer, total_steps):
             total_loss = 0.0
-            num_train_batches = 0.0
+            num_train_batches = tf.constant(0, dtype=tf.int64)
             for one_batch in dataset:
                 per_replica_losses, per_replica_losses_breakdown = self.strategy.experimental_run_v2(
                     self.train_step, args=(one_batch, ))
@@ -147,12 +152,18 @@ class Trainer(object):
                          'batch wh loss', batch_wh_loss, 'batch obj loss',
                          batch_obj_loss, 'batch_class_loss', batch_class_loss,
                          'epoch total loss:', total_loss)
+                with train_summary_writer.as_default():
+                    tf.summary.scalar('batch train loss', batch_loss, step=total_steps+num_train_batches)
+                    tf.summary.scalar('batch xy loss', batch_xy_loss, step=total_steps+num_train_batches)
+                    tf.summary.scalar('batch wh loss', batch_wh_loss, step=total_steps+num_train_batches)
+                    tf.summary.scalar('batch obj loss', batch_obj_loss, step=total_steps+num_train_batches)
+                    tf.summary.scalar('batch class loss', batch_class_loss, step=total_steps+num_train_batches)
             return total_loss, num_train_batches
 
         @tf.function
         def distributed_val_epoch(dataset):
             total_loss = 0.0
-            num_val_batches = 0.0
+            num_val_batches = tf.constant(0, dtype=tf.int64)
             for one_batch in dataset:
                 per_replica_losses = self.strategy.experimental_run_v2(
                     self.val_step, args=(one_batch, ))
@@ -161,40 +172,50 @@ class Trainer(object):
                 total_loss += batch_loss
                 num_val_batches += 1
             return total_loss, num_val_batches
+        
+        current_time = self.get_current_time()
+        train_log_dir = 'logs/gradient_tape/' + current_time + '/train'
+        val_log_dir = 'logs/gradient_tape/' + current_time + '/val'
+        train_summary_writer = tf.summary.create_file_writer(train_log_dir)
+        val_summary_writer = tf.summary.create_file_writer(val_log_dir)
 
-        tf.print('{} Start training...'.format(
-            datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
+        tf.print('{} Start training...'.format(current_time))
         for epoch in range(1, self.epochs + 1):
             t0 = time.time()
             self.lr_decay()
 
             tf.print(
                 '{} Started epoch {} with learning rate {}. Current LR patience count is {} epochs. Last lowest val loss is {}.'
-                .format(datetime.now().strftime("%m/%d/%Y %H:%M:%S"), epoch,
+                .format(self.get_current_time(), epoch,
                         self.current_learning_rate, self.patience_count,
                         self.lowest_val_loss))
 
             train_total_loss, num_train_batches = distributed_train_epoch(
-                train_dist_dataset)
+                train_dist_dataset, train_summary_writer, total_steps)
             t1 = time.time()
-            train_loss = train_total_loss / num_train_batches
+            train_loss = train_total_loss / tf.cast(num_train_batches, dtype=tf.float32)
             tf.print(
                 '{} Epoch {} train loss {}, total train batches {}, {} examples per second'
                 .format(
-                    datetime.now().strftime("%m/%d/%Y %H:%M:%S"), epoch,
+                    self.get_current_time(), epoch,
                     train_loss, num_train_batches,
                     num_train_batches * self.global_batch_size / (t1 - t0)))
+            with train_summary_writer.as_default():
+                tf.summary.scalar('epoch train loss', train_loss, step=epoch)
+            total_steps += num_train_batches
 
             val_total_loss, num_val_batches = distributed_val_epoch(
                 val_dist_dataset)
 
             t2 = time.time()
-            val_loss = val_total_loss / num_val_batches
+            val_loss = val_total_loss / tf.cast(num_val_batches, dtype=tf.float32)
             tf.print(
                 '{} Epoch {} val loss {}, total val batches {}, {} examples per second'
-                .format(datetime.now().strftime("%m/%d/%Y %H:%M:%S"), epoch,
+                .format(self.get_current_time(), epoch,
                         val_loss, num_val_batches,
                         num_val_batches * self.global_batch_size / (t2 - t1)))
+            with val_summary_writer.as_default():
+                tf.summary.scalar('epoch val loss', val_loss, step=epoch)
 
             # save model when reach a new lowest validation loss
             if val_loss < self.lowest_val_loss:
@@ -203,12 +224,11 @@ class Trainer(object):
             self.last_val_loss = val_loss
 
         self.save_model(self.epochs, self.last_val_loss)
-        print('{} Finished.'.format(
-            datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
+        print('{} Finished.'.format(self.get_current_time()))
 
     def save_model(self, epoch, loss):
         # https://github.com/tensorflow/tensorflow/issues/33565
-        model_name = './models/model-v1.0.8-epoch-{}-loss-{:.4f}.tf'.format(
+        model_name = './models/model-v1.0.0-epoch-{}-loss-{:.4f}.tf'.format(
             epoch, loss)
         self.model.save_weights(model_name)
         print("Model {} saved.".format(model_name))
