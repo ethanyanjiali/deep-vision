@@ -13,7 +13,7 @@ from tensorflow.keras.layers import (
     ZeroPadding2D,
     BatchNormalization,
 )
-from utils import xywh_to_x1x2y1y2, broadcast_iou
+from utils import xywh_to_x1x2y1y2, broadcast_iou, binary_cross_entropy
 
 anchors_wh = np.array([[10, 13], [16, 30], [33, 23], [30, 61], [62, 45],
                        [59, 119], [116, 90], [156, 198], [373, 326]],
@@ -494,6 +494,7 @@ class YoloLoss(object):
         # if best iou is higher than threshold, set the box to be ignored for noobj loss
         # eg. ignore_mask(1, 1, 1, 2)
         ignore_mask = tf.cast(best_iou < self.ignore_thresh, tf.float32)
+        ignore_mask = tf.expand_dims(ignore_mask, axis=-1)
         return ignore_mask
 
     def calc_obj_loss(self, true_obj, pred_obj, ignore_mask):
@@ -507,15 +508,14 @@ class YoloLoss(object):
         outputs:
         obj_loss: objectiveness loss
         """
-        obj_entrophy = tf.keras.losses.binary_crossentropy(true_obj, pred_obj)
-        true_obj = tf.squeeze(true_obj, axis=-1)
+        obj_entrophy = binary_cross_entropy(pred_obj, true_obj)
 
         obj_loss = true_obj * obj_entrophy
         noobj_loss = (1 - true_obj) * obj_entrophy * ignore_mask
 
-        obj_loss = tf.reduce_sum(obj_loss, axis=(1, 2, 3))
+        obj_loss = tf.reduce_sum(obj_loss, axis=(1, 2, 3, 4))
         noobj_loss = tf.reduce_sum(
-            noobj_loss, axis=(1, 2, 3)) * self.lamda_noobj
+            noobj_loss, axis=(1, 2, 3, 4)) * self.lamda_noobj
 
         return obj_loss + noobj_loss
 
@@ -535,11 +535,9 @@ class YoloLoss(object):
         # "Note that the loss function only penalizes classiﬁcation error
         # if an object is present in that grid cell (hence the conditional
         # class probability discussed earlier).
-        class_loss = tf.keras.losses.binary_crossentropy(
-            true_class, pred_class)
-        true_obj = tf.squeeze(true_obj, axis=-1)
+        class_loss = binary_cross_entropy(pred_class, true_obj)
         class_loss = true_obj * class_loss
-        class_loss = tf.reduce_sum(class_loss, axis=(1, 2, 3))
+        class_loss = tf.reduce_sum(class_loss, axis=(1, 2, 3, 4))
         return class_loss
 
     def calc_xy_loss(self, true_obj, true_xy, pred_xy, weight):
