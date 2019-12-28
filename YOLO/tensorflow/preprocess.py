@@ -73,50 +73,47 @@ class Preprocessor(object):
         ymin_delta = tf.random.uniform([1], 0, min_ymin)
         xmax_delta = tf.random.uniform([1], 0, 1 - max_xmax)
         ymax_delta = tf.random.uniform([1], 0, 1 - max_ymax)
-        # we also want to cap this delta so that the cropped area won't be too small
-        xmin_delta = tf.math.minimum(xmin_delta, tf.constant(0.1))
-        ymin_delta = tf.math.minimum(ymin_delta, tf.constant(0.1))
-        xmax_delta = tf.math.minimum(xmax_delta, tf.constant(0.1))
-        ymax_delta = tf.math.minimum(ymax_delta, tf.constant(0.1))
 
         return xmin_delta, ymin_delta, xmax_delta, ymax_delta
 
     def random_crop_image_and_label(self, image, bboxes):
         """
-        crop images randomly but preserve all bounding boxes. the crop is guaranteed to include
-        all bounding boxes.
+        crop images randomly at 50% chance but preserve all bounding boxes. the crop is guaranteed to include
+        all bounding boxes. 
         """
-        xmin_delta, ymin_delta, xmax_delta, ymax_delta = self.get_random_crop_delta(
-            bboxes)
-        
-        xmin, ymin, xmax, ymax = tf.split(bboxes, [1, 1, 1, 1], -1)
-        # before crop: |_0.1_|_0.1_|____________0.5___________|_0.1_|___0.2___|
-        # after crop:  |_0.1_|____________0.5___________|_0.1_|
-        # imagine old xmin is 0.2 (0.1+0.1), old xmax is 0.8 (0.1+0.1+0.5+0.1)
-        # if we cut both left 0.1 (xmin_delta) and right 0.2 (xmax_delta)
-        # the new xmin will be (0.2 - 0.1) / (1 - 0.1 - 0.2) = 1/7
-        # the new xmax will be (0.8 - 0.1) / (1 - 0.1 - 0.2) = 6/7
-        # same thing for y
-        xmin = (xmin - xmin_delta) / (1 - xmin_delta - xmax_delta)
-        ymin = (ymin - ymin_delta) / (1 - ymin_delta - ymax_delta)
-        xmax = (xmax - xmin_delta) / (1 - xmin_delta - xmax_delta)
-        ymax = (ymax - ymin_delta) / (1 - ymin_delta - ymax_delta)
+        r = tf.random.uniform([1])
+        if r < 0.5:
+            xmin_delta, ymin_delta, xmax_delta, ymax_delta = self.get_random_crop_delta(
+                bboxes)
 
-        bboxes = tf.squeeze(
-            tf.stack([xmin, ymin, xmax, ymax], axis=1), axis=-1)
-        h = tf.cast(tf.shape(image)[0], dtype=tf.float32)
-        w = tf.cast(tf.shape(image)[1], dtype=tf.float32)
+            xmin, ymin, xmax, ymax = tf.split(bboxes, [1, 1, 1, 1], -1)
+            # before crop: |_0.1_|_0.1_|____________0.5___________|_0.1_|___0.2___|
+            # after crop:  |_0.1_|____________0.5___________|_0.1_|
+            # imagine old xmin is 0.2 (0.1+0.1), old xmax is 0.8 (0.1+0.1+0.5+0.1)
+            # if we cut both left 0.1 (xmin_delta) and right 0.2 (xmax_delta)
+            # the new xmin will be (0.2 - 0.1) / (1 - 0.1 - 0.2) = 1/7
+            # the new xmax will be (0.8 - 0.1) / (1 - 0.1 - 0.2) = 6/7
+            # same thing for y
+            xmin = (xmin - xmin_delta) / (1 - xmin_delta - xmax_delta)
+            ymin = (ymin - ymin_delta) / (1 - ymin_delta - ymax_delta)
+            xmax = (xmax - xmin_delta) / (1 - xmin_delta - xmax_delta)
+            ymax = (ymax - ymin_delta) / (1 - ymin_delta - ymax_delta)
 
-        offset_height = tf.cast(ymin_delta[0] * h, dtype=tf.int32)
-        offset_width = tf.cast(xmin_delta[0] * w, dtype=tf.int32)
-        target_height = tf.cast(
-            tf.math.ceil((1 - ymax_delta - ymin_delta)[0] * h), dtype=tf.int32)
-        target_width = tf.cast(
-            tf.math.ceil((1 - xmax_delta - xmin_delta)[0] * w), dtype=tf.int32)
+            bboxes = tf.squeeze(
+                tf.stack([xmin, ymin, xmax, ymax], axis=1), axis=-1)
+            h = tf.cast(tf.shape(image)[0], dtype=tf.float32)
+            w = tf.cast(tf.shape(image)[1], dtype=tf.float32)
 
-        image = image[offset_height:offset_height +
-                      target_height, offset_width:offset_width +
-                      target_width, :]
+            offset_height = tf.cast(ymin_delta[0] * h, dtype=tf.int32)
+            offset_width = tf.cast(xmin_delta[0] * w, dtype=tf.int32)
+            target_height = tf.cast(
+                tf.math.ceil((1 - ymax_delta - ymin_delta)[0] * h), dtype=tf.int32)
+            target_width = tf.cast(
+                tf.math.ceil((1 - xmax_delta - xmin_delta)[0] * w), dtype=tf.int32)
+
+            image = image[offset_height:offset_height +
+                          target_height, offset_width:offset_width +
+                          target_width, :]
         return image, bboxes
 
     def parse_y_features(self, features):
