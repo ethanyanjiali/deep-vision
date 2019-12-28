@@ -509,10 +509,10 @@ class YoloLoss(object):
         outputs:
         obj_loss: objectiveness loss
         """
-        obj_entrophy = binary_cross_entropy(pred_obj, true_obj)
+        obj_entropy = binary_cross_entropy(pred_obj, true_obj)
 
-        obj_loss = true_obj * obj_entrophy
-        noobj_loss = (1 - true_obj) * obj_entrophy * ignore_mask
+        obj_loss = true_obj * obj_entropy
+        noobj_loss = (1 - true_obj) * obj_entropy * ignore_mask
 
         obj_loss = tf.reduce_sum(obj_loss, axis=(1, 2, 3, 4))
         noobj_loss = tf.reduce_sum(
