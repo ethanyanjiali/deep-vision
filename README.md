@@ -1,6 +1,6 @@
 # Deep Learning in Computer Vision (deep-vision)
 
-[PyTorch](https://github.com/pytorch/pytorch) / [Tensorflow](https://github.com/tensorflow/tensorflow) implementation of common deep neural network models and training scripts for computer vision tasks. This is used to ease the learning curve for new DL practitioners. If you think my work is helpful, please ⭐star⭐ this repo. If you have any questions regarding the code, feel free create an issue.
+[PyTorch](https://github.com/pytorch/pytorch) / [Tensorflow](https://github.com/tensorflow/tensorflow) implementations of common deep neural networks and training scripts for computer vision tasks. This is used to ease the learning curve for new DL practitioners. If you think my work is helpful, please ⭐star⭐ this repo. If you have any questions regarding the code, feel free create an issue.
 
 The directory is categorized by model architecture, then further by framework. Some pretrained models, Jupyter notebook visuliazation script, and training logs are also provided for your reference.
 
@@ -19,7 +19,7 @@ The directory is categorized by model architecture, then further by framework. S
 - ResNet
     - PyTorch
         - ResNetV1 34/50/152
-    - Tensorflow
+    - TensorFlow
         - ResNetV1 50/152
 - MobileNet
     - PyTorch
@@ -27,27 +27,21 @@ The directory is categorized by model architecture, then further by framework. S
 - LeNet
     - PyTorch
         - LeNet-5
-    - Tensorflow
+    - TensorFlow
         - LeNet-5
 
 ## Object Detection
 
 - YOLO
-    - Tensorflow
+    - TensorFlow
         - YoloV3
 
 ## Generative Adversarial Network
 
 - DCGAN
-    - Tensorflow
+    - TensorFlow
 - CycleGAN 
-    - Tensorflow
-    
-## Setup
-
-- Create a virtualenv with Python3 `python3 -m venv env`
-- Install dependencies by `pip install -r requirements.in`
-- If you have CUDA GPU, also run `pip install tensorflow-gpu`
+    - TensorFlow
 
 ## Disclaimer
 
