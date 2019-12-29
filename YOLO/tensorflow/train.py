@@ -1,3 +1,4 @@
+import argparse
 import math
 import datetime
 import os
@@ -21,11 +22,13 @@ tf.random.set_seed(1)
 class Trainer(object):
     def __init__(self,
                  model,
+                 initial_epoch,
                  epochs,
                  global_batch_size,
                  strategy,
                  initial_learning_rate=0.01):
         self.model = model
+        self.initial_epoch = initial_epoch
         self.epochs = epochs
         self.strategy = strategy
         self.global_batch_size = global_batch_size
@@ -112,7 +115,7 @@ class Trainer(object):
         total_loss = tf.reduce_sum(losses)
 
         return total_loss
-    
+
     def get_current_time(self):
         return datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
@@ -120,7 +123,8 @@ class Trainer(object):
         total_steps = tf.constant(0, dtype=tf.int64)
 
         @tf.function
-        def distributed_train_epoch(dataset, train_summary_writer, total_steps):
+        def distributed_train_epoch(dataset, train_summary_writer,
+                                    total_steps):
             total_loss = 0.0
             num_train_batches = tf.constant(0, dtype=tf.int64)
             for one_batch in dataset:
@@ -153,11 +157,26 @@ class Trainer(object):
                          batch_obj_loss, 'batch_class_loss', batch_class_loss,
                          'epoch total loss:', total_loss)
                 with train_summary_writer.as_default():
-                    tf.summary.scalar('batch train loss', batch_loss, step=total_steps+num_train_batches)
-                    tf.summary.scalar('batch xy loss', batch_xy_loss, step=total_steps+num_train_batches)
-                    tf.summary.scalar('batch wh loss', batch_wh_loss, step=total_steps+num_train_batches)
-                    tf.summary.scalar('batch obj loss', batch_obj_loss, step=total_steps+num_train_batches)
-                    tf.summary.scalar('batch class loss', batch_class_loss, step=total_steps+num_train_batches)
+                    tf.summary.scalar(
+                        'batch train loss',
+                        batch_loss,
+                        step=total_steps + num_train_batches)
+                    tf.summary.scalar(
+                        'batch xy loss',
+                        batch_xy_loss,
+                        step=total_steps + num_train_batches)
+                    tf.summary.scalar(
+                        'batch wh loss',
+                        batch_wh_loss,
+                        step=total_steps + num_train_batches)
+                    tf.summary.scalar(
+                        'batch obj loss',
+                        batch_obj_loss,
+                        step=total_steps + num_train_batches)
+                    tf.summary.scalar(
+                        'batch class loss',
+                        batch_class_loss,
+                        step=total_steps + num_train_batches)
             return total_loss, num_train_batches
 
         @tf.function
@@ -172,7 +191,7 @@ class Trainer(object):
                 total_loss += batch_loss
                 num_val_batches += 1
             return total_loss, num_val_batches
-        
+
         current_time = self.get_current_time()
         train_log_dir = 'logs/gradient_tape/' + current_time + '/train'
         val_log_dir = 'logs/gradient_tape/' + current_time + '/val'
@@ -180,7 +199,7 @@ class Trainer(object):
         val_summary_writer = tf.summary.create_file_writer(val_log_dir)
 
         tf.print('{} Start training...'.format(current_time))
-        for epoch in range(1, self.epochs + 1):
+        for epoch in range(self.initial_epoch, self.epochs + 1):
             t0 = time.time()
             self.lr_decay()
 
@@ -193,13 +212,15 @@ class Trainer(object):
             train_total_loss, num_train_batches = distributed_train_epoch(
                 train_dist_dataset, train_summary_writer, total_steps)
             t1 = time.time()
-            train_loss = train_total_loss / tf.cast(num_train_batches, dtype=tf.float32)
+            train_loss = train_total_loss / tf.cast(
+                num_train_batches, dtype=tf.float32)
             tf.print(
                 '{} Epoch {} train loss {}, total train batches {}, {} examples per second'
                 .format(
-                    self.get_current_time(), epoch,
-                    train_loss, num_train_batches,
-                    tf.cast(num_train_batches, dtype=tf.float32) * self.global_batch_size / (t1 - t0)))
+                    self.get_current_time(), epoch, train_loss,
+                    num_train_batches,
+                    tf.cast(num_train_batches, dtype=tf.float32) *
+                    self.global_batch_size / (t1 - t0)))
             with train_summary_writer.as_default():
                 tf.summary.scalar('epoch train loss', train_loss, step=epoch)
             total_steps += num_train_batches
@@ -208,12 +229,14 @@ class Trainer(object):
                 val_dist_dataset)
 
             t2 = time.time()
-            val_loss = val_total_loss / tf.cast(num_val_batches, dtype=tf.float32)
+            val_loss = val_total_loss / tf.cast(
+                num_val_batches, dtype=tf.float32)
             tf.print(
                 '{} Epoch {} val loss {}, total val batches {}, {} examples per second'
-                .format(self.get_current_time(), epoch,
-                        val_loss, num_val_batches,
-                        tf.cast(num_val_batches, dtype=tf.float32) * self.global_batch_size / (t2 - t1)))
+                .format(
+                    self.get_current_time(), epoch, val_loss, num_val_batches,
+                    tf.cast(num_val_batches, dtype=tf.float32) *
+                    self.global_batch_size / (t2 - t1)))
             with val_summary_writer.as_default():
                 tf.summary.scalar('epoch val loss', val_loss, step=epoch)
 
@@ -239,18 +262,21 @@ def create_dataset(tfrecords, batch_size, is_train):
 
     dataset = tf.data.Dataset.list_files(tfrecords)
     dataset = tf.data.TFRecordDataset(dataset)
-    dataset = dataset.map(preprocess, num_parallel_calls=8)
+    dataset = dataset.map(preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     if is_train:
         dataset = dataset.shuffle(512)
 
     dataset = dataset.batch(batch_size)
-    dataset = dataset.prefetch(buffer_size=128)
-
+    dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return dataset
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('checkpoint', type=str, help='checkpoint file path')
+    args = parser.parse_args()
+
     strategy = tf.distribute.MirroredStrategy()
     global_batch_size = strategy.num_replicas_in_sync * BATCH_SIZE
     train_dataset = create_dataset(
@@ -269,8 +295,15 @@ def main():
             shape=(416, 416, 3), num_classes=TOTAL_CLASSES, training=True)
         model.summary()
 
+        initial_epoch = 1
+        if args.checkpoint:
+            model.load_weights(args.checkpoint)
+            initial_epoch = int(args.checkpoint.split('-')[-3]) + 1
+            print('Resume training from checkpoint {} and epoch {}'.format(arges.checkpoint, initial_epoch))
+
         trainer = Trainer(
             model=model,
+            initial_epoch=intial_epoch
             epochs=TOTAL_EPOCHS,
             global_batch_size=global_batch_size,
             strategy=strategy,
