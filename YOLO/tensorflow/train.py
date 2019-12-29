@@ -228,7 +228,7 @@ class Trainer(object):
 
     def save_model(self, epoch, loss):
         # https://github.com/tensorflow/tensorflow/issues/33565
-        model_name = './models/model-v1.0.0-epoch-{}-loss-{:.4f}.tf'.format(
+        model_name = './models/model-v1.0.1-epoch-{}-loss-{:.4f}.tf'.format(
             epoch, loss)
         self.model.save_weights(model_name)
         print("Model {} saved.".format(model_name))
