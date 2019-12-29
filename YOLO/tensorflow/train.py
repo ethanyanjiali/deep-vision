@@ -305,7 +305,7 @@ def main():
 
         trainer = Trainer(
             model=model,
-            initial_epoch=intial_epoch,
+            initial_epoch=initial_epoch,
             epochs=TOTAL_EPOCHS,
             global_batch_size=global_batch_size,
             strategy=strategy,
