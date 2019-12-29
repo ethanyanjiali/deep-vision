@@ -199,7 +199,7 @@ class Trainer(object):
                 .format(
                     self.get_current_time(), epoch,
                     train_loss, num_train_batches,
-                    num_train_batches * self.global_batch_size / (t1 - t0)))
+                    tf.cast(num_train_batches, dtype=tf.float32) * self.global_batch_size / (t1 - t0)))
             with train_summary_writer.as_default():
                 tf.summary.scalar('epoch train loss', train_loss, step=epoch)
             total_steps += num_train_batches
@@ -213,7 +213,7 @@ class Trainer(object):
                 '{} Epoch {} val loss {}, total val batches {}, {} examples per second'
                 .format(self.get_current_time(), epoch,
                         val_loss, num_val_batches,
-                        num_val_batches * self.global_batch_size / (t2 - t1)))
+                        tf.cast(num_val_batches, dtype=tf.float32) * self.global_batch_size / (t2 - t1)))
             with val_summary_writer.as_default():
                 tf.summary.scalar('epoch val loss', val_loss, step=epoch)
 
@@ -242,7 +242,7 @@ def create_dataset(tfrecords, batch_size, is_train):
     dataset = dataset.map(preprocess, num_parallel_calls=8)
 
     if is_train:
-        dataset = dataset.shuffle(2048)
+        dataset = dataset.shuffle(512)
 
     dataset = dataset.batch(batch_size)
     dataset = dataset.prefetch(buffer_size=128)
