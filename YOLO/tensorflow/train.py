@@ -301,7 +301,7 @@ def main():
             model.load_weights(args.checkpoint)
             initial_epoch = int(args.checkpoint.split('-')[-3]) + 1
             print('Resume training from checkpoint {} and epoch {}'.format(
-                arges.checkpoint, initial_epoch))
+                args.checkpoint, initial_epoch))
 
         trainer = Trainer(
             model=model,
