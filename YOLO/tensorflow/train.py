@@ -262,7 +262,8 @@ def create_dataset(tfrecords, batch_size, is_train):
 
     dataset = tf.data.Dataset.list_files(tfrecords)
     dataset = tf.data.TFRecordDataset(dataset)
-    dataset = dataset.map(preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    dataset = dataset.map(
+        preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     if is_train:
         dataset = dataset.shuffle(512)
@@ -299,11 +300,12 @@ def main():
         if args.checkpoint:
             model.load_weights(args.checkpoint)
             initial_epoch = int(args.checkpoint.split('-')[-3]) + 1
-            print('Resume training from checkpoint {} and epoch {}'.format(arges.checkpoint, initial_epoch))
+            print('Resume training from checkpoint {} and epoch {}'.format(
+                arges.checkpoint, initial_epoch))
 
         trainer = Trainer(
             model=model,
-            initial_epoch=intial_epoch
+            initial_epoch=intial_epoch,
             epochs=TOTAL_EPOCHS,
             global_batch_size=global_batch_size,
             strategy=strategy,
