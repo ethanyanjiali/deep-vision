@@ -222,7 +222,7 @@ def create_dataset(tfrecords, batch_size, is_train):
     dataset = dataset.map(preprocess, num_parallel_calls=8)
 
     if is_train:
-        dataset = dataset.shuffle(2048)
+        dataset = dataset.shuffle(512)
 
     dataset = dataset.batch(batch_size)
     dataset = dataset.prefetch(buffer_size=128)
