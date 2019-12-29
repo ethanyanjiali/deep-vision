@@ -275,7 +275,7 @@ def create_dataset(tfrecords, batch_size, is_train):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('checkpoint', type=str, help='checkpoint file path')
+    parser.add_argument('--checkpoint', type=str, help='checkpoint file path')
     args = parser.parse_args()
 
     strategy = tf.distribute.MirroredStrategy()
