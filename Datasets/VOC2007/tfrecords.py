@@ -169,7 +169,7 @@ def main():
         for line in lines:
             train_val_split[line] = 'val'
 
-    with open('./voc_207_names.txt') as names_fp:
+    with open('./voc_2007_names.txt') as names_fp:
         names = names_fp.read().splitlines()
         names_map = {name: i for i, name in enumerate(names)}
     print(names_map)
