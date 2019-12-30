@@ -11,12 +11,13 @@ def xywh_to_x1x2y1y2(box):
     y_box = tf.concat([x1y1, x2y2], axis=-1)
     return y_box
 
+
 def xywh_to_y1x1y2x2(box):
     x = box[..., 0:1]
     y = box[..., 1:2]
     w = box[..., 2:3]
     h = box[..., 3:4]
-    
+
     yx = tf.concat([y, x], axis=-1)
     hw = tf.concat([h, w], axis=-1)
 
@@ -76,4 +77,5 @@ def broadcast_iou(box1, box2):
 def binary_cross_entropy(logits, labels):
     epsilon = 1e-7
     logits = tf.clip_by_value(logits, epsilon, 1 - epsilon)
-    return -(labels*tf.math.log(logits)+(1-labels)*tf.math.log(1 - logits))
+    return -(labels * tf.math.log(logits) +
+             (1 - labels) * tf.math.log(1 - logits))

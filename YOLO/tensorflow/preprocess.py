@@ -20,7 +20,7 @@ class Preprocessor(object):
         classes, bboxes = self.parse_y_features(features)
         image, bboxes = self.random_flip_image_and_label(image, bboxes)
         image, bboxes = self.random_crop_image_and_label(image, bboxes)
-        
+
         image = tf.image.resize(image, self.output_shape)
         image = tf.cast(image, tf.float32) / 127.5 - 1
 
@@ -107,9 +107,11 @@ class Preprocessor(object):
             offset_height = tf.cast(ymin_delta[0] * h, dtype=tf.int32)
             offset_width = tf.cast(xmin_delta[0] * w, dtype=tf.int32)
             target_height = tf.cast(
-                tf.math.ceil((1 - ymax_delta - ymin_delta)[0] * h), dtype=tf.int32)
+                tf.math.ceil((1 - ymax_delta - ymin_delta)[0] * h),
+                dtype=tf.int32)
             target_width = tf.cast(
-                tf.math.ceil((1 - xmax_delta - xmin_delta)[0] * w), dtype=tf.int32)
+                tf.math.ceil((1 - xmax_delta - xmin_delta)[0] * w),
+                dtype=tf.int32)
 
             image = image[offset_height:offset_height +
                           target_height, offset_width:offset_width +
@@ -206,7 +208,10 @@ class Preprocessor(object):
                 # eg. shape in (7)
                 # note that we need to make this one-hot classes in order to use categorical crossentropy later
                 update = tf.concat(
-                    values=[curr_box_xy, curr_box_wh, tf.constant([1.0]), curr_class],
+                    values=[
+                        curr_box_xy, curr_box_wh,
+                        tf.constant([1.0]), curr_class
+                    ],
                     axis=0)
                 # add to final indices and updates to be written into y
                 indices = indices.write(valid_count, index)

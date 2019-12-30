@@ -92,10 +92,7 @@ def Darknet(shape=(256, 256, 3)):
     return tf.keras.Model(inputs, (y0, y1, y2), name='darknet_53')
 
 
-def YoloV3(
-        shape=(416, 416, 3),
-        num_classes=2,
-        training=False):
+def YoloV3(shape=(416, 416, 3), num_classes=2, training=False):
     # YoloV3:
     # "In our experiments with COCO [10] we predict 3 boxes at each scale so
     #  the tensor is N × N × [3 ∗ (4 + 1 + 80)] for the 4 bounding box offsets,
@@ -480,7 +477,7 @@ class YoloLoss(object):
         obj_loss = tf.reduce_sum(obj_loss, axis=(1, 2, 3, 4))
         noobj_loss = tf.reduce_sum(
             noobj_loss, axis=(1, 2, 3, 4)) * self.lamda_noobj
-        
+
         return obj_loss + noobj_loss
 
     def calc_class_loss(self, true_obj, true_class, pred_class):
