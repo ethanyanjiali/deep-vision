@@ -15,6 +15,10 @@ Once all TF Records are generated, you could start training by:
 python3 train.py
 ```
 
+## Further Reading
+
+I've wrote an article explaining how YOLO v3 works on my blog [here](https://yanjia.li/dive-really-deep-into-yolo-v3-a-beginners-guide/), it's also available on [my Medium channel]()
+
 ## Demo
 [MSCOCO 80 Classes](./demo_mscoco.ipynb)
 
