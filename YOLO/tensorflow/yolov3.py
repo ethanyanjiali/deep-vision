@@ -13,7 +13,7 @@ from tensorflow.keras.layers import (
     ZeroPadding2D,
     BatchNormalization,
 )
-from utils import xywh_to_x1x2y1y2, broadcast_iou, binary_cross_entropy
+from utils import xywh_to_x1x2y1y2, xywh_to_y1x1y2x2, broadcast_iou, binary_cross_entropy
 
 anchors_wh = np.array([[10, 13], [16, 30], [33, 23], [30, 61], [62, 45],
                        [59, 119], [116, 90], [156, 198], [373, 326]],
@@ -236,43 +236,8 @@ def YoloV3(
         lambda x: get_absolute_yolo_box(x, anchors_wh[6:9], num_classes),
         name='detector_final_box_large')(y_large)
 
-    outputs = Lambda(
-        lambda x: non_maximum_suppression(x, iou_thresh, score_thresh),
-        name='detector_nms')((box_small[:3], box_medium[:3], box_large[:3]))
-
+    outputs = (box_small, box_medium, box_large)
     return tf.keras.Model(inputs, outputs)
-
-
-def non_maximum_suppression(outputs, iou_thresh, score_thresh):
-    boxes, objectiveness, class_probs = [], [], []
-
-    for o in outputs:
-        boxes.append(
-            tf.reshape(o[0], (tf.shape(o[0])[0], -1, tf.shape(o[0])[-1])))
-        objectiveness.append(
-            tf.reshape(o[1], (tf.shape(o[1])[0], -1, tf.shape(o[1])[-1])))
-        class_probs.append(
-            tf.reshape(o[2], (tf.shape(o[2])[0], -1, tf.shape(o[2])[-1])))
-
-    boxes = tf.concat(boxes, axis=1)
-    boxes = tf.reshape(boxes, (tf.shape(boxes)[0], -1, 1, 4))
-
-    objectiveness = tf.concat(objectiveness, axis=1)
-    class_probs = tf.concat(class_probs, axis=1)
-
-    scores = objectiveness * class_probs
-    scores = tf.reshape(scores,
-                        (tf.shape(scores)[0], -1, tf.shape(scores)[-1]))
-
-    final_boxes, final_scores, final_classes, valid_detections = tf.image.combined_non_max_suppression(
-        boxes=boxes,
-        scores=scores,
-        max_output_size_per_class=100,
-        max_total_size=100,
-        iou_threshold=iou_thresh,
-        score_threshold=score_thresh)
-
-    return final_boxes, final_scores, final_classes, valid_detections
 
 
 def get_absolute_yolo_box(y_pred, valid_anchors_wh, num_classes):
@@ -517,7 +482,7 @@ class YoloLoss(object):
         obj_loss = tf.reduce_sum(obj_loss, axis=(1, 2, 3, 4))
         noobj_loss = tf.reduce_sum(
             noobj_loss, axis=(1, 2, 3, 4)) * self.lamda_noobj
-
+        
         return obj_loss + noobj_loss
 
     def calc_class_loss(self, true_obj, true_class, pred_class):

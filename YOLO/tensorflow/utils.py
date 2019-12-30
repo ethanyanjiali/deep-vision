@@ -11,6 +11,21 @@ def xywh_to_x1x2y1y2(box):
     y_box = tf.concat([x1y1, x2y2], axis=-1)
     return y_box
 
+def xywh_to_y1x1y2x2(box):
+    x = box[..., 0:1]
+    y = box[..., 1:2]
+    w = box[..., 2:3]
+    h = box[..., 3:4]
+    
+    yx = tf.concat([y, x], axis=-1)
+    hw = tf.concat([h, w], axis=-1)
+
+    y1x1 = yx - hw / 2
+    y2x2 = yx + hw / 2
+
+    y_box = tf.concat([y1x1, y2x2], axis=-1)
+    return y_box
+
 
 def broadcast_iou(box1, box2):
     """
@@ -56,6 +71,7 @@ def broadcast_iou(box1, box2):
         (box2[..., 3] - box2[..., 1])
     # intersection over union
     return intersection_area / (box1_area + box2_area - intersection_area)
+
 
 def binary_cross_entropy(logits, labels):
     epsilon = 1e-7
