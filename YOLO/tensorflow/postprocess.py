@@ -64,12 +64,15 @@ class Postprocessor(object):
                 iou = broadcast_iou(best_box[0:4], candidate_boxes[..., 0:4])
                 candidate_boxes = tf.boolean_mask(candidate_boxes,
                                                   iou[0] <= iou_threshold)
-
-            count_index = [[max_output]]
-            count_updates = [tf.fill([tf.shape(candidate_boxes)[-1]], count)]
-            indices = tf.concat([indices, count_index], axis=0)
-            updates = tf.concat([updates, count_updates], axis=0)
-            outputs = tf.tensor_scatter_nd_update(outputs, indices, updates)
+            if count > 0:
+                count_index = [[max_output]]
+                count_updates = [
+                    tf.fill([tf.shape(candidate_boxes)[-1]], count)
+                ]
+                indices = tf.concat([indices, count_index], axis=0)
+                updates = tf.concat([updates, count_updates], axis=0)
+                outputs = tf.tensor_scatter_nd_update(outputs, indices,
+                                                      updates)
             return outputs
 
         combined_boxes = tf.concat([boxes, scores, classes], axis=2)
