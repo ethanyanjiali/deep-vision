@@ -21,3 +21,4 @@ Copy `tfrecords.py` to your newly created `dataset` folder. Run `tfrecords.py` t
 ```bash
 python tfrecords.py
 ```
+Also, if you want to run the notebook for inference, remember to copy the class names file `mscoco_2017_names.txt` to `dataset` too

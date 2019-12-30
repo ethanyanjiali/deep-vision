@@ -95,9 +95,7 @@ def Darknet(shape=(256, 256, 3)):
 def YoloV3(
         shape=(416, 416, 3),
         num_classes=2,
-        training=False,
-        iou_thresh=0.5,
-        score_thresh=0.5):
+        training=False):
     # YoloV3:
     # "In our experiments with COCO [10] we predict 3 boxes at each scale so
     #  the tensor is N × N × [3 ∗ (4 + 1 + 80)] for the 4 bounding box offsets,

@@ -49,7 +49,6 @@ class Postprocessor(object):
             while tf.shape(candidate_boxes)[0] > 0 and count < 100:
                 best_idx = tf.math.argmax(candidate_boxes[..., 4], axis=0)
                 best_box = candidate_boxes[best_idx]
-                print(best_box[0:4])
                 indices.append([count])
                 updates.append(best_box)
                 count += 1
