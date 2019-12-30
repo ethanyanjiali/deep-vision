@@ -43,6 +43,7 @@ class Postprocessor(object):
         """
 
         def single_batch_nms(candidate_boxes):
+            # filter out predictions with score less than score_threshold
             candidate_boxes = tf.boolean_mask(
                 candidate_boxes, candidate_boxes[..., 4] >= score_threshold)
             outputs = tf.zeros((max_detection + 1,
@@ -51,21 +52,28 @@ class Postprocessor(object):
             updates = []
 
             count = 0
+            # keep running this until there's no more candidate box or max_detection is met
             while tf.shape(candidate_boxes)[0] > 0 and count < max_detection:
+                # pick the box with the highest score
                 best_idx = tf.math.argmax(candidate_boxes[..., 4], axis=0)
                 best_box = candidate_boxes[best_idx]
+                # add this best box to the output
                 indices.append([count])
                 updates.append(best_box)
                 count += 1
+                # remove this box from candidate boxes
                 candidate_boxes = tf.concat([
                     candidate_boxes[0:best_idx],
                     candidate_boxes[best_idx + 1:tf.shape(candidate_boxes)[0]]
                 ],
                                             axis=0)
+                # calculate IOU between this box and all remaining candidate boxes
                 iou = broadcast_iou(best_box[0:4], candidate_boxes[..., 0:4])
+                # remove all candidate boxes with IOU bigger than iou_threshold
                 candidate_boxes = tf.boolean_mask(candidate_boxes,
                                                   iou[0] <= iou_threshold)
             if count > 0:
+                # also append num_detection to the result
                 count_index = [[max_detection]]
                 count_updates = [
                     tf.fill([tf.shape(candidate_boxes)[-1]], count)
@@ -78,6 +86,7 @@ class Postprocessor(object):
 
         combined_boxes = tf.concat([boxes, scores, classes], axis=2)
         result = tf.map_fn(single_batch_nms, combined_boxes)
+        # take out num_detection from the result
         valid_counts = tf.expand_dims(
             tf.map_fn(lambda x: x[max_detection][0], result), axis=-1)
         final_result = tf.map_fn(lambda x: x[0:max_detection], result)
