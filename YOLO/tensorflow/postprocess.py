@@ -4,10 +4,10 @@ from utils import broadcast_iou, xywh_to_x1x2y1y2
 
 
 class Postprocessor(object):
-    def __init__(self, iou_thresh, score_thresh):
+    def __init__(self, iou_thresh, score_thresh, max_detection=100):
         self.iou_thresh = iou_thresh
         self.score_thresh = score_thresh
-        pass
+        self.max_detection = max_detection
 
     def __call__(self, raw_yolo_outputs):
         boxes, objectiveness, class_probs = [], [], []
@@ -31,13 +31,13 @@ class Postprocessor(object):
 
         final_boxes, final_scores, final_classes, valid_detections = self.batch_non_maximum_suppression(
             boxes, scores, class_probs, self.iou_thresh, self.score_thresh,
-            100)
+            self.max_detection)
 
         return final_boxes, final_scores, final_classes, valid_detections
 
     @staticmethod
     def batch_non_maximum_suppression(boxes, scores, classes, iou_threshold,
-                                      score_threshold, max_output):
+                                      score_threshold, max_detection):
         """
         Unlike tf.image.combined_non_max_suppression, we are making multi-label classification on the detection
         """
@@ -45,12 +45,13 @@ class Postprocessor(object):
         def single_batch_nms(candidate_boxes):
             candidate_boxes = tf.boolean_mask(
                 candidate_boxes, candidate_boxes[..., 4] >= score_threshold)
-            outputs = tf.zeros((max_output + 1, tf.shape(candidate_boxes)[-1]))
+            outputs = tf.zeros((max_detection + 1,
+                                tf.shape(candidate_boxes)[-1]))
             indices = []
             updates = []
 
             count = 0
-            while tf.shape(candidate_boxes)[0] > 0 and count < 100:
+            while tf.shape(candidate_boxes)[0] > 0 and count < max_detection:
                 best_idx = tf.math.argmax(candidate_boxes[..., 4], axis=0)
                 best_box = candidate_boxes[best_idx]
                 indices.append([count])
@@ -65,7 +66,7 @@ class Postprocessor(object):
                 candidate_boxes = tf.boolean_mask(candidate_boxes,
                                                   iou[0] <= iou_threshold)
             if count > 0:
-                count_index = [[max_output]]
+                count_index = [[max_detection]]
                 count_updates = [
                     tf.fill([tf.shape(candidate_boxes)[-1]], count)
                 ]
@@ -78,8 +79,8 @@ class Postprocessor(object):
         combined_boxes = tf.concat([boxes, scores, classes], axis=2)
         result = tf.map_fn(single_batch_nms, combined_boxes)
         valid_counts = tf.expand_dims(
-            tf.map_fn(lambda x: x[max_output][0], result), axis=-1)
-        final_result = tf.map_fn(lambda x: x[0:max_output], result)
+            tf.map_fn(lambda x: x[max_detection][0], result), axis=-1)
+        final_result = tf.map_fn(lambda x: x[0:max_detection], result)
         nms_boxes, nms_scores, nms_classes = tf.split(
             final_result, [4, 1, -1], axis=-1)
         return nms_boxes, nms_scores, nms_classes, tf.cast(
