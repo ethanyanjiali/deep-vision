@@ -15,6 +15,8 @@ Once all TF Records are generated, you could start training by:
 python3 train.py
 ```
 
+[Here](https://drive.google.com/file/d/15MGD9oDZQPdPd2Ng5YM2JF4ZIqAQe8z6/view?usp=sharing) is the log file when I train on MSCOCO. Sometimes I find it really useful to compare with other's losses.
+
 ## Further Reading
 
 I've wrote an article explaining how YOLO v3 works on my blog [here](https://yanjia.li/dive-really-deep-into-yolo-v3-a-beginners-guide/), it's also available on [my Medium channel]()
