@@ -141,7 +141,7 @@ class Preprocessor(object):
                                        valid_anchors=None):
         """
         preprocess the class and bounding boxes annotations into model desired format for one scale
-        (grid, grid, anchor, (centroid x, centroid y, width, height, objectiveness, ...one-hot classes...))
+        (grid, grid, anchor, (centroid x, centroid y, width, height, objectness, ...one-hot classes...))
 
         inputs:
         grid_size: a scalar grid size to use

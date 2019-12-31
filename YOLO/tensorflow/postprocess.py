@@ -10,22 +10,22 @@ class Postprocessor(object):
         self.max_detection = max_detection
 
     def __call__(self, raw_yolo_outputs):
-        boxes, objectiveness, class_probs = [], [], []
+        boxes, objectness, class_probs = [], [], []
 
         for o in raw_yolo_outputs:
             batch_size = tf.shape(o[0])[0]
             num_classes = tf.shape(o[2])[-1]
             # needs to translate from xywh to y1x1y2x2 format
             boxes.append(tf.reshape(o[0], (batch_size, -1, 4)))
-            objectiveness.append(tf.reshape(o[1], (batch_size, -1, 1)))
+            objectness.append(tf.reshape(o[1], (batch_size, -1, 1)))
             class_probs.append(tf.reshape(o[2], (batch_size, -1, num_classes)))
 
         boxes = xywh_to_x1x2y1y2(tf.concat(boxes, axis=1))
 
-        objectiveness = tf.concat(objectiveness, axis=1)
+        objectness = tf.concat(objectness, axis=1)
         class_probs = tf.concat(class_probs, axis=1)
 
-        scores = objectiveness
+        scores = objectness
         scores = tf.reshape(scores,
                             (tf.shape(scores)[0], -1, tf.shape(scores)[-1]))
 

@@ -247,14 +247,14 @@ def get_absolute_yolo_box(y_pred, valid_anchors_wh, num_classes):
 
     outputs:
     y_box: boxes in shape of (batch, grid, grid, anchor, 4), the last dimension is (xmin, ymin, xmax, ymax)
-    objectiveness: probability that an object exists
+    objectness: probability that an object exists
     classes: probability of classes
     """
 
-    t_xy, t_wh, objectiveness, classes = tf.split(
+    t_xy, t_wh, objectness, classes = tf.split(
         y_pred, (2, 2, 1, num_classes), axis=-1)
 
-    objectiveness = tf.sigmoid(objectiveness)
+    objectness = tf.sigmoid(objectness)
     classes = tf.sigmoid(classes)
 
     grid_size = tf.shape(y_pred)[1]
@@ -323,7 +323,7 @@ def get_absolute_yolo_box(y_pred, valid_anchors_wh, num_classes):
     b_wh = tf.exp(t_wh) * valid_anchors_wh
 
     y_box = tf.concat([b_xy, b_wh], axis=-1)
-    return y_box, objectiveness, classes
+    return y_box, objectness, classes
 
 
 def get_relative_yolo_box(y_true, valid_anchors_wh):
@@ -369,7 +369,7 @@ class YoloLoss(object):
         # basically (bx, by, bw, bh) format from the paper
         # _abs is used to calcuate iou and ignore mask
 
-        # split y_pred into xy, wh, objectiveness and one-hot classes
+        # split y_pred into xy, wh, objectness and one-hot classes
         # pred_xy_rel: (batch, grid, grid, anchor, 2)
         # pred_wh_rel: (batch, grid, grid, anchor, 2)
         # TODO: Add comment for the sigmoid here
@@ -387,7 +387,7 @@ class YoloLoss(object):
             y_pred, self.valid_anchors_wh, self.num_classes)
         pred_box_abs = xywh_to_x1x2y1y2(pred_box_abs)
 
-        # split y_true into xy, wh, objectiveness and one-hot classes
+        # split y_true into xy, wh, objectness and one-hot classes
         # pred_xy_abs: (batch, grid, grid, anchor, 2)
         # pred_wh_abs: (batch, grid, grid, anchor, 2)
         # pred_obj: (batch, grid, grid, anchor, 1)
@@ -460,14 +460,14 @@ class YoloLoss(object):
 
     def calc_obj_loss(self, true_obj, pred_obj, ignore_mask):
         """
-        calculate loss of objectiveness: sum of L2 distances
+        calculate loss of objectness: sum of L2 distances
 
         inputs:
-        true_obj: objectiveness from ground truth in shape of (batch, grid, grid, anchor, num_classes)
-        pred_obj: objectiveness from model prediction in shape of (batch, grid, grid, anchor, num_classes)
+        true_obj: objectness from ground truth in shape of (batch, grid, grid, anchor, num_classes)
+        pred_obj: objectness from model prediction in shape of (batch, grid, grid, anchor, num_classes)
 
         outputs:
-        obj_loss: objectiveness loss
+        obj_loss: objectness loss
         """
         obj_entropy = binary_cross_entropy(pred_obj, true_obj)
 
@@ -518,7 +518,7 @@ class YoloLoss(object):
         xy_loss = tf.reduce_sum(tf.square(true_xy - pred_xy), axis=-1)
 
         # in order to element-wise multiply the result from tf.reduce_sum
-        # we need to squeeze one dimension for objectiveness here
+        # we need to squeeze one dimension for objectness here
         true_obj = tf.squeeze(true_obj, axis=-1)
 
         # YoloV1:
