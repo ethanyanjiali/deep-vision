@@ -35,9 +35,9 @@ There're few tips before you acutally start training:
 - To run the notebook, please download the pretrained model to `saved_model` directory first.
 - `data_load.py` implements some common data preprocessing and augmentation by using numpy. I could have use PyTorch built-in utils but this makes the process more clear
 
-## ResNetV1
+## ResNet
 
-### ResNet-34
+### ResNet-34 V1
 ```
 make train_resnet34
 ```
@@ -56,7 +56,7 @@ make train_resnet34
 
 **Notebook Visualization**: [ResNet34.ipynb](notebooks/ResNet34.ipynb)
 
-### ResNet-50
+### ResNet-50 V1
 ```
 make train_resnet50
 ```

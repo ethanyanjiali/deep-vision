@@ -18,10 +18,10 @@ The directory is categorized by model architecture, then further by framework. S
         - InceptionV3
 - ResNet
     - PyTorch
-        - ResNetV1 34/50/152
+        - ResNet-34/50/152 V1
     - TensorFlow
-        - ResNetV1 50/152
-        - ResNetV2 50
+        - ResNet-50/152 V1
+        - ResNet-50 V2
 - MobileNet
     - PyTorch
         - MobileNetV1 1.0
