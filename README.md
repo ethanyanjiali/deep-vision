@@ -7,15 +7,18 @@ The directory is categorized by model architecture, then further by framework. S
 ## Image Classification
 
 - AlexNet
-    - AlexNetV1
-    - AlexNetV2
+    - PyTorch
+        - AlexNet V1
+        - AlexNet V2
+    - TensorFlow
+        - AlexNet V2
 - VGG
     - PyTorch
-        - VGG 16/19
+        - VGG-16/19
 - Inception (GoogLeNet)
     - PyTorch
-        - InceptionV1
-        - InceptionV3
+        - Inception V1
+        - Inception V3
 - ResNet
     - PyTorch
         - ResNet-34/50/152 V1
@@ -24,7 +27,7 @@ The directory is categorized by model architecture, then further by framework. S
         - ResNet-50 V2
 - MobileNet
     - PyTorch
-        - MobileNetV1 1.0
+        - MobileNet V1 1.0
 - LeNet
     - PyTorch
         - LeNet-5
@@ -35,7 +38,7 @@ The directory is categorized by model architecture, then further by framework. S
 
 - YOLO
     - TensorFlow
-        - YoloV3
+        - YOLO V3
 
 ## Generative Adversarial Network
 
