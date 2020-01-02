@@ -17,14 +17,20 @@ Follow the instruction here [DATASET.md](../../Datasets/ILSVRC2012/DATASET.md) t
 
 ## ResNet
 
-### ResNet-50
+### ResNet-50 V1
 ```
 make train_resnet50
 ```
 [Source Code](models/resnet50.py)
 
-### ResNet-152
+### ResNet-152 V1
 ```
 make train_resnet152
 ```
 [Source Code](models/resnet152.py)
+
+### ResNet-50 V2
+
+I haven't tested ResNetV2 in this `train.py` script yet. But it should work.
+
+[Source Code](models/resnet50v2.py)
