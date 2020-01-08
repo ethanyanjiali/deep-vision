@@ -10,9 +10,9 @@ from PIL import Image
 import ray
 import tensorflow as tf
 
-num_train_shards = 2
-num_val_shards = 2
-num_test_shards = 2
+num_train_shards = 4
+num_val_shards = 4
+num_test_shards = 4
 ray.init()
 tf.get_logger().setLevel('ERROR')
 
@@ -38,10 +38,10 @@ def _bytes_feature(value):
 def genreate_tfexample(anno):
     with open(anno['filepath'], 'rb') as image_file:
         content = image_file.read()
-    width = anno['width']
-    height = anno['height']
-    depth = anno['depth']
-    if depth != 3:
+    width = anno.get('width', -1)
+    height = anno.get('height', -1)
+    depth = anno.get('depth', -1)
+    if depth != 3 and depth != -1:
         print('WANRNING: Image {} has depth of {}'.format(
             anno['filename'], depth))
     class_ids = []
@@ -50,7 +50,7 @@ def genreate_tfexample(anno):
     bbox_ymins = []
     bbox_xmaxs = []
     bbox_ymaxs = []
-    for bbox in anno['bboxes']:
+    for bbox in anno.get('bboxes', []):
         class_ids.append(bbox['class_id'])
         class_texts.append(bbox['class_text'].encode())
         xmin, ymin, xmax, ymax = bbox['xmin'], bbox['ymin'], bbox[
@@ -112,7 +112,7 @@ def build_tf_records(annotations, total_shards, split):
     futures = [
         # train_0001_of_0064.tfrecords
         build_single_tfrecord.remote(
-            chunk, './tfrecords_voc/{}_{}_of_{}.tfrecords'.format(
+            chunk, './tfrecords_voc_2012/{}_{}_of_{}.tfrecords'.format(
                 split,
                 str(i + 1).zfill(4),
                 str(total_shards).zfill(4),
@@ -122,10 +122,10 @@ def build_tf_records(annotations, total_shards, split):
 
 
 def parse_one_xml(xml_file, names_map):
-    tree = ET.parse(os.path.join('./VOCdevkit/VOC2007/Annotations', xml_file))
+    tree = ET.parse(os.path.join('./VOCdevkit/VOC2012/Annotations', xml_file))
     root = tree.getroot()
     filename = root.find('.//filename').text
-    filepath = os.path.join('./VOCdevkit/VOC2007/JPEGImages', filename)
+    filepath = os.path.join('./VOCdevkit/VOC2012/JPEGImages', filename)
     objects_els = root.findall('.//object')
     size_el = root.find('size')
     width = int(size_el.find('width').text)
@@ -157,24 +157,24 @@ def parse_one_xml(xml_file, names_map):
 
 def main():
     print('Start to parse annotations.')
-    if not os.path.exists('./tfrecords_voc'):
-        os.makedirs('./tfrecords_voc')
+    if not os.path.exists('./tfrecords_voc_2012'):
+        os.makedirs('./tfrecords_voc_2012')
 
     train_val_split = {}
-    with open('./VOCdevkit/VOC2007/ImageSets/Main/train.txt') as train_fp:
+    with open('./VOCdevkit/VOC2012/ImageSets/Main/train.txt') as train_fp:
         lines = train_fp.read().splitlines()
         for line in lines:
             train_val_split[line] = 'train'
-    with open('./VOCdevkit/VOC2007/ImageSets/Main/val.txt') as val_fp:
+    with open('./VOCdevkit/VOC2012/ImageSets/Main/val.txt') as val_fp:
         lines = val_fp.read().splitlines()
         for line in lines:
             train_val_split[line] = 'val'
-    with open('./VOCdevkit/VOC2007/ImageSets/Main/test.txt') as val_fp:
-        lines = val_fp.read().splitlines()
+    with open('./VOCdevkit/VOC2012/ImageSets/Main/test.txt') as test_fp:
+        lines = test_fp.read().splitlines()
         for line in lines:
             train_val_split[line] = 'test'
 
-    with open('./voc_2007_names.txt') as names_fp:
+    with open('./voc_2012_names.txt') as names_fp:
         names = names_fp.read().splitlines()
         names_map = {name: i for i, name in enumerate(names)}
     print(names_map)
@@ -182,16 +182,20 @@ def main():
     train_annotations = []
     val_annotations = []
     test_annotations = []
-    for xml_file in os.listdir('./VOCdevkit/VOC2007/Annotations'):
+    for xml_file in os.listdir('./VOCdevkit/VOC2012/Annotations'):
         image_id = xml_file[:-4]
-        if train_val_split[image_id] == 'train':
+        split = train_val_split.get(image_id)
+        if split == 'train':
             train_annotations.append(parse_one_xml(xml_file, names_map))
-        elif train_val_split[image_id] == 'val':
+        elif split == 'val':
             val_annotations.append(parse_one_xml(xml_file, names_map))
-        elif train_val_split[image_id] == 'test':
-            test_annotations.append(parse_one_xml(xml_file, names_map))
         else:
-            print('WARNING: Unwanted image id {}'.format(image_id))
+            filename = image_id + '.jpg'
+            filepath = os.path.join('./VOCdevkit/VOC2012/JPEGImages', filename)
+            test_annotations.append({
+                'filepath': filepath,
+                'filename': filename,
+            })
 
     print('Start to build TF Records.')
     build_tf_records(train_annotations, num_train_shards, 'train')
