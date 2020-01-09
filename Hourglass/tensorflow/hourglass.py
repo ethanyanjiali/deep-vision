@@ -132,7 +132,7 @@ def StackedHourglassNetwork(
     x = BottleneckBlock(x, 128, downsample=False)
     x = BottleneckBlock(x, 256, downsample=True)
 
-    y = None
+    ys = []
     for i in range(num_stack):
         x = HourglassModule(x, order=4, filters=256, num_residual=num_residual)
         for i in range(num_residual):
@@ -148,6 +148,7 @@ def StackedHourglassNetwork(
             strides=1,
             padding='same',
             kernel_initializer='he_normal')(x)
+        ys.append(y)
 
         # if it's not the last stack, we need to add predictions back
         if i < num_stack - 1:
@@ -155,4 +156,4 @@ def StackedHourglassNetwork(
             y_intermediate_2 = Conv2D(filters=256, kernel_size=1, strides=1)(y)
             x = y_intermediate_1 + y_intermediate_2
 
-    return tf.keras.Model(inputs, y, name='stacked_hourglass')
+    return tf.keras.Model(inputs, ys, name='stacked_hourglass')

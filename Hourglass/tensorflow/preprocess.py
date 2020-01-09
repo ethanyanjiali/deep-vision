@@ -21,26 +21,35 @@ class Preprocessor(object):
             image = tf.image.resize(image, self.image_shape[0:2])
 
         image = tf.cast(image, tf.float32) / 127.5 - 1
+        heatmap = self.make_heatmap(features)
+
         return image, heatmap
 
-    def generate_2d_guassian(self, shape_2d, sigma):
+    def generate_2d_guassian(self, height, width, y0, x0, sigma=1):
         """
         "The same technique as Tompson et al. is used for supervision. A MeanSquared Error (MSE) loss is
         applied comparing the predicted heatmap to a ground-truth heatmap consisting of a 2D gaussian
         (with standard deviation of 1 px) centered on the joint location."
         """
-        pass
+        x, y = tf.meshgrid(tf.range(0, height, 1), tf.range(0, width, 1), indexing='xy')
+        return tf.math.exp(-(tf.square(x - x0) + tf.math.square(y - y0))/ tf.math.square(sigma))
 
 
     def make_heatmap(self, features):
         visibility = features['image/object/parts/v']
         x = features['image/object/parts/x']
         y = features['image/object/parts/y']
+        height = features['image/height']
+        width = features['image/width']
         num_heatmap = heatmap_shape[2]
         heatmap = tf.zeros(heatmap_shape)
         for i in range(self.num_heatmap):
             if visibility[i] != 0:
-                heatmap[:, :, i] = 
+                # Since the standard deviation is 1px, we have to convert center to absolute pixel first
+                x0 = tf.math.round(x[i] * width)
+                y0 = tf.math.round(y[i] * height)
+                heatmap[:, :, i] = self.generate_2d_guassian(64, 64, y0, x0)
+        return heatmap
 
     def parse_tfexample(self, example_proto):
         image_feature_description = {

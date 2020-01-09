@@ -9,7 +9,7 @@ from preprocess import Preprocessor
 IMAGE_SHAPE = (256, 256, 3)
 BATCH_SIZE = 32
 TOTAL_EPOCHS = 100
-NUM_HEATMAP = 16
+HEATMAP_SHAPE = (64, 64, 16)
 TF_RECORDS_DIR = './dataset/tfrecords_mpii/'
 
 
@@ -114,7 +114,7 @@ class Trainer(object):
 
 
 def create_dataset(tfrecords, batch_size, is_train):
-    preprocess = Preprocessor(is_train)
+    preprocess = Preprocessor(is_train, IMAGE_SHAPE, HEATMAP_SHAPE)
 
     dataset = tf.data.Dataset.list_files(tfrecords)
     dataset = tf.data.TFRecordDataset(dataset)
@@ -150,7 +150,7 @@ def main():
         # val_dist_dataset = strategy.experimental_distribute_dataset(
         #     val_dataset)
 
-        model = StackedHourglassNetwork(IMAGE_SHAPE, 4, 1, NUM_HEATMAP)
+        model = StackedHourglassNetwork(IMAGE_SHAPE, 4, 1, HEATMAP_SHAPE[2])
         model.summary()
 
         trainer = Trainer(model, TOTAL_EPOCHS, global_batch_size, strategy)
