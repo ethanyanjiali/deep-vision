@@ -47,6 +47,12 @@ The directory is categorized by model architecture, then further by framework. S
 - CycleGAN 
     - TensorFlow
 
+## Pose Estimation
+
+- Stacked Hourglass
+    - TensorFlow
+        - Hourglass-104
+
 ## Disclaimer
 
 - This repo is mainly for study purpose. Hence I write the code in a readable and understandable way, but may not be scalable and reusable. I've also added comments and referrence for those catches I ran into during replication.
