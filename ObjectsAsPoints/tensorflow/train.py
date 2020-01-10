@@ -228,8 +228,7 @@ def main():
             train_dataset)
         val_dist_dataset = strategy.experimental_distribute_dataset(
             val_dataset)
-        model = YoloV3(
-            shape=(416, 416, 3), num_classes=TOTAL_CLASSES, training=True)
+        model = ObjectsAsPoints(num_classes=TOTAL_CLASSES)
         model.summary()
 
         initial_epoch = 1
@@ -246,7 +245,7 @@ def main():
             global_batch_size=global_batch_size,
             strategy=strategy,
         )
-        trainer.run(train_dist_dataset, val_dist_dataset)
+#         trainer.run(train_dist_dataset, val_dist_dataset)
 
 
 if __name__ == '__main__':

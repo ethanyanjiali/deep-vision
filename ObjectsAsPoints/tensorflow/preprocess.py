@@ -23,7 +23,7 @@ class Preprocessor(object):
         image = tf.image.resize(image, self.output_shape)
         image = tf.cast(image, tf.float32) / 127.5 - 1
 
-        return image, label
+        return image, bboxes
 
     def random_flip_image_and_label(self, image, bboxes):
         """
@@ -235,9 +235,11 @@ class Preprocessor(object):
             'image/height': tf.io.FixedLenFeature([], tf.int64),
             'image/width': tf.io.FixedLenFeature([], tf.int64),
             'image/depth': tf.io.FixedLenFeature([], tf.int64),
-            'image/object/parts/x': tf.io.VarLenFeature(tf.float32),
-            'image/object/parts/y': tf.io.VarLenFeature(tf.float32),
-            'image/object/parts/v': tf.io.VarLenFeature(tf.int64),
+            'image/object/class/label': tf.io.VarLenFeature(tf.int64),
+            'image/object/bbox/xmin': tf.io.VarLenFeature(tf.float32),
+            'image/object/bbox/ymin': tf.io.VarLenFeature(tf.float32),
+            'image/object/bbox/xmax': tf.io.VarLenFeature(tf.float32),
+            'image/object/bbox/ymax': tf.io.VarLenFeature(tf.float32),
             'image/encoded': tf.io.FixedLenFeature([], tf.string),
             'image/filename': tf.io.FixedLenFeature([], tf.string),
         }

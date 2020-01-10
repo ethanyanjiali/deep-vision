@@ -24,23 +24,23 @@ order_to_filters = {
 
 # https://github.com/xingyizhou/CenterNet/blob/master/src/lib/models/networks/large_hourglass.py#L287
 order_to_num_residual = {
-    5: 1,
-    4: 1
-    3: 1,
-    2: 1,
-    1: 3,
+    5: (2, 2),
+    4: (2, 2),
+    3: (2, 2),
+    2: (2, 2),
+    1: (2, 4),
 }
 
 
-def ResidualBlock(inputs, filters, strides=1, downsample=False, name=None):
+def ResidualBlock(inputs, filters_in, filters_out, strides=1, name=None):
     """
-    Please note that the residual block in ObjectsAsPoints is different from original HG-104
+    Please note that the residual block in ObjectsAsPoints is different from original HG
     https://github.com/xingyizhou/CenterNet/blob/master/src/lib/models/networks/large_hourglass.py#L48
     """
     identity = inputs
-    if downsample:
+    if filters_in != filters_out or strides > 1:
         identity = Conv2D(
-            filters=filters,  # lift channels first
+            filters=filters_out,  # lift channels first
             kernel_size=1,
             strides=strides,
             padding='same',
@@ -48,22 +48,21 @@ def ResidualBlock(inputs, filters, strides=1, downsample=False, name=None):
         identity = BatchNormalization()(identity)
 
     x = Conv2D(
-        filters=filters,
+        filters=filters_out,
         kernel_size=1,
         strides=strides,
         padding='same',
-        use_bias=False)(x)
-    x = BatchNormalization()(inputs)
+        use_bias=False)(inputs)
+    x = BatchNormalization()(x)
     x = ReLU()(x)
 
     x = Conv2D(
-        filters=filters,
+        filters=filters_out,
         kernel_size=3,
         strides=1,
         padding='same',
         use_bias=False)(x)
     x = BatchNormalization()(x)
-
     x = Add()([identity, x])
     x = ReLU()(x)
 
@@ -74,7 +73,7 @@ def DetectionConv(inputs, filters):
     x = Conv2D(filters=256, kernel_size=3, strides=1, padding='same')(inputs)
     # There's no BN for detection conv
     # https://github.com/xingyizhou/CenterNet/blob/master/src/lib/models/networks/large_hourglass.py#L107
-    x = ReLU()(y1)
+    x = ReLU()(x)
     x = Conv2D(filters=filters, kernel_size=3, strides=1, padding='same')(x)
     return x
 
@@ -94,32 +93,32 @@ def DetectionHead(inputs, num_classes):
 
 def HourglassModule(inputs, order):
     """
-    https://github.com/princeton-vl/pose-hg-train/blob/master/src/models/hg.lua#L3
+    https://github.com/xingyizhou/CenterNet/blob/master/src/lib/models/networks/large_hourglass.py#L117
     """
-    filters1, filters2 = order_to_filters[order]
-    num_residual = order_to_num_residual[order]
+    curr_filters, next_filters = order_to_filters[order]
+    curr_residual, next_residual = order_to_num_residual[order]
 
     # Upper branch
-    up1 = BottleneckBlock(inputs, filters1, downsample=False)
-
-    for i in range(num_residual):
-        up1 = BottleneckBlock(up1, filters1, downsample=False)
+    up1 = ResidualBlock(inputs, curr_filters, curr_filters)
+    for i in range(curr_residual - 1):
+        up1 = ResidualBlock(up1, curr_filters, curr_filters)
 
     # Lower branch
-    low1 = MaxPool2D(pool_size=2, strides=2)(inputs)
-    for i in range(num_residual):
-        low1 = BottleneckBlock(low1, filters2, downsample=False)
+    low1 = ResidualBlock(inputs, curr_filters, next_filters, strides=2)
+    for i in range(curr_residual - 1):
+        low1 = ResidualBlock(low1, next_filters, next_filters)
 
     low2 = low1
     if order > 1:
-        low2 = HourglassModule(low1, order - 1, num_residual)
+        low2 = HourglassModule(low2, order - 1)
     else:
-        for i in range(num_residual):
-            low2 = BottleneckBlock(low2, filters2, downsample=False)
-
+        for i in range(next_residual):
+            low2 = ResidualBlock(low2, next_filters, next_filters)
+    
     low3 = low2
-    for i in range(num_residual):
-        low3 = BottleneckBlock(low3, filters1, downsample=False)
+    for i in range(curr_residual - 1):
+        low3 = ResidualBlock(low3, next_filters, next_filters)
+    low3 = ResidualBlock(low2, next_filters, curr_filters)
 
     up2 = UpSampling2D(size=2)(low3)
 
@@ -129,10 +128,9 @@ def HourglassModule(inputs, order):
 
 
 def ObjectsAsPoints(
-        input_shape=(256, 256, 3), num_stack=4, num_residual=1,
-        num_classes=80):
+        input_shape=(256, 256, 3), num_stack=2, num_classes=80):
     """
-    This part is significantly different from original HG-104
+    This part is significantly different from original HG
     Please refer to https://github.com/xingyizhou/CenterNet/blob/master/src/lib/models/networks/large_hourglass.py#L253
     """
     inputs = Input(shape=input_shape)
@@ -144,20 +142,18 @@ def ObjectsAsPoints(
         use_bias=False)(inputs)
     x = BatchNormalization()(x)
     x = ReLU()(x)
-    x = BottleneckBlock(x, 256, strides=2, downsample=True)
+    x = ResidualBlock(x, 128, 256, strides=2)
 
     intermediate = x
     ys = []
 
     for i in range(num_stack):
-
-        x = HourglassModule(intermediate, order=5, num_residual=num_residual)
+        x = HourglassModule(intermediate, order=5)
         x = Conv2D(
             filters=256,
             kernel_size=3,
             strides=1,
-            padding='same',
-            kernel_initializer='he_normal')(inputs)
+            padding='same')(x)
         x = BatchNormalization()(x)
         x = ReLU()(x)
 
@@ -175,8 +171,9 @@ def ObjectsAsPoints(
             x2 = Conv2D(filters=256, kernel_size=1, strides=1)(intermediate)
             x2 = BatchNormalization()(x2)
 
-            x = Add()([x1, x2])
-            x = ReLU()(x)
-            x = BottleneckBlock(x, 256, downsample=False)
+            intermediate = Add()([x1, x2])
+            intermediate = ReLU()(intermediate)
+            intermediate = ResidualBlock(x, 256, 256)
 
-    return tf.keras.Model(inputs, ys, name='stacked_hourglass')
+
+    return tf.keras.Model(inputs, ys, name='objects_as_points')
