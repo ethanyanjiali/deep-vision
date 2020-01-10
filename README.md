@@ -1,6 +1,6 @@
 # Deep Learning in Computer Vision (deep-vision)
 
-[PyTorch](https://github.com/pytorch/pytorch) / [Tensorflow](https://github.com/tensorflow/tensorflow) implementations of common deep neural networks and training scripts for computer vision tasks. This is used to ease the learning curve for new DL practitioners. If you think my work is helpful, please ⭐star⭐ this repo. If you have any questions regarding the code, feel free create an issue.
+[PyTorch](https://github.com/pytorch/pytorch) / [Tensorflow](https://github.com/tensorflow/tensorflow) implementations of classic deep neural networks and training scripts for computer vision tasks. This is used to ease the learning curve for new DL practitioners by two principles: 1) Keep the coding style consistent accross all networks 2) Focus on the code readability and avoid obscure tricks. If you think my work is helpful, please ⭐star⭐ this repo. If you have any questions regarding the code, feel free create an issue.
 
 The directory is categorized by model architecture, then further by framework. Some pretrained models, Jupyter notebook visuliazation script, and training logs are also provided for your reference.
 

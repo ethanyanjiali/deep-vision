@@ -63,7 +63,7 @@ def BottleneckBlock(inputs, filters, strides=1, downsample=False, name=None):
         padding='same',
         kernel_initializer='he_normal')(x)
 
-    x = x + identity
+    x = Add()([identity, x])
     return x
 
 
@@ -154,6 +154,6 @@ def StackedHourglassNetwork(
         if i < num_stack - 1:
             y_intermediate_1 = Conv2D(filters=256, kernel_size=1, strides=1)(x)
             y_intermediate_2 = Conv2D(filters=256, kernel_size=1, strides=1)(y)
-            x = y_intermediate_1 + y_intermediate_2
+            x = Add()([y_intermediate_1, y_intermediate_2])
 
     return tf.keras.Model(inputs, ys, name='stacked_hourglass')
