@@ -19,6 +19,7 @@ class Preprocessor(object):
         if self.is_train:
             image, bboxes = self.random_flip_image_and_label(image, bboxes)
             image, bboxes = self.random_crop_image_and_label(image, bboxes)
+            label = self.make_label(classes, bboxes)
 
         image = tf.image.resize(image, self.output_shape)
         image = tf.cast(image, tf.float32) / 127.5 - 1
@@ -197,26 +198,15 @@ class Preprocessor(object):
 
         return heatmap
 
-    def make_heatmaps(self, features):
-        v = tf.cast(
-            tf.sparse.to_dense(features['image/object/parts/v']),
-            dtype=tf.float32)
-        x = tf.cast(
-            tf.math.round(
-                tf.sparse.to_dense(features['image/object/parts/x']) *
-                self.heatmap_shape[0]),
-            dtype=tf.int32)
-        y = tf.cast(
-            tf.math.round(
-                tf.sparse.to_dense(features['image/object/parts/y']) *
-                self.heatmap_shape[1]),
-            dtype=tf.int32)
-
-        num_heatmap = self.heatmap_shape[2]
-        heatmap_array = tf.TensorArray(tf.float32, 16)
-
-        for i in range(num_heatmap):
-            if v[i] != 0:
+    def make_label(self, classes, bboxes):
+        heatmap_array = tf.TensorArray(tf.float32, self.num_classes)
+        w = bboxes[..., 2] - bboxes[..., 0]
+        h = bboxes[..., 3] - bboxes[..., 1]
+        x = bboxes[..., 2] - w / 2
+        y = bboxes[..., 3] - h / 2
+        
+        for i in range(self.num_classes):
+            if classes[i] == 1:
                 gaussian = self.generate_2d_guassian(
                     self.heatmap_shape[1], self.heatmap_shape[0], y[i], x[i])
                 heatmap_array = heatmap_array.write(i, gaussian)
