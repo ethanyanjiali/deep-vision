@@ -13,30 +13,86 @@ class Preprocessor(object):
     def __call__(self, example):
         features = self.parse_tfexample(example)
         image = tf.io.decode_jpeg(features['image/encoded'])
-
+        
+        image, keypoint_x, keypoint_y = self.crop_roi(image, features)
         if self.is_train:
-            # TODO: Simply resizing is wrong. We should crop the person out using scale and center provided in the ground truth.
             image = tf.image.resize(image, self.image_shape[0:2])
-            image = tf.image.random_flip_left_right(image)
+            image, keypoint_x, keypoint_y = self.random_flip_image_and_keypoints(image, keypoint_x, keypoint_y)
         else:
             image = tf.image.resize(image, self.image_shape[0:2])
 
         image = tf.cast(image, tf.float32) / 127.5 - 1
-        heatmaps = self.make_heatmaps(features)
+        heatmaps = self.make_heatmaps(features, keypoint_x, keypoint_y)
 
         return image, heatmaps
+
+    
+    def random_flip_image_and_keypoints(self, image, keypoint_x, keypoint_y):
+        r = tf.random.uniform([1])
+        if r < 0.5:
+            image = tf.image.flip_left_right(image)
+            return image, 1 - keypoint_x, keypoint_y
+        else:
+            return image, keypoint_x, keypoint_y
+
+        
+    def crop_roi(self, image, features):
+        img_shape = tf.shape(image)
+        img_height = img_shape[0]
+        img_width = img_shape[1]
+        img_depth = img_shape[2]
+
+        keypoint_x = tf.cast(tf.sparse.to_dense(features['image/object/parts/x']), dtype=tf.int32)
+        keypoint_y = tf.cast(tf.sparse.to_dense(features['image/object/parts/y']), dtype=tf.int32)
+        center_x = features['image/object/center/x']
+        center_y = features['image/object/center/y']
+        body_height = features['image/object/scale'] * 200
+        
+        # avoid invisible keypoints whose value are -1
+        masked_keypoint_x = tf.boolean_mask(keypoint_x, keypoint_x != -1)
+        masked_keypoint_y = tf.boolean_mask(keypoint_y, keypoint_y != -1)
+        
+        # find \left-most, top, bottom, and right-most keypoints
+        keypoint_xmin = tf.reduce_min(masked_keypoint_x)
+        keypoint_xmax = tf.reduce_max(masked_keypoint_x)
+        keypoint_ymin = tf.reduce_min(masked_keypoint_y)
+        keypoint_ymax = tf.reduce_max(masked_keypoint_y)
+        
+        # add a padding according to human body height
+        xmin = keypoint_xmin - tf.cast(body_height / 5, dtype=tf.int32)
+        xmax = keypoint_xmax + tf.cast(body_height / 5, dtype=tf.int32)
+        ymin = keypoint_ymin - tf.cast(body_height / 5, dtype=tf.int32)
+        ymax = keypoint_ymax + tf.cast(body_height / 5, dtype=tf.int32)
+        
+        # make sure the crop is valid
+        effective_xmin = xmin if xmin > 0 else 0
+        effective_ymin = ymin if ymin > 0 else 0
+        effective_xmax = xmax if xmax < img_width else img_width
+        effective_ymax = ymax if ymax < img_height else img_height
+        effective_height = effective_ymax - effective_ymin
+        effective_width = effective_xmax - effective_xmin
+
+        image = image[effective_ymin:effective_ymax, effective_xmin:effective_xmax, :]
+        new_shape = tf.shape(image)
+        new_height = new_shape[0]
+        new_width = new_shape[1]
+        
+        # shift all keypoints based on the crop area
+        effective_keypoint_x = (keypoint_x - effective_xmin) / new_width
+        effective_keypoint_y = (keypoint_y - effective_ymin) / new_height
+        
+        return image, effective_keypoint_x, effective_keypoint_y
         
 
-    def generate_2d_guassian(self, height, width, y0, x0, sigma=1):
+    def generate_2d_guassian(self, height, width, y0, x0, visibility=2, sigma=1):
         """
         "The same technique as Tompson et al. is used for supervision. A MeanSquared Error (MSE) loss is
         applied comparing the predicted heatmap to a ground-truth heatmap consisting of a 2D gaussian
-        (with standard deviation of 1 px) centered on the joint location."
+        (with standard deviation of 1 px) centered on the keypoint location."
 
         https://github.com/princeton-vl/pose-hg-train/blob/master/src/util/img.lua#L204
         """
         heatmap = tf.zeros((height, width))
-        return heatmap
 
         # this gaussian patch is 7x7, let's get four corners of it first
         xmin = x0 - 3 * sigma
@@ -44,7 +100,8 @@ class Preprocessor(object):
         xmax = x0 + 3 * sigma
         ymax = y0 + 3 * sigma
         # if the patch is out of image boundary we simply return nothing according to the source code
-        if xmin >= width or ymin >= height or xmax < 0 or ymax < 0:
+
+        if xmin >= width or ymin >= height or xmax < 0 or ymax <0 or visibility == 0:
             return heatmap
 
         size = 6 * sigma + 1
@@ -77,11 +134,13 @@ class Preprocessor(object):
         updates = tf.TensorArray(tf.float32, 1, dynamic_size=True)
 
         count = 0
+
         for j in tf.range(patch_ymin, patch_ymax):
             for i in tf.range(patch_xmin, patch_xmax):
                 indices = indices.write(count, [heatmap_ymin+j, heatmap_xmin+i])
                 updates = updates.write(count, gaussian_patch[j][i])
                 count += 1
+                
         heatmap = tf.tensor_scatter_nd_update(heatmap, indices.stack(), updates.stack())
 
         # unfortunately, the code below doesn't work because 
@@ -91,23 +150,21 @@ class Preprocessor(object):
         return heatmap
 
 
-    def make_heatmaps(self, features):
+    def make_heatmaps(self, features, keypoint_x, keypoint_y):
         v = tf.cast(tf.sparse.to_dense(features['image/object/parts/v']), dtype=tf.float32)
-        x = tf.cast(tf.math.round(tf.sparse.to_dense(features['image/object/parts/x']) * self.heatmap_shape[0]), dtype=tf.int32)
-        y = tf.cast(tf.math.round(tf.sparse.to_dense(features['image/object/parts/y']) * self.heatmap_shape[1]), dtype=tf.int32)
+        x = tf.cast(tf.math.round(keypoint_x * self.heatmap_shape[0]), dtype=tf.int32)
+        y = tf.cast(tf.math.round(keypoint_y * self.heatmap_shape[1]), dtype=tf.int32)
         
         num_heatmap = self.heatmap_shape[2]
         heatmap_array = tf.TensorArray(tf.float32, 16)
 
         for i in range(num_heatmap):
-            if v[i] != 0:
-                gaussian = self.generate_2d_guassian(self.heatmap_shape[1], self.heatmap_shape[0], y[i], x[i])
-                heatmap_array = heatmap_array.write(i, gaussian)
-            else:
-                heatmap_array = heatmap_array.write(i, tf.zeros((self.heatmap_shape[1], self.heatmap_shape[0])))
+            gaussian = self.generate_2d_guassian(self.heatmap_shape[1], self.heatmap_shape[0], y[i], x[i], v[i])
+            heatmap_array = heatmap_array.write(i, gaussian)
         
         heatmaps = heatmap_array.stack()
-        heatmaps = tf.transpose(heatmaps, perm=[1, 2, 0]) # change to (64, 64, 16)
+        # heatmaps = tf.transpose(heatmaps, perm=[1, 2, 0]) # change to (64, 64, 16)
+        
         return heatmaps
 
     def parse_tfexample(self, example_proto):
@@ -115,9 +172,12 @@ class Preprocessor(object):
             'image/height': tf.io.FixedLenFeature([], tf.int64),
             'image/width': tf.io.FixedLenFeature([], tf.int64),
             'image/depth': tf.io.FixedLenFeature([], tf.int64),
-            'image/object/parts/x': tf.io.VarLenFeature(tf.float32),
-            'image/object/parts/y': tf.io.VarLenFeature(tf.float32),
+            'image/object/parts/x': tf.io.VarLenFeature(tf.int64),
+            'image/object/parts/y': tf.io.VarLenFeature(tf.int64),
             'image/object/parts/v': tf.io.VarLenFeature(tf.int64),
+            'image/object/center/x': tf.io.FixedLenFeature([], tf.int64),
+            'image/object/center/y': tf.io.FixedLenFeature([], tf.int64),
+            'image/object/scale': tf.io.FixedLenFeature([], tf.int64),
             'image/encoded': tf.io.FixedLenFeature([], tf.string),
             'image/filename': tf.io.FixedLenFeature([], tf.string),
         }
