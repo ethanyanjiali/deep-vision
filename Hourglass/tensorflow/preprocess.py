@@ -163,7 +163,7 @@ class Preprocessor(object):
             heatmap_array = heatmap_array.write(i, gaussian)
         
         heatmaps = heatmap_array.stack()
-        # heatmaps = tf.transpose(heatmaps, perm=[1, 2, 0]) # change to (64, 64, 16)
+        heatmaps = tf.transpose(heatmaps, perm=[1, 2, 0]) # change to (64, 64, 16)
         
         return heatmaps
 
