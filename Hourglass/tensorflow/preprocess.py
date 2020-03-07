@@ -17,7 +17,6 @@ class Preprocessor(object):
         image, keypoint_x, keypoint_y = self.crop_roi(image, features)
         if self.is_train:
             image = tf.image.resize(image, self.image_shape[0:2])
-            image, keypoint_x, keypoint_y = self.random_flip_image_and_keypoints(image, keypoint_x, keypoint_y)
         else:
             image = tf.image.resize(image, self.image_shape[0:2])
 
@@ -27,6 +26,9 @@ class Preprocessor(object):
         return image, heatmaps
 
     
+    """
+    This doesn't work with human pose estimation because it's orientation sensitive
+    """
     def random_flip_image_and_keypoints(self, image, keypoint_x, keypoint_y):
         r = tf.random.uniform([1])
         if r < 0.5:
@@ -83,8 +85,8 @@ class Preprocessor(object):
         
         return image, effective_keypoint_x, effective_keypoint_y
         
-
-    def generate_2d_guassian(self, height, width, y0, x0, visibility=2, sigma=1):
+    
+    def generate_2d_guassian(self, height, width, y0, x0, visibility=2, sigma=1, scale=12):
         """
         "The same technique as Tompson et al. is used for supervision. A MeanSquared Error (MSE) loss is
         applied comparing the predicted heatmap to a ground-truth heatmap consisting of a 2D gaussian
@@ -113,7 +115,7 @@ class Preprocessor(object):
         center_y = size // 2
 
         # generate this 7x7 gaussian patch
-        gaussian_patch = tf.cast(tf.math.exp(-(tf.square(x - center_x) + tf.math.square(y - center_y)) / (tf.math.square(sigma) * 2)), dtype=tf.float32)
+        gaussian_patch = tf.cast(tf.math.exp(-(tf.square(x - center_x) + tf.math.square(y - center_y)) / (tf.math.square(sigma) * 2)) * scale, dtype=tf.float32)
 
         # part of the patch could be out of the boundary, so we need to determine the valid range
         # if xmin = -2, it means the 2 left-most columns are invalid, which is max(0, -(-2)) = 2

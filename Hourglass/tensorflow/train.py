@@ -9,7 +9,7 @@ from hourglass104 import StackedHourglassNetwork
 from preprocess import Preprocessor
 
 IMAGE_SHAPE = (256, 256, 3)
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 HEATMAP_SHAPE = (64, 64, 16)
 TF_RECORDS_DIR = './dataset/tfrecords_mpii/'
 
@@ -21,7 +21,8 @@ class Trainer(object):
                  global_batch_size,
                  strategy,
                  initial_learning_rate=0.00025,
-                 start_epoch=1):
+                 start_epoch=1,
+                 tensorboard_dir='./logs'):
         self.start_epoch = start_epoch
         self.model = model
         self.epochs = epochs
@@ -39,7 +40,7 @@ class Trainer(object):
         self.lowest_val_loss = math.inf
         self.patience_count = 0
         self.max_patience = 5
-        self.tensorboard_dir = './logs/'
+        self.tensorboard_dir = tensorboard_dir
 
     def lr_decay(self):
         """
@@ -58,8 +59,12 @@ class Trainer(object):
     def compute_loss(self, labels, outputs):
         loss = 0
         for output in outputs:
-            loss += tf.reduce_sum(self.loss_object(
-                labels, output)) * (1. / self.global_batch_size)
+            # assign more weights to foreground pixels
+            weights = tf.cast(labels > 0, dtype=tf.float32) * 81 + 1
+            # loss += tf.reduce_mean(self.loss_object(
+            #    labels, output)) * (1. / self.global_batch_size)
+            # loss += tf.math.reduce_sum(tf.math.reduce_mean(tf.math.square(labels - output) * weights, axis=[0,1,2]))
+            loss += tf.math.reduce_mean(tf.math.square(labels - output) * weights)
         return loss
 
     def train_step(self, inputs):
@@ -111,8 +116,10 @@ class Trainer(object):
             return total_loss, num_val_batches
         
         summary_writer = tf.summary.create_file_writer(self.tensorboard_dir)
+        summary_writer.set_as_default()
 
         for epoch in range(self.start_epoch, self.epochs + 1):
+            tf.summary.experimental.set_step(epoch)
             self.lr_decay()
             print('Start epoch {} with learning rate {}'.format(epoch, self.current_learning_rate))
 
@@ -121,16 +128,14 @@ class Trainer(object):
             train_loss = train_total_loss / num_train_batches
             print('Epoch {} train loss {}'.format(
                 epoch, train_loss))
-            with summary_writer.as_default():
-                tf.summary.scalar('epoch train loss', train_loss, step=epoch)
+            tf.summary.scalar('epoch train loss', train_loss)
 
             val_total_loss, num_val_batches = distributed_val_epoch(
                 val_dist_dataset)
             val_loss = val_total_loss / num_val_batches
             print('Epoch {} val loss {}'.format(
                 epoch, val_loss))
-            with summary_writer.as_default():
-                tf.summary.scalar('epoch val loss', val_loss, step=epoch)
+            tf.summary.scalar('epoch val loss', val_loss)
 
             # save model when reach a new lowest validation loss
             if val_loss < self.lowest_val_loss:
@@ -166,9 +171,10 @@ def create_dataset(tfrecords, batch_size, is_train):
 @click.command()
 @click.option('--epochs', default=120, help='Total number of epochs.')
 @click.option('--start_epoch', default=1, help='The epoch number to start with.')
-@click.option('--checkpoint', help='The path to checkpoint file.')
 @click.option('--learning_rate', default=0.00025, help='The learning rate to start with.')
-def main(epochs, start_epoch, learning_rate, checkpoint):
+@click.option('--tensorboard_dir', default="./logs", help='The directory to store Tensorboard events.')
+@click.option('--checkpoint', help='The path to checkpoint file.')
+def main(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint):
     strategy = tf.distribute.MirroredStrategy()
     global_batch_size = strategy.num_replicas_in_sync * BATCH_SIZE
     train_dataset = create_dataset(
@@ -195,7 +201,8 @@ def main(epochs, start_epoch, learning_rate, checkpoint):
         # model.summary()
 
         trainer = Trainer(model, epochs, global_batch_size, strategy,
-                          initial_learning_rate=learning_rate, start_epoch=start_epoch)
+                          initial_learning_rate=learning_rate, start_epoch=start_epoch,
+                          tensorboard_dir=tensorboard_dir)
 
         print('Start training...')
         trainer.run(train_dist_dataset, val_dist_dataset)
