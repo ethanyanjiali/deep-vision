@@ -100,7 +100,8 @@ class Preprocessor(object):
         xmax = x0 + 3 * sigma
         ymax = y0 + 3 * sigma
         # if the patch is out of image boundary we simply return nothing according to the source code
-
+        # [1]"In these cases the joint is either truncated or severely occluded, so for
+        # supervision a ground truth heatmap of all zeros is provided."
         if xmin >= width or ymin >= height or xmax < 0 or ymax <0 or visibility == 0:
             return heatmap
 

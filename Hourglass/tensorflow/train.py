@@ -2,6 +2,7 @@ import math
 import os
 from datetime import datetime
 
+import click
 import tensorflow as tf
 
 from hourglass104 import StackedHourglassNetwork
@@ -9,7 +10,6 @@ from preprocess import Preprocessor
 
 IMAGE_SHAPE = (256, 256, 3)
 BATCH_SIZE = 32
-TOTAL_EPOCHS = 100
 HEATMAP_SHAPE = (64, 64, 16)
 TF_RECORDS_DIR = './dataset/tfrecords_mpii/'
 
@@ -20,7 +20,9 @@ class Trainer(object):
                  epochs,
                  global_batch_size,
                  strategy,
-                 initial_learning_rate=0.00025):
+                 initial_learning_rate=0.00025,
+                 start_epoch=1):
+        self.start_epoch = start_epoch
         self.model = model
         self.epochs = epochs
         self.strategy = strategy
@@ -36,7 +38,8 @@ class Trainer(object):
         self.last_val_loss = math.inf
         self.lowest_val_loss = math.inf
         self.patience_count = 0
-        self.max_patience = 10
+        self.max_patience = 5
+        self.tensorboard_dir = './logs/'
 
     def lr_decay(self):
         """
@@ -106,21 +109,28 @@ class Trainer(object):
                     tf.distribute.ReduceOp.SUM, per_replica_loss, axis=None)
                 total_loss += batch_loss
             return total_loss, num_val_batches
+        
+        summary_writer = tf.summary.create_file_writer(self.tensorboard_dir)
 
-        for epoch in range(1, self.epochs + 1):
+        for epoch in range(self.start_epoch, self.epochs + 1):
             self.lr_decay()
             print('Start epoch {} with learning rate {}'.format(epoch, self.current_learning_rate))
 
             train_total_loss, num_train_batches = distributed_train_epoch(
                 train_dist_dataset)
+            train_loss = train_total_loss / num_train_batches
             print('Epoch {} train loss {}'.format(
-                epoch, train_total_loss / num_train_batches))
+                epoch, train_loss))
+            with summary_writer.as_default():
+                tf.summary.scalar('epoch train loss', train_loss, step=epoch)
 
             val_total_loss, num_val_batches = distributed_val_epoch(
                 val_dist_dataset)
             val_loss = val_total_loss / num_val_batches
             print('Epoch {} val loss {}'.format(
                 epoch, val_loss))
+            with summary_writer.as_default():
+                tf.summary.scalar('epoch val loss', val_loss, step=epoch)
 
             # save model when reach a new lowest validation loss
             if val_loss < self.lowest_val_loss:
@@ -142,18 +152,23 @@ def create_dataset(tfrecords, batch_size, is_train):
 
     dataset = tf.data.Dataset.list_files(tfrecords)
     dataset = tf.data.TFRecordDataset(dataset)
-    dataset = dataset.map(preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    dataset = dataset.map(preprocess, num_parallel_calls=8)
 
     if is_train:
         dataset = dataset.shuffle(128)
 
     dataset = dataset.batch(batch_size)
-    dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+    dataset = dataset.prefetch(buffer_size=batch_size)
 
     return dataset
 
 
-def main():
+@click.command()
+@click.option('--epochs', default=120, help='Total number of epochs.')
+@click.option('--start_epoch', default=1, help='The epoch number to start with.')
+@click.option('--checkpoint', help='The path to checkpoint file.')
+@click.option('--learning_rate', default=0.00025, help='The learning rate to start with.')
+def main(epochs, start_epoch, learning_rate, checkpoint):
     strategy = tf.distribute.MirroredStrategy()
     global_batch_size = strategy.num_replicas_in_sync * BATCH_SIZE
     train_dataset = create_dataset(
@@ -175,9 +190,12 @@ def main():
             val_dataset)
 
         model = StackedHourglassNetwork(IMAGE_SHAPE, 4, 1, HEATMAP_SHAPE[2])
-        model.summary()
+        if checkpoint:
+            model.load_weights(checkpoint)
+        # model.summary()
 
-        trainer = Trainer(model, TOTAL_EPOCHS, global_batch_size, strategy)
+        trainer = Trainer(model, epochs, global_batch_size, strategy,
+                          initial_learning_rate=learning_rate, start_epoch=start_epoch)
 
         print('Start training...')
         trainer.run(train_dist_dataset, val_dist_dataset)
