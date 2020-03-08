@@ -20,7 +20,7 @@ class Trainer(object):
                  epochs,
                  global_batch_size,
                  strategy,
-                 initial_learning_rate=0.00025,
+                 initial_learning_rate,
                  start_epoch=1,
                  tensorboard_dir='./logs'):
         self.start_epoch = start_epoch
@@ -48,12 +48,17 @@ class Trainer(object):
         will be reduced by a factor of 5 if there's no improvement over [max_patience] epochs
         """
         if self.patience_count >= self.max_patience:
-            self.current_learning_rate /= 5.0
+            self.current_learning_rate /= 10.0
             self.patience_count = 0
         elif self.last_val_loss == self.lowest_val_loss:
             self.patience_count = 0
         self.patience_count += 1
 
+        self.optimizer.learning_rate = self.current_learning_rate
+        
+    def lr_decay_step(self, epoch):
+        if epoch == 25 or epoch == 50 or epoch == 75:
+            self.current_learning_rate /= 10.0
         self.optimizer.learning_rate = self.current_learning_rate
 
     def compute_loss(self, labels, outputs):
@@ -63,8 +68,8 @@ class Trainer(object):
             weights = tf.cast(labels > 0, dtype=tf.float32) * 81 + 1
             # loss += tf.reduce_mean(self.loss_object(
             #    labels, output)) * (1. / self.global_batch_size)
-            # loss += tf.math.reduce_sum(tf.math.reduce_mean(tf.math.square(labels - output) * weights, axis=[0,1,2]))
-            loss += tf.math.reduce_mean(tf.math.square(labels - output) * weights)
+            # loss += tf.math.reduce_sum(tf.math.reduce_mean(tf.math.square(labels - output) * weights, axis=[0,1,2])) * (1. / self.global_batch_size)
+            loss += tf.math.reduce_mean(tf.math.square(labels - output) * weights) * (1. / self.global_batch_size)
         return loss
 
     def train_step(self, inputs):
@@ -82,13 +87,14 @@ class Trainer(object):
 
     def val_step(self, inputs):
         images, labels = inputs
-        logits = self.model(images, training=False)
-        loss = self.compute_loss(labels, logits)
+        outputs = self.model(images, training=False)
+        loss = self.compute_loss(labels, outputs)
         return loss
 
     def run(self, train_dist_dataset, val_dist_dataset):
         @tf.function
         def distributed_train_epoch(dataset):
+            tf.print('Start distributed traininng...')
             total_loss = 0.0
             num_train_batches = 0.0
             for one_batch in dataset:
@@ -112,7 +118,14 @@ class Trainer(object):
                 num_val_batches += 1
                 batch_loss = self.strategy.reduce(
                     tf.distribute.ReduceOp.SUM, per_replica_loss, axis=None)
-                total_loss += batch_loss
+                tf.print('Validated batch', num_val_batches, 'batch loss',
+                         batch_loss)
+                if not tf.math.is_nan(batch_loss):
+                    # TODO: Find out why the last validation batch loss become NaN
+                    total_loss += batch_loss
+                else:
+                    num_val_batches -= 1
+                
             return total_loss, num_val_batches
         
         summary_writer = tf.summary.create_file_writer(self.tensorboard_dir)
@@ -120,7 +133,10 @@ class Trainer(object):
 
         for epoch in range(self.start_epoch, self.epochs + 1):
             tf.summary.experimental.set_step(epoch)
-            self.lr_decay()
+            
+            self.lr_decay_step(epoch)
+            tf.summary.scalar('epoch learning rate', self.current_learning_rate)
+            
             print('Start epoch {} with learning rate {}'.format(epoch, self.current_learning_rate))
 
             train_total_loss, num_train_batches = distributed_train_epoch(
@@ -157,13 +173,13 @@ def create_dataset(tfrecords, batch_size, is_train):
 
     dataset = tf.data.Dataset.list_files(tfrecords)
     dataset = tf.data.TFRecordDataset(dataset)
-    dataset = dataset.map(preprocess, num_parallel_calls=8)
+    dataset = dataset.map(preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     if is_train:
-        dataset = dataset.shuffle(128)
+        dataset = dataset.shuffle(batch_size)
 
     dataset = dataset.batch(batch_size)
-    dataset = dataset.prefetch(buffer_size=batch_size)
+    dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
     return dataset
 
@@ -171,7 +187,7 @@ def create_dataset(tfrecords, batch_size, is_train):
 @click.command()
 @click.option('--epochs', default=120, help='Total number of epochs.')
 @click.option('--start_epoch', default=1, help='The epoch number to start with.')
-@click.option('--learning_rate', default=0.00025, help='The learning rate to start with.')
+@click.option('--learning_rate', default=0.001, help='The learning rate to start with.')
 @click.option('--tensorboard_dir', default="./logs", help='The directory to store Tensorboard events.')
 @click.option('--checkpoint', help='The path to checkpoint file.')
 def main(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint):

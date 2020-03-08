@@ -13,11 +13,13 @@ class Preprocessor(object):
     def __call__(self, example):
         features = self.parse_tfexample(example)
         image = tf.io.decode_jpeg(features['image/encoded'])
-        
-        image, keypoint_x, keypoint_y = self.crop_roi(image, features)
+
         if self.is_train:
+            random_margin = tf.random.uniform([1], 0.1, 0.3)[0]
+            image, keypoint_x, keypoint_y = self.crop_roi(image, features, margin=random_margin)
             image = tf.image.resize(image, self.image_shape[0:2])
         else:
+            image, keypoint_x, keypoint_y = self.crop_roi(image, features)
             image = tf.image.resize(image, self.image_shape[0:2])
 
         image = tf.cast(image, tf.float32) / 127.5 - 1
@@ -38,7 +40,7 @@ class Preprocessor(object):
             return image, keypoint_x, keypoint_y
 
         
-    def crop_roi(self, image, features):
+    def crop_roi(self, image, features, margin=0.2):
         img_shape = tf.shape(image)
         img_height = img_shape[0]
         img_width = img_shape[1]
@@ -48,7 +50,7 @@ class Preprocessor(object):
         keypoint_y = tf.cast(tf.sparse.to_dense(features['image/object/parts/y']), dtype=tf.int32)
         center_x = features['image/object/center/x']
         center_y = features['image/object/center/y']
-        body_height = features['image/object/scale'] * 200
+        body_height = features['image/object/scale'] * 200.0
         
         # avoid invisible keypoints whose value are -1
         masked_keypoint_x = tf.boolean_mask(keypoint_x, keypoint_x != -1)
@@ -61,10 +63,10 @@ class Preprocessor(object):
         keypoint_ymax = tf.reduce_max(masked_keypoint_y)
         
         # add a padding according to human body height
-        xmin = keypoint_xmin - tf.cast(body_height / 5, dtype=tf.int32)
-        xmax = keypoint_xmax + tf.cast(body_height / 5, dtype=tf.int32)
-        ymin = keypoint_ymin - tf.cast(body_height / 5, dtype=tf.int32)
-        ymax = keypoint_ymax + tf.cast(body_height / 5, dtype=tf.int32)
+        xmin = keypoint_xmin - tf.cast(body_height * margin, dtype=tf.int32)
+        xmax = keypoint_xmax + tf.cast(body_height * margin, dtype=tf.int32)
+        ymin = keypoint_ymin - tf.cast(body_height * margin, dtype=tf.int32)
+        ymax = keypoint_ymax + tf.cast(body_height * margin, dtype=tf.int32)
         
         # make sure the crop is valid
         effective_xmin = xmin if xmin > 0 else 0
@@ -180,7 +182,7 @@ class Preprocessor(object):
             'image/object/parts/v': tf.io.VarLenFeature(tf.int64),
             'image/object/center/x': tf.io.FixedLenFeature([], tf.int64),
             'image/object/center/y': tf.io.FixedLenFeature([], tf.int64),
-            'image/object/scale': tf.io.FixedLenFeature([], tf.int64),
+            'image/object/scale': tf.io.FixedLenFeature([], tf.float32),
             'image/encoded': tf.io.FixedLenFeature([], tf.string),
             'image/filename': tf.io.FixedLenFeature([], tf.string),
         }

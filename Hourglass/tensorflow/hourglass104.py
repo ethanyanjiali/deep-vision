@@ -36,7 +36,7 @@ def BottleneckBlock(inputs, filters, strides=1, downsample=False, name=None):
             padding='same',
             kernel_initializer='he_normal')(inputs)
 
-    x = BatchNormalization()(inputs)
+    x = BatchNormalization(momentum=0.9)(inputs)
     x = ReLU()(x)
     x = Conv2D(
         filters=filters // 2,
@@ -45,7 +45,7 @@ def BottleneckBlock(inputs, filters, strides=1, downsample=False, name=None):
         padding='same',
         kernel_initializer='he_normal')(x)
 
-    x = BatchNormalization()(x)
+    x = BatchNormalization(momentum=0.9)(x)
     x = ReLU()(x)
     x = Conv2D(
         filters=filters // 2,
@@ -54,7 +54,7 @@ def BottleneckBlock(inputs, filters, strides=1, downsample=False, name=None):
         padding='same',
         kernel_initializer='he_normal')(x)
 
-    x = BatchNormalization()(x)
+    x = BatchNormalization(momentum=0.9)(x)
     x = ReLU()(x)
     x = Conv2D(
         filters=filters,
@@ -105,7 +105,7 @@ def LinearLayer(inputs, filters):
         strides=1,
         padding='same',
         kernel_initializer='he_normal')(inputs)
-    x = BatchNormalization()(x)
+    x = BatchNormalization(momentum=0.9)(x)
     x = ReLU()(x)
     return x
 
@@ -125,7 +125,7 @@ def StackedHourglassNetwork(
         strides=2,
         padding='same',
         kernel_initializer='he_normal')(inputs)
-    x = BatchNormalization()(x)
+    x = BatchNormalization(momentum=0.9)(x)
     x = ReLU()(x)
     x = BottleneckBlock(x, 128, downsample=True)
     x = MaxPool2D(pool_size=2, strides=2)(x)
