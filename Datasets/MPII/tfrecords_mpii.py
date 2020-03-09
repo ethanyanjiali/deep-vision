@@ -10,7 +10,6 @@ from loguru import logger
 from PIL import Image
 import ray
 import tensorflow as tf
-import scipy.io as sio
 
 num_train_shards = 64
 num_val_shards = 8

@@ -9,9 +9,7 @@ from hourglass104 import StackedHourglassNetwork
 from preprocess import Preprocessor
 
 IMAGE_SHAPE = (256, 256, 3)
-BATCH_SIZE = 16
-HEATMAP_SHAPE = (64, 64, 16)
-TF_RECORDS_DIR = './dataset/tfrecords_mpii/'
+HEATMAP_SIZE = (64, 64)
 
 
 class Trainer(object):
@@ -34,13 +32,14 @@ class Trainer(object):
         self.optimizer = tf.keras.optimizers.Adam(
             learning_rate=initial_learning_rate)
         self.model = model
-        
+
         self.current_learning_rate = initial_learning_rate
         self.last_val_loss = math.inf
         self.lowest_val_loss = math.inf
         self.patience_count = 0
         self.max_patience = 5
         self.tensorboard_dir = tensorboard_dir
+        self.best_model = None
 
     def lr_decay(self):
         """
@@ -55,7 +54,7 @@ class Trainer(object):
         self.patience_count += 1
 
         self.optimizer.learning_rate = self.current_learning_rate
-        
+
     def lr_decay_step(self, epoch):
         if epoch == 25 or epoch == 50 or epoch == 75:
             self.current_learning_rate /= 10.0
@@ -69,7 +68,9 @@ class Trainer(object):
             # loss += tf.reduce_mean(self.loss_object(
             #    labels, output)) * (1. / self.global_batch_size)
             # loss += tf.math.reduce_sum(tf.math.reduce_mean(tf.math.square(labels - output) * weights, axis=[0,1,2])) * (1. / self.global_batch_size)
-            loss += tf.math.reduce_mean(tf.math.square(labels - output) * weights) * (1. / self.global_batch_size)
+            loss += tf.math.reduce_mean(
+                tf.math.square(labels - output) * weights) * (
+                    1. / self.global_batch_size)
         return loss
 
     def train_step(self, inputs):
@@ -125,32 +126,32 @@ class Trainer(object):
                     total_loss += batch_loss
                 else:
                     num_val_batches -= 1
-                
+
             return total_loss, num_val_batches
-        
+
         summary_writer = tf.summary.create_file_writer(self.tensorboard_dir)
         summary_writer.set_as_default()
 
         for epoch in range(self.start_epoch, self.epochs + 1):
             tf.summary.experimental.set_step(epoch)
-            
-            self.lr_decay_step(epoch)
-            tf.summary.scalar('epoch learning rate', self.current_learning_rate)
-            
-            print('Start epoch {} with learning rate {}'.format(epoch, self.current_learning_rate))
+
+            self.lr_decay(epoch)
+            tf.summary.scalar('epoch learning rate',
+                              self.current_learning_rate)
+
+            print('Start epoch {} with learning rate {}'.format(
+                epoch, self.current_learning_rate))
 
             train_total_loss, num_train_batches = distributed_train_epoch(
                 train_dist_dataset)
             train_loss = train_total_loss / num_train_batches
-            print('Epoch {} train loss {}'.format(
-                epoch, train_loss))
+            print('Epoch {} train loss {}'.format(epoch, train_loss))
             tf.summary.scalar('epoch train loss', train_loss)
 
             val_total_loss, num_val_batches = distributed_val_epoch(
                 val_dist_dataset)
             val_loss = val_total_loss / num_val_batches
-            print('Epoch {} val loss {}'.format(
-                epoch, val_loss))
+            print('Epoch {} val loss {}'.format(epoch, val_loss))
             tf.summary.scalar('epoch val loss', val_loss)
 
             # save model when reach a new lowest validation loss
@@ -160,20 +161,23 @@ class Trainer(object):
             self.last_val_loss = val_loss
 
         self.save_model(self.epochs, self.last_val_loss)
-        
+
     def save_model(self, epoch, loss):
         model_name = './models/model-v1.0.0-epoch-{}-loss-{:.4f}.h5'.format(
             epoch, loss)
         self.model.save_weights(model_name)
+        self.best_model = model_name
         print("Model {} saved.".format(model_name))
 
 
-def create_dataset(tfrecords, batch_size, is_train):
-    preprocess = Preprocessor(IMAGE_SHAPE, HEATMAP_SHAPE, is_train)
+def create_dataset(tfrecords, batch_size, num_heatmap, is_train):
+    preprocess = Preprocessor(
+        IMAGE_SHAPE, (HEATMAP_SIZE[0], HEATMAP_SIZE[1], num_heatmap), is_train)
 
     dataset = tf.data.Dataset.list_files(tfrecords)
     dataset = tf.data.TFRecordDataset(dataset)
-    dataset = dataset.map(preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    dataset = dataset.map(
+        preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     if is_train:
         dataset = dataset.shuffle(batch_size)
@@ -184,24 +188,15 @@ def create_dataset(tfrecords, batch_size, is_train):
     return dataset
 
 
-@click.command()
-@click.option('--epochs', default=120, help='Total number of epochs.')
-@click.option('--start_epoch', default=1, help='The epoch number to start with.')
-@click.option('--learning_rate', default=0.001, help='The learning rate to start with.')
-@click.option('--tensorboard_dir', default="./logs", help='The directory to store Tensorboard events.')
-@click.option('--checkpoint', help='The path to checkpoint file.')
-def main(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint):
+def train(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint,
+          num_heatmap, batch_size, train_tfrecords, val_tfrecords):
     strategy = tf.distribute.MirroredStrategy()
     global_batch_size = strategy.num_replicas_in_sync * BATCH_SIZE
     train_dataset = create_dataset(
-        os.path.join(TF_RECORDS_DIR, 'train*'),
-        global_batch_size,
-        is_train=True)
+        train_tfrecords, global_batch_size, num_heatmap, is_train=True)
     val_dataset = create_dataset(
-        os.path.join(TF_RECORDS_DIR, 'val*'),
-        global_batch_size,
-        is_train=False)
-    
+        val_tfrecords, global_batch_size, num_heatmap, is_train=False)
+
     if not os.path.exists(os.path.join('./models')):
         os.makedirs(os.path.join('./models/'))
 
@@ -211,18 +206,34 @@ def main(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint):
         val_dist_dataset = strategy.experimental_distribute_dataset(
             val_dataset)
 
-        model = StackedHourglassNetwork(IMAGE_SHAPE, 4, 1, HEATMAP_SHAPE[2])
+        model = StackedHourglassNetwork(IMAGE_SHAPE, 4, 1, num_heatmap)
         if checkpoint:
             model.load_weights(checkpoint)
-        # model.summary()
 
-        trainer = Trainer(model, epochs, global_batch_size, strategy,
-                          initial_learning_rate=learning_rate, start_epoch=start_epoch,
-                          tensorboard_dir=tensorboard_dir)
+        trainer = Trainer(
+            model,
+            epochs,
+            global_batch_size,
+            strategy,
+            initial_learning_rate=learning_rate,
+            start_epoch=start_epoch,
+            tensorboard_dir=tensorboard_dir)
 
         print('Start training...')
         trainer.run(train_dist_dataset, val_dist_dataset)
+    
+    return self.best_model
 
 
 if __name__ == "__main__":
-    main()
+    tfrecords_dir = './dataset/tfrecords_mpii/'
+    train_tfrecords = os.path.join(tfrecords_dir, 'train*')
+    val_tfrecords = os.path.join(tfrecords_dir, 'val*')
+    batch_size = 16
+    num_heatmap = 16
+    tensorboard_dir = './logs/'
+    learning_rate = 0.0001
+    start_epoch = 1
+
+    train(epochs, start_epoch, learning_rate, tensorboard_dir, None,
+          num_heatmap, batch_size, train_tfrecords, val_tfrecords)
