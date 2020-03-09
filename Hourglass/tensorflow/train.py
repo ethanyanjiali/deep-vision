@@ -160,8 +160,6 @@ class Trainer(object):
                 self.lowest_val_loss = val_loss
             self.last_val_loss = val_loss
 
-        self.save_model(self.epochs, self.last_val_loss)
-
     def save_model(self, epoch, loss):
         model_name = './models/model-v1.0.0-epoch-{}-loss-{:.4f}.h5'.format(
             epoch, loss)
