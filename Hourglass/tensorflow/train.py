@@ -37,7 +37,7 @@ class Trainer(object):
         self.last_val_loss = math.inf
         self.lowest_val_loss = math.inf
         self.patience_count = 0
-        self.max_patience = 5
+        self.max_patience = 10
         self.tensorboard_dir = tensorboard_dir
         self.best_model = None
 
@@ -135,7 +135,7 @@ class Trainer(object):
         for epoch in range(self.start_epoch, self.epochs + 1):
             tf.summary.experimental.set_step(epoch)
 
-            self.lr_decay(epoch)
+            self.lr_decay()
             tf.summary.scalar('epoch learning rate',
                               self.current_learning_rate)
 
