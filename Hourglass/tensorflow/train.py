@@ -191,7 +191,7 @@ def create_dataset(tfrecords, batch_size, num_heatmap, is_train):
 def train(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint,
           num_heatmap, batch_size, train_tfrecords, val_tfrecords):
     strategy = tf.distribute.MirroredStrategy()
-    global_batch_size = strategy.num_replicas_in_sync * BATCH_SIZE
+    global_batch_size = strategy.num_replicas_in_sync * batch_size
     train_dataset = create_dataset(
         train_tfrecords, global_batch_size, num_heatmap, is_train=True)
     val_dataset = create_dataset(
@@ -221,7 +221,7 @@ def train(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint,
 
         print('Start training...')
         trainer.run(train_dist_dataset, val_dist_dataset)
-    
+
     return self.best_model
 
 
