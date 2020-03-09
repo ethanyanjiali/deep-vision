@@ -8,6 +8,7 @@ from train import train
 """
 python3 main.py \
     --epochs=100 \
+    --start_epoch=1 \
     --learning_rate=0.001 \
     --tensorboard_dir="./logs/" \
     --num_heatmap=16 \
@@ -19,6 +20,8 @@ python3 main.py \
 
 @click.command()
 @click.option('--epochs', default=120, help='Total number of epochs.')
+@click.option(
+    '--start_epoch', default=1, help='The initial epoch to start with.')
 @click.option(
     '--learning_rate', default=0.001, help='The learning rate to start with.')
 @click.option(
@@ -38,8 +41,9 @@ python3 main.py \
 def main(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint,
          num_heatmap, batch_size, train_tfrecords, val_tfrecords,
          output_bucket, output_dir, version):
-    model_path = train(epochs, 1, learning_rate, tensorboard_dir, checkpoint,
-                       num_heatmap, batch_size, train_tfrecords, val_tfrecords)
+    model_path = train(epochs, start_epoch, learning_rate, tensorboard_dir,
+                       checkpoint, num_heatmap, batch_size, train_tfrecords,
+                       val_tfrecords)
     print("Received model " + model_path)
 
     if output_bucket is None or output_dir is None:
