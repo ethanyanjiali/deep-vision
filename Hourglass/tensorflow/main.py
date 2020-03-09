@@ -19,7 +19,7 @@ python3 main.py \
 
 
 @click.command()
-@click.option('--epochs', default=120, help='Total number of epochs.')
+@click.option('--epochs', default=100, help='Total number of epochs.')
 @click.option(
     '--start_epoch', default=1, help='The initial epoch to start with.')
 @click.option(

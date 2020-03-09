@@ -205,7 +205,7 @@ def train(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint,
             val_dataset)
 
         model = StackedHourglassNetwork(IMAGE_SHAPE, 4, 1, num_heatmap)
-        if checkpoint:
+        if checkpoint and os.path.exists(checkpoint):
             model.load_weights(checkpoint)
 
         trainer = Trainer(
