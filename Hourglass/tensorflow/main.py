@@ -41,9 +41,10 @@ python3 main.py \
 def main(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint,
          num_heatmap, batch_size, train_tfrecords, val_tfrecords,
          output_bucket, output_dir, version):
-    model_path = train(epochs, start_epoch, learning_rate, tensorboard_dir,
-                       checkpoint, num_heatmap, batch_size, train_tfrecords,
-                       val_tfrecords)
+    versioned_tensorboard_dir = os.path.join(tensorboard_dir, "v" + version)
+    model_path = train(epochs, start_epoch, learning_rate,
+                       versioned_tensorboard_dir, checkpoint, num_heatmap,
+                       batch_size, train_tfrecords, val_tfrecords)
     print("Received model " + model_path)
 
     if output_bucket is None or output_dir is None:
