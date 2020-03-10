@@ -218,9 +218,7 @@ def train(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint,
             tensorboard_dir=tensorboard_dir)
 
         print('Start training...')
-        trainer.run(train_dist_dataset, val_dist_dataset)
-
-    return self.best_model
+        return trainer.run(train_dist_dataset, val_dist_dataset)
 
 
 if __name__ == "__main__":
