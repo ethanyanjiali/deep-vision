@@ -19,6 +19,7 @@ class Trainer(object):
                  global_batch_size,
                  strategy,
                  initial_learning_rate,
+                 version='0.0.1',
                  start_epoch=1,
                  tensorboard_dir='./logs'):
         self.start_epoch = start_epoch
@@ -40,6 +41,7 @@ class Trainer(object):
         self.max_patience = 10
         self.tensorboard_dir = tensorboard_dir
         self.best_model = None
+        self.version = version
 
     def lr_decay(self):
         """
@@ -163,8 +165,8 @@ class Trainer(object):
         return self.best_model
 
     def save_model(self, epoch, loss):
-        model_name = './models/model-v1.0.0-epoch-{}-loss-{:.4f}.h5'.format(
-            epoch, loss)
+        model_name = './models/model-v{}-epoch-{}-loss-{:.4f}.h5'.format(
+            self.version, epoch, loss)
         self.model.save_weights(model_name)
         self.best_model = model_name
         print("Model {} saved.".format(model_name))
@@ -189,7 +191,7 @@ def create_dataset(tfrecords, batch_size, num_heatmap, is_train):
 
 
 def train(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint,
-          num_heatmap, batch_size, train_tfrecords, val_tfrecords):
+          num_heatmap, batch_size, train_tfrecords, val_tfrecords, version):
     strategy = tf.distribute.MirroredStrategy()
     global_batch_size = strategy.num_replicas_in_sync * batch_size
     train_dataset = create_dataset(
@@ -217,6 +219,7 @@ def train(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint,
             strategy,
             initial_learning_rate=learning_rate,
             start_epoch=start_epoch,
+            version=version,
             tensorboard_dir=tensorboard_dir)
 
         print('Start training...')
@@ -234,4 +237,4 @@ if __name__ == "__main__":
     start_epoch = 1
 
     train(epochs, start_epoch, learning_rate, tensorboard_dir, None,
-          num_heatmap, batch_size, train_tfrecords, val_tfrecords)
+          num_heatmap, batch_size, train_tfrecords, val_tfrecords, '0.0.1')
