@@ -1,5 +1,5 @@
 # Stacked Hourglass Network - TensorFlow 2
-TensorFlow 2 implemetation of Stacked Hourglass Network (Hourglass-104) with Multi-GPU training support. This is the minimal implementation to start training. I haven't add sufficient data preprocessing and postprocessing yet, such as person cropping and NMS.
+TensorFlow 2 implemetation of Stacked Hourglass Network (Hourglass-104) with Multi-GPU training support. I've trained the model with MPII dataset. To train with your own dataset, you will need to create TF Records and maybe change the preprocess.py file accordinly.
 
 
 ## Set Up Dataset
