@@ -12,3 +12,7 @@ Once all TF Records are generated, you could start training by:
 ```
 python3 train.py
 ```
+
+## Inference
+
+Please see `demo_hourglass_pose.ipynb` for examples of inference.
