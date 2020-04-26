@@ -434,10 +434,11 @@ class YoloLoss(object):
                                                            obj_loss)
 
     def calc_ignore_mask(self, true_obj, true_box, pred_box):
-
+        
         def calc_example_ignore_mask(inputs):
             """
-            calcualte ignore mask for each example in current batch
+            calcualte ignore mask for each example in current batch.
+            thanks kelvinkoh0308 for catching this bug here: https://github.com/ethanyanjiali/deep-vision/issues/6
             """
             example_true_obj, example_true_box, example_pred_box = inputs
             # eg. true_obj (13, 13, 3, 1)
