@@ -434,29 +434,39 @@ class YoloLoss(object):
                                                            obj_loss)
 
     def calc_ignore_mask(self, true_obj, true_box, pred_box):
-        # eg. true_obj (1, 13, 13, 3, 1)
-        true_obj = tf.squeeze(true_obj, axis=-1)
-        # eg. true_obj (1, 13, 13, 3)
-        # eg. true_box (1, 13, 13, 3, 4)
-        # eg. pred_box (1, 13, 13, 2, 4)
-        # eg. true_box_filtered (2, 4) it was (3, 4) but one element got filtered out
-        true_box_filtered = tf.boolean_mask(true_box, tf.cast(
-            true_obj, tf.bool))
 
-        # YOLOv3:
-        # "If the bounding box prior is not the best but does overlap a ground
-        # truth object by more than some threshold we ignore the prediction,
-        # following [17]. We use the threshold of .5."
-        # calculate the iou for each pair of pred bbox and true bbox, then find the best among them
-        # eg. best_iou (1, 1, 1, 2)
-        best_iou = tf.reduce_max(
-            broadcast_iou(pred_box, true_box_filtered), axis=-1)
+        def calc_example_ignore_mask(inputs):
+            """
+            calcualte ignore mask for each example in current batch
+            """
+            example_true_obj, example_true_box, example_pred_box = inputs
+            # eg. true_obj (13, 13, 3, 1)
+            has_true_box = tf.cast(tf.squeeze(example_true_obj, axis=-1), tf.bool)
+            # eg. has_true_box (13, 13, 3)
+            # eg. true_box (13, 13, 3, 4)
+            # eg. pred_box (13, 13, 2, 4)
+            # eg. true_box_filtered (2, 4) it was (3, 4) but one element got filtered out
+            true_box_filtered = tf.boolean_mask(example_true_box, has_true_box)
+            # if there's no true box left for this example, return all zeros
+            if (tf.shape(true_box_filtered)[0] == 0):
+                return tf.zeros_like(example_true_obj, dtype=tf.float32)
+            # YOLOv3:
+            # "If the bounding box prior is not the best but does overlap a ground
+            # truth object by more than some threshold we ignore the prediction,
+            # following [17]. We use the threshold of .5."
+            # calculate the iou for each pair of pred bbox and true bbox, then find the best among them
+            # eg. best_iou (1, 1, 2)
+            best_iou = tf.reduce_max(broadcast_iou(example_pred_box, true_box_filtered), axis=-1)
 
-        # if best iou is higher than threshold, set the box to be ignored for noobj loss
-        # eg. ignore_mask(1, 1, 1, 2)
-        ignore_mask = tf.cast(best_iou < self.ignore_thresh, tf.float32)
-        ignore_mask = tf.expand_dims(ignore_mask, axis=-1)
-        return ignore_mask
+            # if best iou is higher than threshold, set the box to be ignored for noobj loss
+            # eg. ignore_mask(1, 1, 2)
+            example_ignore_mask = tf.cast(best_iou < self.ignore_thresh, tf.float32)
+            example_ignore_mask = tf.expand_dims(example_ignore_mask, axis=-1)
+            return example_ignore_mask
+
+        batch_ignore_mask = tf.map_fn(calc_example_ignore_mask, (true_obj, true_box, pred_box), dtype=tf.float32)
+
+        return batch_ignore_mask
 
     def calc_obj_loss(self, true_obj, pred_obj, ignore_mask):
         """
