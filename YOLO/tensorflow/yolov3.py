@@ -456,14 +456,19 @@ class YoloLoss(object):
             # truth object by more than some threshold we ignore the prediction,
             # following [17]. We use the threshold of .5."
             # calculate the iou for each pair of pred bbox and true bbox, then find the best among them
-            # eg. best_iou (1, 1, 2)
+            # eg. best_iou (1, 2)
             best_iou = tf.reduce_max(broadcast_iou(example_pred_box, true_box_filtered), axis=-1)
 
             # if best iou is higher than threshold, set the box to be ignored for noobj loss
-            # eg. ignore_mask(1, 1, 2)
+            # eg. ignore_mask(1, 2)
             example_ignore_mask = tf.cast(best_iou < self.ignore_thresh, tf.float32)
             example_ignore_mask = tf.expand_dims(example_ignore_mask, axis=-1)
             return example_ignore_mask
+
+        if tf.shape(true_obj)[0] == 0:
+            # in multi-gpu training, some replica could receive batch size = 0 for the last batch
+            # this won't affect loss calculation, but may break tf.map_fn
+            return tf.zeros_like(true_obj)
 
         batch_ignore_mask = tf.map_fn(calc_example_ignore_mask, (true_obj, true_box, pred_box), dtype=tf.float32)
 
