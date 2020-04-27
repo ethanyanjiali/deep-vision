@@ -450,7 +450,7 @@ class YoloLoss(object):
         true_box = tf.sort(true_box, axis=1, direction="DESCENDING")
         # (None, 100, 4)
         # only use maximum 100 boxes per groundtruth to calcualte IOU, otherwise
-        # GPU emory comsumption would explose for a matrix like (16, 52*52*3, 52*52*3, 4)
+        # GPU emory comsumption would explode for a matrix like (16, 52*52*3, 52*52*3, 4)
         true_box = true_box[:, 0:100, :]
         # (None, 507, 4)
         pred_box = tf.reshape(pred_box, [pred_box_shape[0], -1, 4])
