@@ -434,45 +434,40 @@ class YoloLoss(object):
                                                            obj_loss)
 
     def calc_ignore_mask(self, true_obj, true_box, pred_box):
-        
-        def calc_example_ignore_mask(inputs):
-            """
-            calcualte ignore mask for each example in current batch.
-            thanks kelvinkoh0308 for catching this bug here: https://github.com/ethanyanjiali/deep-vision/issues/6
-            """
-            example_true_obj, example_true_box, example_pred_box = inputs
-            # eg. true_obj (13, 13, 3, 1)
-            has_true_box = tf.cast(tf.squeeze(example_true_obj, axis=-1), tf.bool)
-            # eg. has_true_box (13, 13, 3)
-            # eg. true_box (13, 13, 3, 4)
-            # eg. pred_box (13, 13, 2, 4)
-            # eg. true_box_filtered (2, 4) it was (3, 4) but one element got filtered out
-            true_box_filtered = tf.boolean_mask(example_true_box, has_true_box)
-            # if there's no true box left for this example, return all zeros
-            if (tf.shape(true_box_filtered)[0] == 0):
-                return tf.zeros_like(example_true_obj, dtype=tf.float32)
-            # YOLOv3:
-            # "If the bounding box prior is not the best but does overlap a ground
-            # truth object by more than some threshold we ignore the prediction,
-            # following [17]. We use the threshold of .5."
-            # calculate the iou for each pair of pred bbox and true bbox, then find the best among them
-            # eg. best_iou (1, 2)
-            best_iou = tf.reduce_max(broadcast_iou(example_pred_box, true_box_filtered), axis=-1)
+        # YOLOv3:
+        # "If the bounding box prior is not the best but does overlap a ground
+        # truth object by more than some threshold we ignore the prediction,
+        # following [17]. We use the threshold of .5."
+        # calculate the iou for each pair of pred bbox and true bbox, then find the best among them
 
-            # if best iou is higher than threshold, set the box to be ignored for noobj loss
-            # eg. ignore_mask(1, 2)
-            example_ignore_mask = tf.cast(best_iou < self.ignore_thresh, tf.float32)
-            example_ignore_mask = tf.expand_dims(example_ignore_mask, axis=-1)
-            return example_ignore_mask
+        # (None, 13, 13, 3, 4)
+        true_box_shape = tf.shape(true_box)
+        # (None, 13, 13, 3, 4)
+        pred_box_shape = tf.shape(pred_box)
+        # (None, 507, 4)
+        true_box = tf.reshape(true_box, [true_box_shape[0], -1, 4])
+        # sort true_box to have non-zero boxes rank first
+        true_box = tf.sort(true_box, axis=1, direction="DESCENDING")
+        # (None, 100, 4)
+        # only use maximum 100 boxes per groundtruth to calcualte IOU, otherwise
+        # GPU emory comsumption would explose for a matrix like (16, 52*52*3, 52*52*3, 4)
+        true_box = true_box[:, 0:100, :]
+        # (None, 507, 4)
+        pred_box = tf.reshape(pred_box, [pred_box_shape[0], -1, 4])
 
-        if tf.shape(true_obj)[0] == 0:
-            # in multi-gpu training, some replica could receive batch size = 0 for the last batch
-            # this won't affect loss calculation, but may break tf.map_fn
-            return tf.zeros_like(true_obj)
-
-        batch_ignore_mask = tf.map_fn(calc_example_ignore_mask, (true_obj, true_box, pred_box), dtype=tf.float32)
-
-        return batch_ignore_mask
+        # https://github.com/dmlc/gluon-cv/blob/06bb7ec2044cdf3f433721be9362ab84b02c5a90/gluoncv/model_zoo/yolo/yolo_target.py#L198
+        # (None, 507, 507)
+        iou = broadcast_iou(pred_box, true_box)
+        # (None, 507)
+        best_iou = tf.reduce_max(iou, axis=-1)
+        # (None, 13, 13, 3)
+        best_iou = tf.reshape(best_iou, [pred_box_shape[0], pred_box_shape[1], pred_box_shape[2], pred_box_shape[3]])
+        # ignore_mask = 1 => don't ignore
+        # ignore_mask = 0 => should ignore
+        ignore_mask = tf.cast(best_iou < self.ignore_thresh, tf.float32)
+        # (None, 13, 13, 3, 1)
+        ignore_mask = tf.expand_dims(ignore_mask, axis=-1)
+        return ignore_mask
 
     def calc_obj_loss(self, true_obj, pred_obj, ignore_mask):
         """
