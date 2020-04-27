@@ -35,8 +35,8 @@ def broadcast_iou(box_a, box_b):
     https://github.com/dmlc/gluon-cv/blob/c3dd20d4b1c1ef8b7d381ad2a7d04a68c5fa1221/gluoncv/nn/bbox.py#L206
 
     inputs:
-    box1: a tensor full of boxes, eg. (B, N, 4)
-    box2: another tensor full of boxes, eg. (B, M, 4)
+    box_a: a tensor full of boxes, eg. (B, N, 4), box is in x1y1x2y2
+    box_b: another tensor full of boxes, eg. (B, M, 4)
     """
 
     # (B, N, 1, 4)
@@ -57,13 +57,13 @@ def broadcast_iou(box_a, box_b):
 
     # (B, N, M, 1)
     left = tf.math.maximum(al, bl)
-    right = tf.math.maximum(ar, br)
+    right = tf.math.minimum(ar, br)
     top = tf.math.maximum(at, bt)
-    bot = tf.math.maximum(ab, bb)
+    bot = tf.math.minimum(ab, bb)
 
     # (B, N, M, 1)
-    iw = right - left
-    ih = bot - top
+    iw = tf.clip_by_value(right - left, 0, 1)
+    ih = tf.clip_by_value(bot - top, 0, 1)
     i = iw * ih
 
     # (B, N, M, 1)
