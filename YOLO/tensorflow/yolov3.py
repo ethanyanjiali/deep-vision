@@ -434,27 +434,38 @@ class YoloLoss(object):
                                                            obj_loss)
 
     def calc_ignore_mask(self, true_obj, true_box, pred_box):
-        # eg. true_obj (1, 13, 13, 3, 1)
-        true_obj = tf.squeeze(true_obj, axis=-1)
-        # eg. true_obj (1, 13, 13, 3)
-        # eg. true_box (1, 13, 13, 3, 4)
-        # eg. pred_box (1, 13, 13, 2, 4)
-        # eg. true_box_filtered (2, 4) it was (3, 4) but one element got filtered out
-        true_box_filtered = tf.boolean_mask(true_box, tf.cast(
-            true_obj, tf.bool))
-
         # YOLOv3:
         # "If the bounding box prior is not the best but does overlap a ground
         # truth object by more than some threshold we ignore the prediction,
         # following [17]. We use the threshold of .5."
         # calculate the iou for each pair of pred bbox and true bbox, then find the best among them
-        # eg. best_iou (1, 1, 1, 2)
-        best_iou = tf.reduce_max(
-            broadcast_iou(pred_box, true_box_filtered), axis=-1)
 
-        # if best iou is higher than threshold, set the box to be ignored for noobj loss
-        # eg. ignore_mask(1, 1, 1, 2)
+        # (None, 13, 13, 3, 4)
+        true_box_shape = tf.shape(true_box)
+        # (None, 13, 13, 3, 4)
+        pred_box_shape = tf.shape(pred_box)
+        # (None, 507, 4)
+        true_box = tf.reshape(true_box, [true_box_shape[0], -1, 4])
+        # sort true_box to have non-zero boxes rank first
+        true_box = tf.sort(true_box, axis=1, direction="DESCENDING")
+        # (None, 100, 4)
+        # only use maximum 100 boxes per groundtruth to calcualte IOU, otherwise
+        # GPU emory comsumption would explode for a matrix like (16, 52*52*3, 52*52*3, 4)
+        true_box = true_box[:, 0:100, :]
+        # (None, 507, 4)
+        pred_box = tf.reshape(pred_box, [pred_box_shape[0], -1, 4])
+
+        # https://github.com/dmlc/gluon-cv/blob/06bb7ec2044cdf3f433721be9362ab84b02c5a90/gluoncv/model_zoo/yolo/yolo_target.py#L198
+        # (None, 507, 507)
+        iou = broadcast_iou(pred_box, true_box)
+        # (None, 507)
+        best_iou = tf.reduce_max(iou, axis=-1)
+        # (None, 13, 13, 3)
+        best_iou = tf.reshape(best_iou, [pred_box_shape[0], pred_box_shape[1], pred_box_shape[2], pred_box_shape[3]])
+        # ignore_mask = 1 => don't ignore
+        # ignore_mask = 0 => should ignore
         ignore_mask = tf.cast(best_iou < self.ignore_thresh, tf.float32)
+        # (None, 13, 13, 3, 1)
         ignore_mask = tf.expand_dims(ignore_mask, axis=-1)
         return ignore_mask
 

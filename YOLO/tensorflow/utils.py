@@ -28,50 +28,53 @@ def xywh_to_y1x1y2x2(box):
     return y_box
 
 
-def broadcast_iou(box1, box2):
+def broadcast_iou(box_a, box_b):
     """
-    calculate iou between one box1iction box and multiple box2 box in a broadcast way
+    calculate iou between box_a and multiple box_b in a broadcast way.
+    Used this implementation as reference: 
+    https://github.com/dmlc/gluon-cv/blob/c3dd20d4b1c1ef8b7d381ad2a7d04a68c5fa1221/gluoncv/nn/bbox.py#L206
 
     inputs:
-    box1: a tensor full of boxes, eg. (3, 4)
-    box2: another tensor full of boxes, eg. (3, 4)
+    box_a: a tensor full of boxes, eg. (B, N, 4), box is in x1y1x2y2
+    box_b: another tensor full of boxes, eg. (B, M, 4)
     """
 
-    # assert one dimension in order to mix match box1 and box2
-    # eg:
-    # box1 -> (3, 1, 4)
-    # box2 -> (1, 3, 4)
-    box1 = tf.expand_dims(box1, -2)
-    box2 = tf.expand_dims(box2, 0)
+    # (B, N, 1, 4)
+    box_a = tf.expand_dims(box_a, -2)
+    # (B, 1, M, 4)
+    box_b = tf.expand_dims(box_b, -3)
+    # (B, N, M, 4)
+    new_shape = tf.broadcast_dynamic_shape(tf.shape(box_a), tf.shape(box_b))
 
-    # derive the union of shape to broadcast
-    # eg. new_shape -> (3, 3, 4)
-    new_shape = tf.broadcast_dynamic_shape(tf.shape(box1), tf.shape(box2))
+    # (B, N, M, 4)
+    # (B, N, M, 4)
+    box_a = tf.broadcast_to(box_a, new_shape)
+    box_b = tf.broadcast_to(box_b, new_shape)
 
-    # broadcast (duplicate) box1 and box2 so that
-    # each box2 has one box1 matched correspondingly
-    # box1: (3, 3, 4)
-    # box2: (3, 3, 4)
-    box1 = tf.broadcast_to(box1, new_shape)
-    box2 = tf.broadcast_to(box2, new_shape)
+    # (B, N, M, 1)
+    al, at, ar, ab = tf.split(box_a, 4, -1)
+    bl, bt, br, bb = tf.split(box_b, 4, -1)
 
-    # minimum xmax - maximum xmin is the width of intersection.
-    # but has to be greater or equal to 0
-    interserction_w = tf.maximum(
-        tf.minimum(box1[..., 2], box2[..., 2]) - tf.maximum(
-            box1[..., 0], box2[..., 0]), 0)
-    # minimum ymax - maximum ymin is the height of intersection.
-    # but has to be greater or equal to 0
-    interserction_h = tf.maximum(
-        tf.minimum(box1[..., 3], box2[..., 3]) - tf.maximum(
-            box1[..., 1], box2[..., 1]), 0)
-    intersection_area = interserction_w * interserction_h
-    box1_area = (box1[..., 2] - box1[..., 0]) * \
-        (box1[..., 3] - box1[..., 1])
-    box2_area = (box2[..., 2] - box2[..., 0]) * \
-        (box2[..., 3] - box2[..., 1])
-    # intersection over union
-    return intersection_area / (box1_area + box2_area - intersection_area)
+    # (B, N, M, 1)
+    left = tf.math.maximum(al, bl)
+    right = tf.math.minimum(ar, br)
+    top = tf.math.maximum(at, bt)
+    bot = tf.math.minimum(ab, bb)
+
+    # (B, N, M, 1)
+    iw = tf.clip_by_value(right - left, 0, 1)
+    ih = tf.clip_by_value(bot - top, 0, 1)
+    i = iw * ih
+
+    # (B, N, M, 1)
+    area_a = (ar - al) * (ab - at)
+    area_b = (br - bl) * (bb - bt)
+    union = area_a + area_b - i
+
+    # (B, N, M)
+    iou = tf.squeeze(i / (union + 1e-7), axis=-1)
+
+    return iou
 
 
 def binary_cross_entropy(logits, labels):
