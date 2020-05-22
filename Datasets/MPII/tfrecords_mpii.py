@@ -125,8 +125,8 @@ def parse_one_annotation(anno, image_dir):
 
 def main():
     print('Start to parse annotations.')
-    if not os.path.exists('./tfrecords_mpii'):
-        os.makedirs('./tfrecords_mpii')
+    if not os.path.exists('./tfrecords'):
+        os.makedirs('./tfrecords')
 
     with open('./mpii_human_pose_v1_u12_2/train.json') as train_json:
         train_annos = json.load(train_json)
