@@ -52,11 +52,11 @@ def genreate_tfexample(anno):
     depth = 3
 
     x = [
-        joint[0] / width if joint[0] >= 0 else joint[0]
+        int(joint[0]) if joint[0] >= 0 else -1
         for joint in anno['joints']
     ]
     y = [
-        joint[1] / height if joint[1] >= 0 else joint[0]
+        int(joint[1]) if joint[1] >= 0 else -1 
         for joint in anno['joints']
     ]
     # 0 - invisible, 1 - occluded, 2 - visible
@@ -70,11 +70,17 @@ def genreate_tfexample(anno):
         'image/depth':
         tf.train.Feature(int64_list=tf.train.Int64List(value=[depth])),
         'image/object/parts/x':
-        tf.train.Feature(float_list=tf.train.FloatList(value=x)),
+        tf.train.Feature(int64_list=tf.train.Int64List(value=x)),
         'image/object/parts/y':
-        tf.train.Feature(float_list=tf.train.FloatList(value=y)),
+        tf.train.Feature(int64_list=tf.train.Int64List(value=y)),
         'image/object/parts/v':
-        tf.train.Feature(float_list=tf.train.Int64List(value=v)),
+        tf.train.Feature(int64_list=tf.train.Int64List(value=v)),
+        'image/object/center/x':
+        tf.train.Feature(int64_list=tf.train.Int64List(value=[int(anno['center'][0])])),
+        'image/object/center/y':
+        tf.train.Feature(int64_list=tf.train.Int64List(value=[int(anno['center'][1])])),
+        'image/object/scale':
+        tf.train.Feature(float_list=tf.train.FloatList(value=[anno['scale']])),
         'image/encoded':
         _bytes_feature(content),
         'image/filename':
@@ -114,11 +120,15 @@ def parse_one_annotation(anno, image_dir):
     filename = anno['image']
     joints = anno['joints']
     joints_visibility = anno['joints_vis']
+    scale = anno['scale']
+    center = anno['center']
     annotation = {
         'filename': filename,
         'filepath': os.path.join(image_dir, filename),
         'joints_visibility': joints_visibility,
         'joints': joints,
+        'scale': scale,
+        'center': center
     }
     return annotation
 

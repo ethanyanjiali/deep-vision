@@ -235,6 +235,7 @@ if __name__ == "__main__":
     tensorboard_dir = './logs/'
     learning_rate = 0.0001
     start_epoch = 1
+    epochs = 5
 
     train(epochs, start_epoch, learning_rate, tensorboard_dir, None,
           num_heatmap, batch_size, train_tfrecords, val_tfrecords, '0.0.1')
